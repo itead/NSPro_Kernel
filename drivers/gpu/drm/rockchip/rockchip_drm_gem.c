@@ -587,6 +587,11 @@ rockchip_gem_alloc_object(struct drm_device *drm, unsigned int size)
 	gfp_t gfp_mask = GFP_HIGHUSER | __GFP_RECLAIMABLE;
 #endif
 
+	if (!size) {
+		DRM_ERROR("gem buffer size is zero\n");
+		return ERR_PTR(-EINVAL);
+	}
+
 	size = round_up(size, PAGE_SIZE);
 
 	rk_obj = kzalloc(sizeof(*rk_obj), GFP_KERNEL);

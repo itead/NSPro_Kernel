@@ -96,6 +96,7 @@ static int snd_ctl_elem_info_compat(struct snd_ctl_file *ctl,
 {
 	struct snd_ctl_elem_info *data;
 	int err;
+	u32 item;
 
 	data = kzalloc(sizeof(*data), GFP_KERNEL);
 	if (! data)
@@ -108,8 +109,11 @@ static int snd_ctl_elem_info_compat(struct snd_ctl_file *ctl,
 	/* we need to copy the item index.
 	 * hope this doesn't break anything..
 	 */
-	if (get_user(data->value.enumerated.item, &data32->value.enumerated.item))
+	if (copy_from_user(&item,
+			    (char __user *)data32 + offsetof(struct snd_ctl_elem_info32, value.enumerated.item),
+			    sizeof(item)))
 		goto error;
+	data->value.enumerated.item = item;
 
 	snd_power_lock(ctl->card);
 	err = snd_power_wait(ctl->card, SNDRV_CTL_POWER_D0);
@@ -125,14 +129,22 @@ static int snd_ctl_elem_info_compat(struct snd_ctl_file *ctl,
 	if (copy_to_user(&data32->id, &data->id, sizeof(data->id)) ||
 	    copy_to_user(&data32->type, &data->type, 3 * sizeof(u32)))
 		goto error;
-	if (put_user(data->owner, &data32->owner))
+	if (copy_to_user((char __user *)data32 +
+			 offsetof(struct snd_ctl_elem_info32, owner),
+			 &data->owner, sizeof(data->owner)))
 		goto error;
 	switch (data->type) {
 	case SNDRV_CTL_ELEM_TYPE_BOOLEAN:
 	case SNDRV_CTL_ELEM_TYPE_INTEGER:
-		if (put_user(data->value.integer.min, &data32->value.integer.min) ||
-		    put_user(data->value.integer.max, &data32->value.integer.max) ||
-		    put_user(data->value.integer.step, &data32->value.integer.step))
+		if (put_user(data->value.integer.min,
+			     (__s32 __user *)((char __user *)data32 +
+			     offsetof(struct snd_ctl_elem_info32, value.integer.min))) ||
+		    put_user(data->value.integer.max,
+			     (__s32 __user *)((char __user *)data32 +
+			     offsetof(struct snd_ctl_elem_info32, value.integer.max))) ||
+		    put_user(data->value.integer.step,
+			     (__s32 __user *)((char __user *)data32 +
+			     offsetof(struct snd_ctl_elem_info32, value.integer.step))))
 			goto error;
 		break;
 	case SNDRV_CTL_ELEM_TYPE_INTEGER64:
@@ -400,19 +412,29 @@ static int snd_ctl_elem_add_compat(struct snd_ctl_file *file,
 	if (copy_from_user(&data->id, &data32->id, sizeof(data->id)) ||
 	    copy_from_user(&data->type, &data32->type, 3 * sizeof(u32)))
 		goto error;
-	if (get_user(data->owner, &data32->owner))
+	if (copy_from_user(&data->owner,
+                       (void __user *)((char __user *)data32 +
+                           offsetof(struct snd_ctl_elem_info32, owner)),
+                       sizeof(data->owner)))
 		goto error;
 	switch (data->type) {
 	case SNDRV_CTL_ELEM_TYPE_BOOLEAN:
 	case SNDRV_CTL_ELEM_TYPE_INTEGER:
-		if (get_user(data->value.integer.min, &data32->value.integer.min) ||
-		    get_user(data->value.integer.max, &data32->value.integer.max) ||
-		    get_user(data->value.integer.step, &data32->value.integer.step))
+		if (get_user(data->value.integer.min,
+			     (__s32 __user *)((char __user *)data32 +
+			     offsetof(struct snd_ctl_elem_info32, value.integer.min))) ||
+		    get_user(data->value.integer.max,
+			     (__s32 __user *)((char __user *)data32 +
+			     offsetof(struct snd_ctl_elem_info32, value.integer.max))) ||
+		    get_user(data->value.integer.step,
+			     (__s32 __user *)((char __user *)data32 +
+			     offsetof(struct snd_ctl_elem_info32, value.integer.step))))
 			goto error;
 		break;
 	case SNDRV_CTL_ELEM_TYPE_INTEGER64:
-		if (copy_from_user(&data->value.integer64,
-				   &data32->value.integer64,
+		if (copy_from_user((void *)((char *)data + offsetof(struct snd_ctl_elem_info, value.integer64)),
+				   (void __user *)((char __user *)data32 +
+                                   offsetof(struct snd_ctl_elem_info32, value.integer64)),
 				   sizeof(data->value.integer64)))
 			goto error;
 		break;

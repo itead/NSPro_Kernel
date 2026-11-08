@@ -390,46 +390,71 @@ EXPORT_SYMBOL(sg_alloc_table);
  *   0 on success, negative error on failure
  */
 int sg_alloc_table_from_pages(struct sg_table *sgt,
-	struct page **pages, unsigned int n_pages,
-	unsigned long offset, unsigned long size,
-	gfp_t gfp_mask)
+        struct page **pages, unsigned int n_pages,
+        unsigned long offset, unsigned long size,
+        gfp_t gfp_mask)
 {
-	unsigned int chunks;
-	unsigned int i;
-	unsigned int cur_page;
-	int ret;
-	struct scatterlist *s;
+        unsigned int chunks;
+        unsigned int i;
+        unsigned int cur_page;
+        int ret;
+        struct scatterlist *s;
 
-	/* compute number of contiguous chunks */
-	chunks = 1;
-	for (i = 1; i < n_pages; ++i)
-		if (page_to_pfn(pages[i]) != page_to_pfn(pages[i - 1]) + 1)
-			++chunks;
+        if (!sgt || !pages || !n_pages ||
+            offset >= PAGE_SIZE || !size)
+                return -EINVAL;
 
-	ret = sg_alloc_table(sgt, chunks, gfp_mask);
-	if (unlikely(ret))
-		return ret;
+        if (size > ((unsigned long)n_pages << PAGE_SHIFT) - offset)
+                return -EINVAL;
 
-	/* merging chunks and putting them into the scatterlist */
-	cur_page = 0;
-	for_each_sg(sgt->sgl, s, sgt->orig_nents, i) {
-		unsigned long chunk_size;
-		unsigned int j;
+        for (i = 0; i < n_pages; i++) {
+                if (!pages[i])
+                        return -EINVAL;
+        }
 
-		/* look for the end of the current chunk */
-		for (j = cur_page + 1; j < n_pages; ++j)
-			if (page_to_pfn(pages[j]) !=
-			    page_to_pfn(pages[j - 1]) + 1)
-				break;
+        chunks = 1;
+        for (i = 1; i < n_pages; ++i) {
+                if (page_to_pfn(pages[i]) !=
+                    page_to_pfn(pages[i - 1]) + 1)
+                        ++chunks;
+        }
 
-		chunk_size = ((j - cur_page) << PAGE_SHIFT) - offset;
-		sg_set_page(s, pages[cur_page], min(size, chunk_size), offset);
-		size -= chunk_size;
-		offset = 0;
-		cur_page = j;
-	}
+        ret = sg_alloc_table(sgt, chunks, gfp_mask);
+        if (unlikely(ret))
+                return ret;
 
-	return 0;
+        cur_page = 0;
+        for_each_sg(sgt->sgl, s, sgt->orig_nents, i) {
+                unsigned long chunk_size;
+                unsigned int j;
+                unsigned long length;
+
+                for (j = cur_page + 1; j < n_pages; ++j) {
+                        if (page_to_pfn(pages[j]) !=
+                            page_to_pfn(pages[j - 1]) + 1)
+                                break;
+                }
+
+                chunk_size = ((unsigned long)(j - cur_page)
+                              << PAGE_SHIFT) - offset;
+                length = min(size, chunk_size);
+
+                sg_set_page(s, pages[cur_page], length, offset);
+
+                size -= length;
+                offset = 0;
+                cur_page = j;
+
+                if (!size)
+                        break;
+        }
+
+        if (size) {
+                sg_free_table(sgt);
+                return -EINVAL;
+        }
+
+        return 0;
 }
 EXPORT_SYMBOL(sg_alloc_table_from_pages);
 

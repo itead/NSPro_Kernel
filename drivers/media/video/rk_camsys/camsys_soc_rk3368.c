@@ -240,8 +240,8 @@ camsys_dev_t *camsys_dev, camsys_soc_cfg_t cfg_cmd, void *cfg_para)
 		else
 			__raw_writel(0x00, (void *)(camsys_dev->rk_isp_base +
 			MRV_AFM_BASE + VI_IRCL));
-			camsys_trace(2, "Isp self soft rst: %ld", reset);
-			break;
+		camsys_trace(2, "Isp self soft rst: %ld", reset);
+		break;
 		}
 
 	default:

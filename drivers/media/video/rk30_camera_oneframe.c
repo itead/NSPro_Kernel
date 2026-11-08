@@ -2620,7 +2620,7 @@ static int rk_camera_set_fmt(struct soc_camera_device *icd,
 RK_CAMERA_SET_FMT_END:
     if (stream_on & ENABLE_CAPTURE)
         write_cif_reg(pcdev->base,CIF_CIF_CTRL, (read_cif_reg(pcdev->base,CIF_CIF_CTRL) | ENABLE_CAPTURE));
-	if (ret)
+    if (ret)
     	RKCAMERA_TR("\n%s..%d.. ret = %d  \n",__FUNCTION__,__LINE__, ret);
     return ret;
 }

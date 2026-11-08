@@ -34,10 +34,27 @@ void udf_free_inode(struct inode *inode)
 
 	if (lvidiu) {
 		mutex_lock(&sbi->s_alloc_mutex);
-		if (S_ISDIR(inode->i_mode))
-			le32_add_cpu(&lvidiu->numDirs, -1);
-		else
-			le32_add_cpu(&lvidiu->numFiles, -1);
+		if (S_ISDIR(inode->i_mode)) {
+		        __le32 count;
+
+		        memcpy(&count, (char *)lvidiu +
+		                offsetof(struct logicalVolIntegrityDescImpUse, numDirs),
+		                sizeof(count));
+		        le32_add_cpu(&count, -1);
+		        memcpy((char *)lvidiu +
+		                offsetof(struct logicalVolIntegrityDescImpUse, numDirs),
+		                &count, sizeof(count));
+		} else {
+		        __le32 count;
+
+		        memcpy(&count, (char *)lvidiu +
+		                offsetof(struct logicalVolIntegrityDescImpUse, numFiles),
+		                sizeof(count));
+		        le32_add_cpu(&count, -1);
+		        memcpy((char *)lvidiu +
+		                offsetof(struct logicalVolIntegrityDescImpUse, numFiles),
+		                &count, sizeof(count));
+		}
 		udf_updated_lvid(sb);
 		mutex_unlock(&sbi->s_alloc_mutex);
 	}
@@ -96,9 +113,27 @@ struct inode *udf_new_inode(struct inode *dir, umode_t mode)
 		inode->i_generation = iinfo->i_unique;
 		mutex_lock(&sbi->s_alloc_mutex);
 		if (S_ISDIR(mode))
-			le32_add_cpu(&lvidiu->numDirs, 1);
+			{
+				__le32 count;
+				memcpy(&count, (char *)lvidiu +
+					offsetof(struct logicalVolIntegrityDescImpUse, numDirs),
+					sizeof(count));
+				le32_add_cpu(&count, 1);
+				memcpy((char *)lvidiu +
+					offsetof(struct logicalVolIntegrityDescImpUse, numDirs),
+					&count, sizeof(count));
+			}
 		else
-			le32_add_cpu(&lvidiu->numFiles, 1);
+			{
+				__le32 count;
+				memcpy(&count, (char *)lvidiu +
+					offsetof(struct logicalVolIntegrityDescImpUse, numFiles),
+					sizeof(count));
+				le32_add_cpu(&count, 1);
+				memcpy((char *)lvidiu +
+					offsetof(struct logicalVolIntegrityDescImpUse, numFiles),
+					&count, sizeof(count));
+			}
 		udf_updated_lvid(sb);
 		mutex_unlock(&sbi->s_alloc_mutex);
 	}

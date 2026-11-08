@@ -836,16 +836,18 @@ static int get_v4l2_ext_controls32(struct file *file,
 		if (copy_in_user(kcontrols, ucontrols, sizeof(*ucontrols)))
 			return -EFAULT;
 
-		if (get_user(id, &kcontrols->id))
+		if (copy_from_user(&id, (void __user *)kcontrols, sizeof(id)))
 			return -EFAULT;
 
 		if (ctrl_is_pointer(file, id)) {
 			void __user *s;
 
-			if (get_user(p, &ucontrols->string))
+			if (get_user(p, (compat_caddr_t __user *)((char __user *)ucontrols +
+                                offsetof(struct v4l2_ext_control32, string))))
 				return -EFAULT;
 			s = compat_ptr(p);
-			if (put_user(s, &kcontrols->string))
+			if (put_user(s, (char __user **)((char __user *)kcontrols +
+                                  offsetof(struct v4l2_ext_control, string))))
 				return -EFAULT;
 		}
 		ucontrols++;
