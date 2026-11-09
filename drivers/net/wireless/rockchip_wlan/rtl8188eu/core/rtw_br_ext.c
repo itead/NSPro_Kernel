@@ -985,12 +985,12 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 				if (!memcmp(skb->data + ETH_ALEN, ipx->ipx_source.node, ETH_ALEN)) {
 					RTW_INFO("NAT25: Use IPX Net, and Socket as network addr\n");
 
-					__nat25_generate_ipx_network_addr_with_socket(networkAddr, &ipx->ipx_source.net, &ipx->ipx_source.sock);
+					__nat25_generate_ipx_network_addr_with_socket(networkAddr, (const u8 *)ipx + offsetof(struct ipxhdr, ipx_source.net), (const u8 *)ipx + offsetof(struct ipxhdr, ipx_source.sock));
 
 					/* change IPX source node addr to wlan STA address */
 					memcpy(ipx->ipx_source.node, GET_MY_HWADDR(priv), ETH_ALEN);
 				} else
-					__nat25_generate_ipx_network_addr_with_node(networkAddr, &ipx->ipx_source.net, ipx->ipx_source.node);
+					__nat25_generate_ipx_network_addr_with_node(networkAddr, (const u8 *)ipx + offsetof(struct ipxhdr, ipx_source.net), ipx->ipx_source.node);
 
 				__nat25_db_network_insert(priv, skb->data + ETH_ALEN, networkAddr);
 
@@ -1002,14 +1002,14 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 				if (!memcmp(GET_MY_HWADDR(priv), ipx->ipx_dest.node, ETH_ALEN)) {
 					RTW_INFO("NAT25: Lookup IPX, Modify Destination IPX Node addr\n");
 
-					__nat25_generate_ipx_network_addr_with_socket(networkAddr, &ipx->ipx_dest.net, &ipx->ipx_dest.sock);
+					__nat25_generate_ipx_network_addr_with_socket(networkAddr, (const u8 *)ipx + offsetof(struct ipxhdr, ipx_dest.net), (const u8 *)ipx + offsetof(struct ipxhdr, ipx_dest.sock));
 
 					__nat25_db_network_lookup_and_replace(priv, skb, networkAddr);
 
 					/* replace IPX destination node addr with Lookup destination MAC addr */
 					memcpy(ipx->ipx_dest.node, skb->data, ETH_ALEN);
 				} else {
-					__nat25_generate_ipx_network_addr_with_node(networkAddr, &ipx->ipx_dest.net, ipx->ipx_dest.node);
+					__nat25_generate_ipx_network_addr_with_node(networkAddr, (const u8 *)ipx + offsetof(struct ipxhdr, ipx_dest.net), ipx->ipx_dest.node);
 
 					__nat25_db_network_lookup_and_replace(priv, skb, networkAddr);
 				}
