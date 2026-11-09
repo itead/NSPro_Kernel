@@ -1635,6 +1635,7 @@ PVRSRVBridgeDevmemIntCtxCreate(IMG_UINT32 ui32DispatchTableEntry,
 {
 	DEVMEMINT_CTX * psDevMemServerContextInt = NULL;
 	IMG_HANDLE hPrivDataInt = NULL;
+	IMG_UINT32 ui32CPUCacheLineSize;
 
 
 
@@ -1649,7 +1650,8 @@ PVRSRVBridgeDevmemIntCtxCreate(IMG_UINT32 ui32DispatchTableEntry,
 					psDevmemIntCtxCreateIN->bbKernelMemoryCtx,
 					&psDevMemServerContextInt,
 					&hPrivDataInt,
-					&psDevmemIntCtxCreateOUT->ui32CPUCacheLineSize);
+					&ui32CPUCacheLineSize);
+	psDevmemIntCtxCreateOUT->ui32CPUCacheLineSize = ui32CPUCacheLineSize;
 	/* Exit early if bridged call fails */
 	if(psDevmemIntCtxCreateOUT->eError != PVRSRV_OK)
 	{
