@@ -525,6 +525,7 @@ u8 rtw_set_802_11_infrastructure_mode(_adapter *padapter,
 		}
 
 		_enter_critical_bh(&pmlmepriv->lock, &irqL);
+		old_state = cur_network->network.InfrastructureMode;
 
 		if ((check_fwstate(pmlmepriv, _FW_LINKED) == _TRUE) || (old_state == Ndis802_11IBSS))
 			rtw_disassoc_cmd(padapter, 0, 0);
@@ -540,7 +541,6 @@ u8 rtw_set_802_11_infrastructure_mode(_adapter *padapter,
 		}
 
 		cur_network->network.InfrastructureMode = networktype;
-		old_state = networktype;
 
 		_clr_fwstate_(pmlmepriv, ~WIFI_NULL_STATE);
 
