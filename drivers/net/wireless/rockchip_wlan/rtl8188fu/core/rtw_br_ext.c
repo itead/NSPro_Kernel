@@ -175,7 +175,7 @@ static __inline__ void __nat25_generate_ipv4_network_addr(unsigned char *network
 
 
 static __inline__ void __nat25_generate_ipx_network_addr_with_node(unsigned char *networkAddr,
-				unsigned int *ipxNetAddr, unsigned char *ipxNodeAddr)
+				const void *ipxNetAddr, unsigned char *ipxNodeAddr)
 {
 	memset(networkAddr, 0, MAX_NETWORK_ADDR_LEN);
 
@@ -186,7 +186,7 @@ static __inline__ void __nat25_generate_ipx_network_addr_with_node(unsigned char
 
 
 static __inline__ void __nat25_generate_ipx_network_addr_with_socket(unsigned char *networkAddr,
-				unsigned int *ipxNetAddr, unsigned short *ipxSocketAddr)
+				const void *ipxNetAddr, const void *ipxSocketAddr)
 {
 	memset(networkAddr, 0, MAX_NETWORK_ADDR_LEN);
 
@@ -1047,14 +1047,14 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 						{
 							DBG_871X("NAT25: Use IPX Net, and Socket as network addr\n");
 
-							__nat25_generate_ipx_network_addr_with_socket(networkAddr, &ipx->ipx_source.net, &ipx->ipx_source.sock);
+							__nat25_generate_ipx_network_addr_with_socket(networkAddr, (const unsigned char *)ipx + offsetof(struct ipxhdr, ipx_source.net), (const unsigned char *)ipx + offsetof(struct ipxhdr, ipx_source.sock));
 
 							// change IPX source node addr to wlan STA address
                                                         memcpy(ipx->ipx_source.node, GET_MY_HWADDR(priv), ETH_ALEN);
 						}
 						else
 						{
-							__nat25_generate_ipx_network_addr_with_node(networkAddr, &ipx->ipx_source.net, ipx->ipx_source.node);
+							__nat25_generate_ipx_network_addr_with_node(networkAddr, (const unsigned char *)ipx + offsetof(struct ipxhdr, ipx_source.net), ipx->ipx_source.node);
 						}
 
 						__nat25_db_network_insert(priv, skb->data+ETH_ALEN, networkAddr);
@@ -1069,7 +1069,7 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 						{
 							DBG_871X("NAT25: Lookup IPX, Modify Destination IPX Node addr\n");
 
-							__nat25_generate_ipx_network_addr_with_socket(networkAddr, &ipx->ipx_dest.net, &ipx->ipx_dest.sock);
+							__nat25_generate_ipx_network_addr_with_socket(networkAddr, (const unsigned char *)ipx + offsetof(struct ipxhdr, ipx_dest.net), (const unsigned char *)ipx + offsetof(struct ipxhdr, ipx_dest.sock));
 
 							__nat25_db_network_lookup_and_replace(priv, skb, networkAddr);
 
@@ -1078,7 +1078,7 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 						}
 						else
 						{
-							__nat25_generate_ipx_network_addr_with_node(networkAddr, &ipx->ipx_dest.net, ipx->ipx_dest.node);
+							__nat25_generate_ipx_network_addr_with_node(networkAddr, (const unsigned char *)ipx + offsetof(struct ipxhdr, ipx_dest.net), ipx->ipx_dest.node);
 
 							__nat25_db_network_lookup_and_replace(priv, skb, networkAddr);
 						}
