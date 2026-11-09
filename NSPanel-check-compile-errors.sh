@@ -8,11 +8,11 @@ fi
 if [ "$#" -eq 1 ]; then
 	LOG_FILE=$1
 else
-	LOG_FILE=$(ls -1t /tmp/nspanel-kernel-build-*.log 2>/dev/null | sed -n '1p')
+	LOG_FILE=$(ls -1t ./nspanel-kernel-build-*.log 2>/dev/null | sed -n '1p')
 fi
 
 if [ -z "$LOG_FILE" ]; then
-	printf 'Aucun log NSPanel trouvé dans /tmp. Lance d’abord NSPanel-compile.sh.\n' >&2
+	printf 'Aucun log NSPanel trouvé dans le répertoire courant. Lance d’abord NSPanel-compile.sh.\n' >&2
 	exit 2
 fi
 
@@ -34,8 +34,16 @@ else
 	printf 'État compilation : en cours ou log interrompu (aucun statut final).\n'
 fi
 
+if git rev-parse --show-toplevel >/dev/null 2>&1; then
+	if git diff --cached --name-only -- "$LOG_FILE" | grep -F -x -- "$LOG_FILE" >/dev/null 2>&1; then
+		printf 'État Git : log ajouté à l’index, prêt pour le prochain commit.\n'
+	else
+		printf 'État Git : log pas encore indexé (compilation éventuellement en cours).\n'
+	fi
+fi
+
 printf '\n===== Diagnostics (warnings, erreurs et échecs make) =====\n'
-if grep -n -B 8 -A 12 -m 8 -E 'warning:|error:|fatal error:|undefined reference|Error [0-9]' "$LOG_FILE"; then
+if grep -n -B 8 -A 12 -m 20 -E 'warning:|error:|fatal error:|undefined reference|Error [0-9]' "$LOG_FILE"; then
 	:
 else
 	printf 'Aucun diagnostic correspondant trouvé dans le log.\n'
