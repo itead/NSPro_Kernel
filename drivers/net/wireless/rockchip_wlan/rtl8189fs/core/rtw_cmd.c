@@ -1539,7 +1539,7 @@ _func_enter_;
 
 #ifdef CONFIG_80211N_HT
 	phtpriv->ht_option = _FALSE;
-	ptmp = rtw_get_ie(&pnetwork->network.IEs[12], _HT_CAPABILITY_IE_, &tmp_len, pnetwork->network.IELength-12);
+	ptmp = rtw_get_ie((u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, IEs) + 12, _HT_CAPABILITY_IE_, &tmp_len, pnetwork->network.IELength-12);
 	if(pregistrypriv->ht_enable && ptmp && tmp_len>0)
 	{
 		//	Added by Albert 2010/06/23
@@ -1557,7 +1557,7 @@ _func_enter_;
 
 			//rtw_restructure_ht_ie
 			ie_length = psecnetwork->IELength;
-			rtw_restructure_ht_ie(padapter, &pnetwork->network.IEs[12], &psecnetwork->IEs[0], 
+			rtw_restructure_ht_ie(padapter, (u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, IEs) + 12, &psecnetwork->IEs[0], 
 									pnetwork->network.IELength-12, &ie_length,
 									pnetwork->network.Configuration.DSConfig);
 			psecnetwork->IELength = ie_length;
