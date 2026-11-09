@@ -88,7 +88,6 @@ PVRSRVBridgePMRExportPMR(IMG_UINT32 ui32DispatchTableEntry,
 {
 	IMG_HANDLE hPMR = psPMRExportPMRIN->hPMR;
 	PMR * psPMRInt = NULL;
-	IMG_HANDLE hPMR = NULL;
 	PMR_EXPORT * psPMRExportInt = NULL;
 	IMG_HANDLE hPMRExportInt = NULL;
 	IMG_HANDLE hPMRExportOut = NULL;
@@ -620,6 +619,7 @@ PVRSRVBridgePMRImportPMR(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_HANDLE hPMRExport = psPMRImportPMRIN->hPMRExport;
 	PMR_EXPORT * psPMRExportInt = NULL;
 	PMR * psPMRInt = NULL;
+	IMG_HANDLE hPMR = NULL;
 
 
 
@@ -734,6 +734,9 @@ PVRSRVBridgePMRLocalImportPMR(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_HANDLE hExtHandle = psPMRLocalImportPMRIN->hExtHandle;
 	PMR * psExtHandleInt = NULL;
 	PMR * psPMRInt = NULL;
+	IMG_HANDLE hPMR = NULL;
+	__typeof__(psPMRLocalImportPMROUT->uiSize) uiSize;
+	__typeof__(psPMRLocalImportPMROUT->sAlign) sAlign;
 
 
 
@@ -769,8 +772,10 @@ PVRSRVBridgePMRLocalImportPMR(IMG_UINT32 ui32DispatchTableEntry,
 		PMRLocalImportPMR(
 					psExtHandleInt,
 					&psPMRInt,
-					&psPMRLocalImportPMROUT->uiSize,
-					&psPMRLocalImportPMROUT->sAlign);
+					&uiSize,
+					&sAlign);
+	psPMRLocalImportPMROUT->uiSize = uiSize;
+	psPMRLocalImportPMROUT->sAlign = sAlign;
 	/* Exit early if bridged call fails */
 	if(psPMRLocalImportPMROUT->eError != PVRSRV_OK)
 	{
@@ -786,11 +791,13 @@ PVRSRVBridgePMRLocalImportPMR(IMG_UINT32 ui32DispatchTableEntry,
 
 	psPMRLocalImportPMROUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psPMRLocalImportPMROUT->hPMR,
+							&hPMR,
 							(void *) psPMRInt,
 							PVRSRV_HANDLE_TYPE_PHYSMEM_PMR,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&PMRUnrefPMR);
+	if (psPMRLocalImportPMROUT->eError == PVRSRV_OK)
+		psPMRLocalImportPMROUT->hPMR = hPMR;
 	if (psPMRLocalImportPMROUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
