@@ -1748,15 +1748,13 @@ _func_enter_;
 	if(psta==NULL)
 	{
 		DBG_871X("%s, psta==NUL\n", __func__);
-		res = _FAIL;
-				goto exit;
+		return _FAIL;
 	}
 
 	if(!(psta->state &_FW_LINKED))
 	{
 		DBG_871X("%s, psta->state(0x%x) != _FW_LINKED\n", __func__, psta->state);
-		res = _FAIL;
-				goto exit;
+		return _FAIL;
 	}
 */
 
