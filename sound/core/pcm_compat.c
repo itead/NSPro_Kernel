@@ -252,8 +252,8 @@ static int snd_pcm_status_user_compat(struct snd_pcm_substream *substream,
                      offsetof(struct snd_pcm_status32, audio_tstamp_data),
                      &status.audio_tstamp_data,
                      sizeof(status.audio_tstamp_data)) ||
-	    compat_put_timespec(&status.audio_tstamp, &src->audio_tstamp) ||
-	    compat_put_timespec(&status.driver_tstamp, &src->driver_tstamp) ||
+	    compat_put_timespec(&status.audio_tstamp, (struct compat_timespec __user *)((u8 __user *)src + offsetof(struct snd_pcm_status32, audio_tstamp))) ||
+	    compat_put_timespec(&status.driver_tstamp, (struct compat_timespec __user *)((u8 __user *)src + offsetof(struct snd_pcm_status32, driver_tstamp))) ||
 	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status32, audio_tstamp_accuracy), &status.audio_tstamp_accuracy, sizeof(status.audio_tstamp_accuracy)))
 		return -EFAULT;
 
@@ -298,7 +298,7 @@ static int snd_pcm_status_user_x32(struct snd_pcm_substream *substream,
 	 * ignore rest of status structure
 	 */
 	if (ext && get_user(status.audio_tstamp_data,
-				(u32 __user *)(&src->audio_tstamp_data)))
+				(u32 __user *)((u8 __user *)src + offsetof(struct snd_pcm_status_x32, audio_tstamp_data))))
 		return -EFAULT;
 	err = snd_pcm_status(substream, &status);
 	if (err < 0)
@@ -308,9 +308,9 @@ static int snd_pcm_status_user_x32(struct snd_pcm_substream *substream,
 		return -EFAULT;
 	appl_ptr = status.appl_ptr;
 	hw_ptr = status.hw_ptr;
-	if (put_user(status.state, &src->state) ||
-	    put_timespec(&status.trigger_tstamp, &src->trigger_tstamp) ||
-	    put_timespec(&status.tstamp, &src->tstamp) ||
+	if (copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status_x32, state), &status.state, sizeof(status.state)) ||
+	    put_timespec(&status.trigger_tstamp, (struct timespec __user *)((u8 __user *)src + offsetof(struct snd_pcm_status_x32, trigger_tstamp))) ||
+	    put_timespec(&status.tstamp, (struct timespec __user *)((u8 __user *)src + offsetof(struct snd_pcm_status_x32, tstamp))) ||
 	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status_x32, appl_ptr), &appl_ptr, sizeof(appl_ptr)) ||
 	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status_x32, hw_ptr), &hw_ptr, sizeof(hw_ptr)) ||
 	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status_x32, delay), &status.delay, sizeof(status.delay)) ||
@@ -318,9 +318,9 @@ static int snd_pcm_status_user_x32(struct snd_pcm_substream *substream,
 	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status_x32, avail_max), &status.avail_max, sizeof(status.avail_max)) ||
 	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status_x32, overrange), &status.overrange, sizeof(status.overrange)) ||
 	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status_x32, suspended_state), &status.suspended_state, sizeof(status.suspended_state)) ||
-	    put_user(status.audio_tstamp_data, &src->audio_tstamp_data) ||
-	    put_timespec(&status.audio_tstamp, &src->audio_tstamp) ||
-	    put_timespec(&status.driver_tstamp, &src->driver_tstamp) ||
+	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status_x32, audio_tstamp_data), &status.audio_tstamp_data, sizeof(status.audio_tstamp_data)) ||
+	    put_timespec(&status.audio_tstamp, (struct timespec __user *)((u8 __user *)src + offsetof(struct snd_pcm_status_x32, audio_tstamp))) ||
+	    put_timespec(&status.driver_tstamp, (struct timespec __user *)((u8 __user *)src + offsetof(struct snd_pcm_status_x32, driver_tstamp))) ||
 	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status_x32, audio_tstamp_accuracy), &status.audio_tstamp_accuracy, sizeof(status.audio_tstamp_accuracy)))
 		return -EFAULT;
 
