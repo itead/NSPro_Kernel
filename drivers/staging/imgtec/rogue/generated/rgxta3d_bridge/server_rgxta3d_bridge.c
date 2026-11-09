@@ -543,6 +543,8 @@ PVRSRVBridgeRGXCreateZSBuffer(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_HANDLE hPMR = psRGXCreateZSBufferIN->hPMR;
 	PMR * psPMRInt = NULL;
 	RGX_ZSBUFFER_DATA * pssZSBufferKMInt = NULL;
+	IMG_HANDLE hsZSBufferKM = NULL;
+	IMG_UINT32 ui32sZSBufferFWDevVAddr = 0;
 
 
 
@@ -599,7 +601,7 @@ PVRSRVBridgeRGXCreateZSBuffer(IMG_UINT32 ui32DispatchTableEntry,
 					psPMRInt,
 					psRGXCreateZSBufferIN->uiMapFlags,
 					&pssZSBufferKMInt,
-					&psRGXCreateZSBufferOUT->ui32sZSBufferFWDevVAddr);
+					&ui32sZSBufferFWDevVAddr);
 	/* Exit early if bridged call fails */
 	if(psRGXCreateZSBufferOUT->eError != PVRSRV_OK)
 	{
@@ -615,7 +617,7 @@ PVRSRVBridgeRGXCreateZSBuffer(IMG_UINT32 ui32DispatchTableEntry,
 
 	psRGXCreateZSBufferOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psRGXCreateZSBufferOUT->hsZSBufferKM,
+							&hsZSBufferKM,
 							(void *) pssZSBufferKMInt,
 							PVRSRV_HANDLE_TYPE_RGX_FWIF_ZSBUFFER,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
@@ -625,6 +627,9 @@ PVRSRVBridgeRGXCreateZSBuffer(IMG_UINT32 ui32DispatchTableEntry,
 		UnlockHandle();
 		goto RGXCreateZSBuffer_exit;
 	}
+
+	psRGXCreateZSBufferOUT->hsZSBufferKM = hsZSBufferKM;
+	psRGXCreateZSBufferOUT->ui32sZSBufferFWDevVAddr = ui32sZSBufferFWDevVAddr;
 
 	/* Release now we have created handles. */
 	UnlockHandle();
