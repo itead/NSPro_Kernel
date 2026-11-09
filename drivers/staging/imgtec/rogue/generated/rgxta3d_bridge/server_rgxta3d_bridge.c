@@ -82,6 +82,7 @@ PVRSRVBridgeRGXCreateHWRTData(IMG_UINT32 ui32DispatchTableEntry,
 	DEVMEM_MEMDESC * psRTACtlMemDescInt = NULL;
 	DEVMEM_MEMDESC * pssHWRTDataMemDescInt = NULL;
 	__typeof__(psRGXCreateHWRTDataOUT->ui32FWHWRTData) ui32FWHWRTData;
+	IMG_HANDLE hCleanupCookieOut = NULL;
 
 	IMG_UINT32 ui32NextOffset = 0;
 	IMG_BYTE   *pArrayArgsBuffer = NULL;
@@ -220,7 +221,7 @@ PVRSRVBridgeRGXCreateHWRTData(IMG_UINT32 ui32DispatchTableEntry,
 
 	psRGXCreateHWRTDataOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psRGXCreateHWRTDataOUT->hCleanupCookie,
+							&hCleanupCookieOut,
 							(void *) psCleanupCookieInt,
 							PVRSRV_HANDLE_TYPE_RGX_RTDATA_CLEANUP,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
@@ -267,6 +268,7 @@ PVRSRVBridgeRGXCreateHWRTData(IMG_UINT32 ui32DispatchTableEntry,
 		goto RGXCreateHWRTData_exit;
 	}
 
+	psRGXCreateHWRTDataOUT->hCleanupCookie = hCleanupCookieOut;
 	/* Release now we have created handles. */
 	UnlockHandle();
 
