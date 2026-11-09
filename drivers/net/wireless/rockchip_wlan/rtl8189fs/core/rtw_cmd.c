@@ -1418,6 +1418,7 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network* pnetwork)
 #ifdef CONFIG_80211AC_VHT
 	struct vht_priv		*pvhtpriv = &pmlmepriv->vhtpriv;
 #endif //CONFIG_80211AC_VHT
+	__typeof__(psecnetwork->IELength) ie_length;
 	NDIS_802_11_NETWORK_INFRASTRUCTURE ndis_network_mode = pnetwork->network.InfrastructureMode;
 	struct mlme_ext_priv	*pmlmeext = &padapter->mlmeextpriv;
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
@@ -1550,12 +1551,16 @@ _func_enter_;
 		{
 			rtw_ht_use_default_setting(padapter);
 
-			rtw_build_wmm_ie_ht(padapter, &psecnetwork->IEs[0], &psecnetwork->IELength);
+			ie_length = psecnetwork->IELength;
+			rtw_build_wmm_ie_ht(padapter, &psecnetwork->IEs[0], &ie_length);
+			psecnetwork->IELength = ie_length;
 
 			//rtw_restructure_ht_ie
+			ie_length = psecnetwork->IELength;
 			rtw_restructure_ht_ie(padapter, &pnetwork->network.IEs[12], &psecnetwork->IEs[0], 
-									pnetwork->network.IELength-12, &psecnetwork->IELength,
+									pnetwork->network.IELength-12, &ie_length,
 									pnetwork->network.Configuration.DSConfig);
+			psecnetwork->IELength = ie_length;
 		}
 	}
 
@@ -1566,12 +1571,16 @@ _func_enter_;
 		&& hal_chk_proto_cap(padapter, PROTO_CAP_11AC)
 		&& (!pmlmepriv->country_ent || COUNTRY_CHPLAN_EN_11AC(pmlmepriv->country_ent))
 	) {
+		ie_length = psecnetwork->IELength;
 		rtw_restructure_vht_ie(padapter, &pnetwork->network.IEs[0], &psecnetwork->IEs[0], 
-								pnetwork->network.IELength, &psecnetwork->IELength);
+								pnetwork->network.IELength, &ie_length);
+		psecnetwork->IELength = ie_length;
 	}
 #endif
 
-	rtw_append_exented_cap(padapter, &psecnetwork->IEs[0], &psecnetwork->IELength);
+	ie_length = psecnetwork->IELength;
+	rtw_append_exented_cap(padapter, &psecnetwork->IEs[0], &ie_length);
+	psecnetwork->IELength = ie_length;
 
 #endif //CONFIG_80211N_HT
 

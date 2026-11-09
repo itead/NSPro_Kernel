@@ -80,6 +80,7 @@ PVRSRVBridgeRGXCreateComputeContext(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_BYTE *psFrameworkCmdInt = NULL;
 	IMG_HANDLE hPrivData = psRGXCreateComputeContextIN->hPrivData;
 	IMG_HANDLE hPrivDataInt = NULL;
+	__typeof__(psRGXCreateComputeContextOUT->hComputeContext) local_hComputeContext;
 	RGX_SERVER_COMPUTE_CONTEXT * psComputeContextInt = NULL;
 
 	IMG_UINT32 ui32NextOffset = 0;
@@ -200,7 +201,7 @@ PVRSRVBridgeRGXCreateComputeContext(IMG_UINT32 ui32DispatchTableEntry,
 
 	psRGXCreateComputeContextOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psRGXCreateComputeContextOUT->hComputeContext,
+							&local_hComputeContext,
 							(void *) psComputeContextInt,
 							PVRSRV_HANDLE_TYPE_RGX_SERVER_COMPUTE_CONTEXT,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
@@ -210,6 +211,7 @@ PVRSRVBridgeRGXCreateComputeContext(IMG_UINT32 ui32DispatchTableEntry,
 		UnlockHandle();
 		goto RGXCreateComputeContext_exit;
 	}
+	psRGXCreateComputeContextOUT->hComputeContext = local_hComputeContext;
 
 	/* Release now we have created handles. */
 	UnlockHandle();

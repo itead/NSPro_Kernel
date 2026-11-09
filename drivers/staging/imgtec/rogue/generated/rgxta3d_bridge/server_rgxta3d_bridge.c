@@ -81,6 +81,7 @@ PVRSRVBridgeRGXCreateHWRTData(IMG_UINT32 ui32DispatchTableEntry,
 	RGX_RTDATA_CLEANUP_DATA * psCleanupCookieInt = NULL;
 	DEVMEM_MEMDESC * psRTACtlMemDescInt = NULL;
 	DEVMEM_MEMDESC * pssHWRTDataMemDescInt = NULL;
+	__typeof__(psRGXCreateHWRTDataOUT->ui32FWHWRTData) ui32FWHWRTData;
 
 	IMG_UINT32 ui32NextOffset = 0;
 	IMG_BYTE   *pArrayArgsBuffer = NULL;
@@ -202,12 +203,13 @@ PVRSRVBridgeRGXCreateHWRTData(IMG_UINT32 ui32DispatchTableEntry,
 					psRGXCreateHWRTDataIN->ui32ui32ISPMergeScaleY,
 					psRGXCreateHWRTDataIN->ui16MaxRTs,
 					&pssHWRTDataMemDescInt,
-					&psRGXCreateHWRTDataOUT->ui32FWHWRTData);
+					&ui32FWHWRTData);
 	/* Exit early if bridged call fails */
 	if(psRGXCreateHWRTDataOUT->eError != PVRSRV_OK)
 	{
 		goto RGXCreateHWRTData_exit;
 	}
+	psRGXCreateHWRTDataOUT->ui32FWHWRTData = ui32FWHWRTData;
 
 	/* Lock over handle creation. */
 	LockHandle();

@@ -90,6 +90,9 @@ PVRSRVBridgePMRExportPMR(IMG_UINT32 ui32DispatchTableEntry,
 	PMR * psPMRInt = NULL;
 	PMR_EXPORT * psPMRExportInt = NULL;
 	IMG_HANDLE hPMRExportInt = NULL;
+	__typeof__(psPMRExportPMROUT->ui64Size) ui64Size;
+	__typeof__(psPMRExportPMROUT->ui32Log2Contig) ui32Log2Contig;
+	__typeof__(psPMRExportPMROUT->ui64Password) ui64Password;
 
 
 
@@ -125,14 +128,17 @@ PVRSRVBridgePMRExportPMR(IMG_UINT32 ui32DispatchTableEntry,
 		PMRExportPMR(
 					psPMRInt,
 					&psPMRExportInt,
-					&psPMRExportPMROUT->ui64Size,
-					&psPMRExportPMROUT->ui32Log2Contig,
-					&psPMRExportPMROUT->ui64Password);
+					&ui64Size,
+					&ui32Log2Contig,
+					&ui64Password);
 	/* Exit early if bridged call fails */
 	if(psPMRExportPMROUT->eError != PVRSRV_OK)
 	{
 		goto PMRExportPMR_exit;
 	}
+	psPMRExportPMROUT->ui64Size = ui64Size;
+	psPMRExportPMROUT->ui32Log2Contig = ui32Log2Contig;
+	psPMRExportPMROUT->ui64Password = ui64Password;
 
 	/* Lock over handle creation. */
 	LockHandle();

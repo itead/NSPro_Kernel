@@ -83,6 +83,7 @@ PVRSRVBridgeDevmemIntExportCtx(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_HANDLE hPMR = psDevmemIntExportCtxIN->hPMR;
 	PMR * psPMRInt = NULL;
 	DEVMEMINT_CTX_EXPORT * psContextExportInt = NULL;
+	__typeof__(psDevmemIntExportCtxOUT->hContextExport) local_hContextExport;
 
 
 
@@ -153,7 +154,7 @@ PVRSRVBridgeDevmemIntExportCtx(IMG_UINT32 ui32DispatchTableEntry,
 
 	psDevmemIntExportCtxOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psDevmemIntExportCtxOUT->hContextExport,
+							&local_hContextExport,
 							(void *) psContextExportInt,
 							PVRSRV_HANDLE_TYPE_DEVMEMINT_CTX_EXPORT,
 							PVRSRV_HANDLE_ALLOC_FLAG_NONE
@@ -163,6 +164,7 @@ PVRSRVBridgeDevmemIntExportCtx(IMG_UINT32 ui32DispatchTableEntry,
 		UnlockHandle();
 		goto DevmemIntExportCtx_exit;
 	}
+	psDevmemIntExportCtxOUT->hContextExport = local_hContextExport;
 
 	/* Release now we have created handles. */
 	UnlockHandle();

@@ -79,6 +79,7 @@ PVRSRVBridgeRGXCreateTransferContext(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_BYTE *psFrameworkCmdInt = NULL;
 	IMG_HANDLE hPrivData = psRGXCreateTransferContextIN->hPrivData;
 	IMG_HANDLE hPrivDataInt = NULL;
+	__typeof__(psRGXCreateTransferContextOUT->hTransferContext) local_hTransferContext;
 	RGX_SERVER_TQ_CONTEXT * psTransferContextInt = NULL;
 
 	IMG_UINT32 ui32NextOffset = 0;
@@ -186,7 +187,7 @@ PVRSRVBridgeRGXCreateTransferContext(IMG_UINT32 ui32DispatchTableEntry,
 
 	psRGXCreateTransferContextOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psRGXCreateTransferContextOUT->hTransferContext,
+							&local_hTransferContext,
 							(void *) psTransferContextInt,
 							PVRSRV_HANDLE_TYPE_RGX_SERVER_TQ_CONTEXT,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
@@ -196,6 +197,7 @@ PVRSRVBridgeRGXCreateTransferContext(IMG_UINT32 ui32DispatchTableEntry,
 		UnlockHandle();
 		goto RGXCreateTransferContext_exit;
 	}
+	psRGXCreateTransferContextOUT->hTransferContext = local_hTransferContext;
 
 	/* Release now we have created handles. */
 	UnlockHandle();

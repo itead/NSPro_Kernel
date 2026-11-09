@@ -631,7 +631,7 @@ enum  sctp_spp_flags {
 
 struct sctp_paddrparams {
 	sctp_assoc_t		spp_assoc_id;
-	struct sockaddr_storage	spp_address;
+	struct sockaddr_storage	spp_address __attribute__((packed));
 	__u32			spp_hbinterval;
 	__u16			spp_pathmaxrxt;
 	__u32			spp_pathmtu;
@@ -738,7 +738,7 @@ struct sctp_assoc_value {
  */
 struct sctp_paddrinfo {
 	sctp_assoc_t		spinfo_assoc_id;
-	struct sockaddr_storage	spinfo_address;
+	struct sockaddr_storage	spinfo_address __attribute__((packed));
 	__s32			spinfo_state;
 	__u32			spinfo_cwnd;
 	__u32			spinfo_srtt;

@@ -1004,6 +1004,21 @@ void init_mlme_default_rate_set(_adapter *padapter)
 	_rtw_memcpy(pmlmeext->default_supported_mcs_set, supported_mcs_set, sizeof(pmlmeext->default_supported_mcs_set));
 }
 
+static s32 issue_probereq_ex_network(_adapter *padapter,
+				     const WLAN_BSSID_EX *network,
+				     u8 *da, u8 ch, bool append_wps,
+				     int try_cnt, int wait_ms)
+{
+	NDIS_802_11_SSID ssid;
+
+	_rtw_memcpy(&ssid,
+		    (const u8 *)network + offsetof(WLAN_BSSID_EX, Ssid),
+		    sizeof(ssid));
+
+	return issue_probereq_ex(padapter, &ssid, da, ch, append_wps,
+				 try_cnt, wait_ms);
+}
+
 static void init_mlme_ext_priv_value(_adapter *padapter)
 {
 	struct mlme_ext_priv	*pmlmeext = &padapter->mlmeextpriv;
@@ -12509,7 +12524,7 @@ void linked_status_chk(_adapter *padapter, u8 from_timer)
 				}
 
 				if (rx_chk != _SUCCESS)
-					issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, psta->hwaddr, 0, 0, 3, 1);
+					issue_probereq_ex_network(padapter, &pmlmeinfo->network, psta->hwaddr, 0, 0, 3, 1);
 
 				if ((tx_chk != _SUCCESS && pmlmeinfo->link_count++ == link_count_limit) || rx_chk != _SUCCESS) {
 					tx_chk = issue_nulldata(padapter, psta->hwaddr, 0, 3, 1);
@@ -12532,9 +12547,9 @@ bypass_active_keep_alive:
 #ifdef DBG_EXPIRATION_CHK
 						RTW_INFO("issue_probereq to trigger probersp, retry=%d\n", pmlmeext->retry);
 #endif
-						issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
-						issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
-						issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
+						issue_probereq_ex_network(padapter, &pmlmeinfo->network, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
+						issue_probereq_ex_network(padapter, &pmlmeinfo->network, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
+						issue_probereq_ex_network(padapter, &pmlmeinfo->network, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
 					}
 				}
 
