@@ -678,12 +678,12 @@ PVRSRVBridgePMRImportPMR(IMG_UINT32 ui32DispatchTableEntry,
 							PVRSRV_HANDLE_TYPE_PHYSMEM_PMR,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&PMRUnrefPMR);
-	psPMRImportPMROUT->hPMR = hPMR;
 	if (psPMRImportPMROUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
 		goto PMRImportPMR_exit;
 	}
+	psPMRImportPMROUT->hPMR = hPMR;
 
 	/* Release now we have created handles. */
 	UnlockHandle();
@@ -774,13 +774,13 @@ PVRSRVBridgePMRLocalImportPMR(IMG_UINT32 ui32DispatchTableEntry,
 					&psPMRInt,
 					&uiSize,
 					&sAlign);
-	psPMRLocalImportPMROUT->uiSize = uiSize;
-	psPMRLocalImportPMROUT->sAlign = sAlign;
 	/* Exit early if bridged call fails */
 	if(psPMRLocalImportPMROUT->eError != PVRSRV_OK)
 	{
 		goto PMRLocalImportPMR_exit;
 	}
+	psPMRLocalImportPMROUT->uiSize = uiSize;
+	psPMRLocalImportPMROUT->sAlign = sAlign;
 
 	/* Lock over handle creation. */
 	LockHandle();
