@@ -329,8 +329,6 @@ _func_enter_;
 	rtw_hal_init_xmit_priv(padapter);
 
 exit:
-	memcpy((u8 *)hdr + offsetof(struct rtw_ieee80211_hdr, frame_ctl),
-	       &frame_ctl, sizeof(frame_ctl));
 
 _func_exit_;	
 
@@ -1750,13 +1748,15 @@ _func_enter_;
 	if(psta==NULL)
 	{
 		DBG_871X("%s, psta==NUL\n", __func__);
-		return _FAIL;
+		res = _FAIL;
+				goto exit;
 	}
 
 	if(!(psta->state &_FW_LINKED))
 	{
 		DBG_871X("%s, psta->state(0x%x) != _FW_LINKED\n", __func__, psta->state);
-		return _FAIL;
+		res = _FAIL;
+				goto exit;
 	}
 */
 
@@ -1844,19 +1844,22 @@ _func_enter_;
 			if(pattrib->psta != psta)
 			{
 				DBG_871X("%s, pattrib->psta(%p) != psta(%p)\n", __func__, pattrib->psta, psta);
-				return _FAIL;
+				res = _FAIL;
+				goto exit;
 			}
 
 			if(psta==NULL)
 			{
 				DBG_871X("%s, psta==NUL\n", __func__);
-				return _FAIL;
+				res = _FAIL;
+				goto exit;
 			}
 
 			if(!(psta->state &_FW_LINKED))
 			{
 				DBG_871X("%s, psta->state(0x%x) != _FW_LINKED\n", __func__, psta->state);
-				return _FAIL;
+				res = _FAIL;
+				goto exit;
 			}
 
 		
@@ -1914,6 +1917,8 @@ _func_enter_;
 	}
 
 exit:
+	memcpy(hdr + offsetof(struct rtw_ieee80211_hdr, frame_ctl),
+	       &frame_ctl, sizeof(frame_ctl));
 
 _func_exit_;
 
