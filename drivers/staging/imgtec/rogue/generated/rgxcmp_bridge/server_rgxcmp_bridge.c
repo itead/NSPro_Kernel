@@ -347,6 +347,7 @@ PVRSRVBridgeRGXKickCDM(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_HANDLE *hServerSyncsInt2 = NULL;
 	IMG_CHAR *uiUpdateFenceNameInt = NULL;
 	IMG_BYTE *psDMCmdInt = NULL;
+	__typeof__(psRGXKickCDMOUT->i32UpdateFenceFd) i32UpdateFenceFd = 0;
 
 	IMG_UINT32 ui32NextOffset = 0;
 	IMG_BYTE   *pArrayArgsBuffer = NULL;
@@ -699,12 +700,13 @@ PVRSRVBridgeRGXKickCDM(IMG_UINT32 ui32DispatchTableEntry,
 					psServerSyncsInt,
 					psRGXKickCDMIN->i32CheckFenceFd,
 					psRGXKickCDMIN->i32UpdateTimelineFd,
-					&psRGXKickCDMOUT->i32UpdateFenceFd,
+					&i32UpdateFenceFd,
 					uiUpdateFenceNameInt,
 					psRGXKickCDMIN->ui32CmdSize,
 					psDMCmdInt,
 					psRGXKickCDMIN->ui32PDumpFlags,
 					psRGXKickCDMIN->ui32ExtJobRef);
+	psRGXKickCDMOUT->i32UpdateFenceFd = i32UpdateFenceFd;
 
 
 
