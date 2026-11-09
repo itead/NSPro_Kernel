@@ -70,7 +70,7 @@ static int snd_rawmidi_ioctl_status_compat(struct snd_rawmidi_file *rfile,
 	int err;
 	struct snd_rawmidi_status status;
 
-	if (get_user(status.stream, (s32 __user *)((char __user *)src + offsetof(struct snd_rawmidi_status32, stream))))
+	if (copy_from_user(&status.stream, (u8 __user *)src + offsetof(struct snd_rawmidi_status32, stream), sizeof(status.stream)))
 		return -EFAULT;
 
 	switch (status.stream) {
