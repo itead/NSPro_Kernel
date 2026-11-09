@@ -366,7 +366,9 @@ static int rtw_cfg80211_clear_wps_sr_of_non_target_bss(_adapter *padapter, struc
 	struct rtw_wdev_priv *wdev_data = adapter_wdev_data(padapter);
 	int ret = 0;
 	u8 *psr = NULL, sr = 0;
-	NDIS_802_11_SSID *pssid = &pnetwork->network.Ssid;
+	NDIS_802_11_SSID ssid;
+		NDIS_802_11_SSID *pssid = &ssid;
+		memcpy(&ssid, (const u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, Ssid), sizeof(ssid));
 	u32 wpsielen = 0;
 	u8 *wpsie = NULL;
 
