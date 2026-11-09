@@ -1517,14 +1517,14 @@ _func_enter_;
 		_rtw_memcpy( &pmlmepriv->assoc_bssid[ 0 ], &pnetwork->network.MacAddress[ 0 ], ETH_ALEN );
 	}
 
-	psecnetwork->IELength = rtw_restruct_sec_ie(padapter, &pnetwork->network.IEs[0], &psecnetwork->IEs[0], pnetwork->network.IELength);
+	psecnetwork->IELength = rtw_restruct_sec_ie(padapter, (u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, IEs), &psecnetwork->IEs[0], pnetwork->network.IELength);
 
 
 	pqospriv->qos_option = 0;
 	
 	if(pregistrypriv->wmm_enable)	
 	{
-		tmp_len = rtw_restruct_wmm_ie(padapter, &pnetwork->network.IEs[0], &psecnetwork->IEs[0], pnetwork->network.IELength, psecnetwork->IELength);	
+		tmp_len = rtw_restruct_wmm_ie(padapter, (u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, IEs), &psecnetwork->IEs[0], pnetwork->network.IELength, psecnetwork->IELength);	
 
 		if (psecnetwork->IELength != tmp_len)		
 		{
@@ -1572,7 +1572,7 @@ _func_enter_;
 		&& (!pmlmepriv->country_ent || COUNTRY_CHPLAN_EN_11AC(pmlmepriv->country_ent))
 	) {
 		ie_length = psecnetwork->IELength;
-		rtw_restructure_vht_ie(padapter, &pnetwork->network.IEs[0], &psecnetwork->IEs[0], 
+		rtw_restructure_vht_ie(padapter, (u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, IEs), &psecnetwork->IEs[0], 
 								pnetwork->network.IELength, &ie_length);
 		psecnetwork->IELength = ie_length;
 	}
