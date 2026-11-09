@@ -1264,6 +1264,7 @@ PVRSRVBridgeRGXCreateRenderContext(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_HANDLE hPrivData = psRGXCreateRenderContextIN->hPrivData;
 	IMG_HANDLE hPrivDataInt = NULL;
 	RGX_SERVER_RENDER_CONTEXT * psRenderContextInt = NULL;
+	IMG_HANDLE hRenderContextHandle = NULL;
 
 	IMG_UINT32 ui32NextOffset = 0;
 	IMG_BYTE   *pArrayArgsBuffer = NULL;
@@ -1371,11 +1372,13 @@ PVRSRVBridgeRGXCreateRenderContext(IMG_UINT32 ui32DispatchTableEntry,
 
 	psRGXCreateRenderContextOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psRGXCreateRenderContextOUT->hRenderContext,
+							&hRenderContextHandle,
 							(void *) psRenderContextInt,
 							PVRSRV_HANDLE_TYPE_RGX_SERVER_RENDER_CONTEXT,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&PVRSRVRGXDestroyRenderContextKM);
+	if (psRGXCreateRenderContextOUT->eError == PVRSRV_OK)
+		psRGXCreateRenderContextOUT->hRenderContext = hRenderContextHandle;
 	if (psRGXCreateRenderContextOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
