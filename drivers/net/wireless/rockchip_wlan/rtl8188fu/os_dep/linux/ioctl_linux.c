@@ -2945,6 +2945,8 @@ static int rtw_wx_get_scan(struct net_device *dev, struct iw_request_info *a,
        
 	while(1)
 	{
+		NDIS_802_11_SSID ssid;
+
 		if (rtw_end_of_queue_search(phead,plist)== _TRUE)
 			break;
 
@@ -2954,7 +2956,6 @@ static int rtw_wx_get_scan(struct net_device *dev, struct iw_request_info *a,
 		}
 
 		pnetwork = LIST_CONTAINOR(plist, struct wlan_network, list);
-		NDIS_802_11_SSID ssid;
 		memcpy(&ssid, (const u8 *)&pnetwork->network + offsetof(NDIS_802_11_BSSID_EX, Ssid), sizeof(ssid));
 
 		//report network only if the current channel set contains the channel to which this network belongs
