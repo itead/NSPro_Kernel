@@ -2673,7 +2673,7 @@ s32 rtw_mgmt_xmitframe_coalesce(_adapter *padapter, _pkt *pkt, struct xmit_frame
 		frame_body_len = pattrib->pktlen - sizeof(struct rtw_ieee80211_hdr_3addr);
 
 		/* conscruct AAD, copy frame control field */
-		_rtw_memcpy(BIP_AAD, &pwlanhdr->frame_ctl, 2);
+		_rtw_memcpy(BIP_AAD, (u8 *)pwlanhdr + offsetof(struct rtw_ieee80211_hdr, frame_ctl), 2);
 		ClearRetry(BIP_AAD);
 		ClearPwrMgt(BIP_AAD);
 		ClearMData(BIP_AAD);
