@@ -1565,12 +1565,16 @@ _func_enter_;
 		&& hal_chk_proto_cap(padapter, PROTO_CAP_11AC)
 		&& (!pmlmepriv->country_ent || COUNTRY_CHPLAN_EN_11AC(pmlmepriv->country_ent))
 	) {
-		rtw_restructure_vht_ie(padapter, &pnetwork->network.IEs[0], &psecnetwork->IEs[0], 
-								pnetwork->network.IELength, &psecnetwork->IELength);
+		new_ie_len = psecnetwork->IELength;
+		rtw_restructure_vht_ie(padapter, &pnetwork->network.IEs[0], &psecnetwork->IEs[0],
+			pnetwork->network.IELength, &new_ie_len);
+		psecnetwork->IELength = new_ie_len;
 	}
 #endif
 
-	rtw_append_exented_cap(padapter, &psecnetwork->IEs[0], &psecnetwork->IELength);
+	new_ie_len = psecnetwork->IELength;
+	rtw_append_exented_cap(padapter, &psecnetwork->IEs[0], &new_ie_len);
+	psecnetwork->IELength = new_ie_len;
 
 #endif //CONFIG_80211N_HT
 
