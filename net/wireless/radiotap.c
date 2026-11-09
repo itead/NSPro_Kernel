@@ -116,7 +116,9 @@ int ieee80211_radiotap_iterator_init(
 	iterator->_arg = (uint8_t *)radiotap_header + sizeof(*radiotap_header);
 	iterator->_reset_on_ext = 0;
 	iterator->_next_bitmap = (unsigned char *)radiotap_header +
-		offsetof(struct ieee80211_radiotap_header, it_present);
+		sizeof(radiotap_header->it_version) +
+		sizeof(radiotap_header->it_pad) +
+		sizeof(radiotap_header->it_len);
 	iterator->_next_bitmap += sizeof(__le32);
 	iterator->_vns = vns;
 	iterator->current_namespace = &radiotap_ns;
