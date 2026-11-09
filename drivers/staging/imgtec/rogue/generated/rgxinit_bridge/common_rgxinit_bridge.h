@@ -98,6 +98,14 @@ typedef struct PVRSRV_BRIDGE_OUT_RGXINITALLOCFWIMGMEM_TAG
  *******************************************/
 
 /* Bridge in structure for RGXInitFirmware */
+typedef struct _RGXFWIF_COMPCHECKS_BVNC_BRIDGE_
+{
+    IMG_UINT32 ui32LayoutVersion;
+    IMG_UINT32 ui32VLenMax;
+    IMG_UINT64 ui64BNC;
+    IMG_CHAR aszV[RGXFWIF_COMPCHECKS_BVNC_V_LEN_MAX + 1];
+} __attribute__((packed)) RGXFWIF_COMPCHECKS_BVNC_BRIDGE;
+
 typedef struct PVRSRV_BRIDGE_IN_RGXINITFIRMWARE_TAG
 {
 	IMG_BOOL bEnableSignatureChecks;
@@ -111,11 +119,11 @@ typedef struct PVRSRV_BRIDGE_IN_RGXINITFIRMWARE_TAG
 	IMG_UINT32 ui32FilterFlags;
 	IMG_UINT32 ui32JonesDisableMask;
 	IMG_UINT32 ui32ui32HWRDebugDumpLimit;
-	RGXFWIF_COMPCHECKS_BVNC sClientBVNC;
+	RGXFWIF_COMPCHECKS_BVNC_BRIDGE sClientBVNC;
 	IMG_UINT32 ui32HWPerfCountersDataSize;
 	RGX_RD_POWER_ISLAND_CONF eRGXRDPowerIslandConf;
 	FW_PERF_CONF eFirmwarePerf;
-} __attribute__((packed)) PVRSRV_BRIDGE_IN_RGXINITFIRMWARE;
+} __attribute__((packed, aligned(8))) PVRSRV_BRIDGE_IN_RGXINITFIRMWARE;
 
 /* Bridge out structure for RGXInitFirmware */
 typedef struct PVRSRV_BRIDGE_OUT_RGXINITFIRMWARE_TAG
@@ -199,8 +207,8 @@ typedef struct PVRSRV_BRIDGE_IN_RGXINITGUEST_TAG
 	IMG_UINT32 ui32RGXFWAlignChecksArrLength;
 	IMG_UINT32 * pui32RGXFWAlignChecks;
 	IMG_UINT32 ui32DeviceFlags;
-	RGXFWIF_COMPCHECKS_BVNC sClientBVNC;
-} __attribute__((packed)) PVRSRV_BRIDGE_IN_RGXINITGUEST;
+	RGXFWIF_COMPCHECKS_BVNC_BRIDGE sClientBVNC;
+} __attribute__((packed, aligned(8))) PVRSRV_BRIDGE_IN_RGXINITGUEST;
 
 /* Bridge out structure for RGXInitGuest */
 typedef struct PVRSRV_BRIDGE_OUT_RGXINITGUEST_TAG

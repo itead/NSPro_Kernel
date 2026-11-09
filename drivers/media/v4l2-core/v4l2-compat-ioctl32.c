@@ -887,12 +887,24 @@ static int put_v4l2_ext_controls32(struct file *file,
 		unsigned int size = sizeof(*ucontrols);
 		u32 id;
 
-		if (get_user(id, &kcontrols->id) ||
-		    put_user(id, &ucontrols->id) ||
-		    assign_in_user(&ucontrols->size, &kcontrols->size) ||
-		    copy_in_user(&ucontrols->reserved2, &kcontrols->reserved2,
-				 sizeof(ucontrols->reserved2)))
-			return -EFAULT;
+		if (copy_from_user(&id,
+		                                   (u8 __user *)kcontrols +
+		                                   offsetof(struct v4l2_ext_control, id),
+		                                   sizeof(id)) ||
+		                    copy_to_user((u8 __user *)ucontrols +
+		                                 offsetof(struct v4l2_ext_control, id),
+		                                 &id, sizeof(id)) ||
+		                    copy_in_user((u8 __user *)ucontrols +
+		                                 offsetof(struct v4l2_ext_control, size),
+		                                 (u8 __user *)kcontrols +
+		                                 offsetof(struct v4l2_ext_control, size),
+		                                 sizeof(ucontrols->size)) ||
+		                    copy_in_user((u8 __user *)ucontrols +
+		                                 offsetof(struct v4l2_ext_control, reserved2),
+		                                 (u8 __user *)kcontrols +
+		                                 offsetof(struct v4l2_ext_control, reserved2),
+		                                 sizeof(ucontrols->reserved2)))
+		                        return -EFAULT;
 
 		/*
 		 * Do not modify the pointer when copying a pointer control.

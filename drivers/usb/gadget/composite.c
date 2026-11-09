@@ -571,7 +571,8 @@ static int bos_desc(struct usb_composite_dev *cdev)
 	 */
 	usb_ext = cdev->req->buf + le16_to_cpu(bos->wTotalLength);
 	bos->bNumDeviceCaps++;
-	le16_add_cpu(&bos->wTotalLength, USB_DT_USB_EXT_CAP_SIZE);
+	bos->wTotalLength = cpu_to_le16(
+                le16_to_cpu(bos->wTotalLength) + USB_DT_USB_EXT_CAP_SIZE);
 	usb_ext->bLength = USB_DT_USB_EXT_CAP_SIZE;
 	usb_ext->bDescriptorType = USB_DT_DEVICE_CAPABILITY;
 	usb_ext->bDevCapabilityType = USB_CAP_TYPE_EXT;
@@ -583,7 +584,8 @@ static int bos_desc(struct usb_composite_dev *cdev)
 	 */
 	ss_cap = cdev->req->buf + le16_to_cpu(bos->wTotalLength);
 	bos->bNumDeviceCaps++;
-	le16_add_cpu(&bos->wTotalLength, USB_DT_USB_SS_CAP_SIZE);
+	bos->wTotalLength = cpu_to_le16(
+                le16_to_cpu(bos->wTotalLength) + USB_DT_USB_SS_CAP_SIZE);
 	ss_cap->bLength = USB_DT_USB_SS_CAP_SIZE;
 	ss_cap->bDescriptorType = USB_DT_DEVICE_CAPABILITY;
 	ss_cap->bDevCapabilityType = USB_SS_CAP_TYPE;
@@ -977,24 +979,24 @@ static int get_string(struct usb_composite_dev *cdev,
 
 		sp = composite->strings;
 		if (sp)
-			collect_langs(sp, s->wData);
+			collect_langs(sp, (__le16 *)((u8 *)s + offsetof(struct usb_string_descriptor, wData)));
 
 		list_for_each_entry(c, &cdev->configs, list) {
 			sp = c->strings;
 			if (sp)
-				collect_langs(sp, s->wData);
+				collect_langs(sp, (__le16 *)((u8 *)s + offsetof(struct usb_string_descriptor, wData)));
 
 			list_for_each_entry(f, &c->functions, list) {
 				sp = f->strings;
 				if (sp)
-					collect_langs(sp, s->wData);
+					collect_langs(sp, (__le16 *)((u8 *)s + offsetof(struct usb_string_descriptor, wData)));
 			}
 		}
 		list_for_each_entry(uc, &cdev->gstrings, list) {
 			struct usb_gadget_strings **sp;
 
 			sp = get_containers_gs(uc);
-			collect_langs(sp, s->wData);
+			collect_langs(sp, (__le16 *)((u8 *)s + offsetof(struct usb_string_descriptor, wData)));
 		}
 
 		for (len = 0; len <= 126 && s->wData[len]; len++)

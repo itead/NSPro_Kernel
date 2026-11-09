@@ -227,16 +227,28 @@ static const struct apphint_init_data init_data_debugfs_device[] = {
  * This will return an undefined size for a NULL ptr - so should only be
  * used here.
  */
-#define APPHINT_HELP_ARRAY_SIZE(a) (sizeof((a))/(sizeof((a[0]))))
+#define APPHINT_HELP_ARRAY_SIZE_BOOL(a)          0
+#define APPHINT_HELP_ARRAY_SIZE_UINT64(a)         0
+#define APPHINT_HELP_ARRAY_SIZE_UINT32(a)         0
+#define APPHINT_HELP_ARRAY_SIZE_STRING(a)         0
+#define APPHINT_HELP_ARRAY_SIZE_UINT32List(a)     (sizeof(a) / sizeof((a)[0]))
+#define APPHINT_HELP_ARRAY_SIZE_UINT32Bitfield(a) (sizeof(a) / sizeof((a)[0]))
+#define APPHINT_HELP_ARRAY_SIZE(type, a) APPHINT_HELP_ARRAY_SIZE_ ## type(a)
 
 static const struct apphint_param param_lookup[] = {
 #define X(a, b, c, d, e) \
-	{APPHINT_ID_ ## a, APPHINT_DATA_TYPE_ ## b, e, APPHINT_HELP_ARRAY_SIZE(e) },
-	APPHINT_LIST_ALL
+        {APPHINT_ID_ ## a, APPHINT_DATA_TYPE_ ## b, e, APPHINT_HELP_ARRAY_SIZE(b, e) },
+        APPHINT_LIST_ALL
 #undef X
 };
 
 #undef APPHINT_HELP_ARRAY_SIZE
+#undef APPHINT_HELP_ARRAY_SIZE_BOOL
+#undef APPHINT_HELP_ARRAY_SIZE_UINT64
+#undef APPHINT_HELP_ARRAY_SIZE_UINT32
+#undef APPHINT_HELP_ARRAY_SIZE_STRING
+#undef APPHINT_HELP_ARRAY_SIZE_UINT32List
+#undef APPHINT_HELP_ARRAY_SIZE_UINT32Bitfield
 
 static const struct apphint_class_state class_state[] = {
 #define X(a) {APPHINT_CLASS_ ## a, APPHINT_ENABLED_CLASS_ ## a},

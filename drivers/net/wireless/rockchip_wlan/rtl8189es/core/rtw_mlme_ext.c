@@ -3755,7 +3755,7 @@ void issue_p2p_GO_request(_adapter *padapter, u8* raddr)
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, raddr, ETH_ALEN);
@@ -4203,7 +4203,7 @@ void issue_p2p_GO_response(_adapter *padapter, u8* raddr, u8* frame_body,uint le
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, raddr, ETH_ALEN);
@@ -4678,7 +4678,7 @@ void issue_p2p_GO_confirm(_adapter *padapter, u8* raddr, u8 result)
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, raddr, ETH_ALEN);
@@ -4954,7 +4954,7 @@ void issue_p2p_invitation_request(_adapter *padapter, u8* raddr )
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, raddr, ETH_ALEN);
@@ -5294,7 +5294,7 @@ void issue_p2p_invitation_response(_adapter *padapter, u8* raddr, u8 dialogToken
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, raddr, ETH_ALEN);
@@ -5567,7 +5567,7 @@ void issue_p2p_provision_request(_adapter *padapter, u8* pssid, u8 ussidlen, u8*
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, pdev_raddr, ETH_ALEN);
@@ -5705,7 +5705,7 @@ void issue_probersp_p2p(_adapter *padapter, unsigned char *da)
 	
 	mac = adapter_mac_addr(padapter);
 	
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 	_rtw_memcpy(pwlanhdr->addr1, da, ETH_ALEN);
 	_rtw_memcpy(pwlanhdr->addr2, mac, ETH_ALEN);
@@ -6047,7 +6047,7 @@ int _issue_probereq_p2p(_adapter *padapter, u8 *da, int wait_ack)
 
 	mac = adapter_mac_addr(padapter);
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 
 	if (da) {
@@ -7490,7 +7490,7 @@ void issue_beacon(_adapter *padapter, int timeout_ms)
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;	
 	
 	
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 	
 	_rtw_memcpy(pwlanhdr->addr1, bc_addr, ETH_ALEN);
@@ -7814,7 +7814,7 @@ void issue_probersp(_adapter *padapter, unsigned char *da, u8 is_valid_p2p_probe
 	mac = adapter_mac_addr(padapter);
 	bssid = cur_network->MacAddress;
 	
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 	_rtw_memcpy(pwlanhdr->addr1, da, ETH_ALEN);
 	_rtw_memcpy(pwlanhdr->addr2, mac, ETH_ALEN);
@@ -8094,7 +8094,7 @@ int _issue_probereq(_adapter *padapter, NDIS_802_11_SSID *pssid, u8 *da, u8 ch, 
 
 	mac = adapter_mac_addr(padapter);
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 
 	if (da)
@@ -8252,7 +8252,7 @@ void issue_auth(_adapter *padapter, struct sta_info *psta, unsigned short status
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 
 	SetSeqNum(pwlanhdr, pmlmeext->mgnt_seq);
@@ -8412,7 +8412,7 @@ void issue_asocrsp(_adapter *padapter, unsigned short status, struct sta_info *p
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 
 	_rtw_memcpy((void *)GetAddr1Ptr(pwlanhdr), pstat->hwaddr, ETH_ALEN);
@@ -8658,7 +8658,7 @@ void issue_assocreq(_adapter *padapter)
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 	_rtw_memcpy(pwlanhdr->addr1, get_my_bssid(&(pmlmeinfo->network)), ETH_ALEN);
 	_rtw_memcpy(pwlanhdr->addr2, adapter_mac_addr(padapter), ETH_ALEN);
@@ -9115,7 +9115,7 @@ static int _issue_nulldata(_adapter *padapter, unsigned char *da, unsigned int p
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 
 	if((pmlmeinfo->state&0x03) == WIFI_FW_AP_STATE)
@@ -9293,7 +9293,7 @@ static int _issue_qos_nulldata(_adapter *padapter, unsigned char *da, u16 tid, i
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 
 	if((pmlmeinfo->state&0x03) == WIFI_FW_AP_STATE)
@@ -9443,7 +9443,7 @@ static int _issue_deauth(_adapter *padapter, unsigned char *da, unsigned short r
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, da, ETH_ALEN);
@@ -9573,7 +9573,7 @@ void issue_action_spct_ch_switch(_adapter *padapter, u8 *ra, u8 new_ch, u8 ch_of
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, ra, ETH_ALEN); /* RA */
@@ -9645,7 +9645,7 @@ void issue_action_SA_Query(_adapter *padapter, unsigned char *raddr, unsigned ch
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 
 	if(raddr)
@@ -9748,7 +9748,7 @@ static int issue_action_ba(_adapter *padapter, unsigned char *raddr, unsigned ch
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 
 	//_rtw_memcpy(pwlanhdr->addr1, get_my_bssid(&(pmlmeinfo->network)), ETH_ALEN);
@@ -10027,7 +10027,7 @@ static void issue_action_BSSCoexistPacket(_adapter *padapter)
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, get_my_bssid(&(pmlmeinfo->network)), ETH_ALEN);
@@ -10191,7 +10191,7 @@ int _issue_action_SM_PS(_adapter *padapter ,  unsigned char *raddr , u8 NewMimoP
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe);
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, raddr, ETH_ALEN); /* RA */

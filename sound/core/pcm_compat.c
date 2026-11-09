@@ -224,7 +224,8 @@ static int snd_pcm_status_user_compat(struct snd_pcm_substream *substream,
 	 * ignore rest of status structure
 	 */
 	if (ext && get_user(status.audio_tstamp_data,
-				(u32 __user *)(&src->audio_tstamp_data)))
+				(u32 __user *)((u8 __user *)src +
+				       offsetof(struct snd_pcm_status32, audio_tstamp_data))))
 		return -EFAULT;
 	err = snd_pcm_status(substream, &status);
 	if (err < 0)
@@ -232,9 +233,11 @@ static int snd_pcm_status_user_compat(struct snd_pcm_substream *substream,
 
 	if (clear_user(src, sizeof(*src)))
 		return -EFAULT;
-	if (put_user(status.state, &src->state) ||
-	    compat_put_timespec(&status.trigger_tstamp, &src->trigger_tstamp) ||
-	    compat_put_timespec(&status.tstamp, &src->tstamp) ||
+	if (copy_to_user((u8 __user *)src +
+                         offsetof(struct snd_pcm_status32, state),
+                         &status.state, sizeof(status.state)) ||
+	    compat_put_timespec(&status.trigger_tstamp, (struct compat_timespec __user *)((char __user *)src + offsetof(struct snd_pcm_status32, trigger_tstamp))) ||
+	    compat_put_timespec(&status.tstamp, (struct compat_timespec __user *)((char __user *)src + offsetof(struct snd_pcm_status32, tstamp))) ||
 	    put_user(status.appl_ptr, &src->appl_ptr) ||
 	    put_user(status.hw_ptr, &src->hw_ptr) ||
 	    put_user(status.delay, &src->delay) ||
@@ -242,7 +245,10 @@ static int snd_pcm_status_user_compat(struct snd_pcm_substream *substream,
 	    put_user(status.avail_max, &src->avail_max) ||
 	    put_user(status.overrange, &src->overrange) ||
 	    put_user(status.suspended_state, &src->suspended_state) ||
-	    put_user(status.audio_tstamp_data, &src->audio_tstamp_data) ||
+	    copy_to_user((u8 __user *)src +
+                     offsetof(struct snd_pcm_status32, audio_tstamp_data),
+                     &status.audio_tstamp_data,
+                     sizeof(status.audio_tstamp_data)) ||
 	    compat_put_timespec(&status.audio_tstamp, &src->audio_tstamp) ||
 	    compat_put_timespec(&status.driver_tstamp, &src->driver_tstamp) ||
 	    put_user(status.audio_tstamp_accuracy, &src->audio_tstamp_accuracy))
