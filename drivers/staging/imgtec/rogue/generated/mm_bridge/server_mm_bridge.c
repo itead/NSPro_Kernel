@@ -1635,7 +1635,7 @@ PVRSRVBridgeDevmemIntCtxCreate(IMG_UINT32 ui32DispatchTableEntry,
 {
 	DEVMEMINT_CTX * psDevMemServerContextInt = NULL;
 	IMG_HANDLE hPrivDataInt = NULL;
-	IMG_UINT32 ui32CPUCacheLineSize;
+	IMG_UINT32 ui32CPUCacheLineSize = 0;
 
 
 
