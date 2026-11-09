@@ -109,7 +109,8 @@ static void rockchip_gem_free_list(struct list_head lists[])
 static int rockchip_gem_get_pages(struct rockchip_gem_object *rk_obj)
 {
 	struct drm_device *drm = rk_obj->base.dev;
-	int ret, i;
+	int ret;
+	unsigned int i;
 	struct scatterlist *s;
 	unsigned int cur_page, j;
 	struct page **pages, **dst_pages;
