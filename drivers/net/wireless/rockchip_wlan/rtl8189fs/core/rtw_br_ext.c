@@ -1047,7 +1047,15 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 						{
 							DBG_871X("NAT25: Use IPX Net, and Socket as network addr\n");
 
-							__nat25_generate_ipx_network_addr_with_socket(networkAddr, &ipx->ipx_source.net, &ipx->ipx_source.sock);
+							{
+								typeof(ipx->ipx_source) ipx_source;
+
+								memcpy(&ipx_source, (const u8 *)ipx +
+								       offsetof(struct ipxhdr, ipx_source),
+								       sizeof(ipx_source));
+								__nat25_generate_ipx_network_addr_with_socket(
+									networkAddr, &ipx_source.net, &ipx_source.sock);
+							}
 
 							// change IPX source node addr to wlan STA address
                                                         memcpy(ipx->ipx_source.node, GET_MY_HWADDR(priv), ETH_ALEN);
