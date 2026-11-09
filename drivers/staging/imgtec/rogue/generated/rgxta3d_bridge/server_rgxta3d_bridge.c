@@ -415,6 +415,7 @@ PVRSRVBridgeRGXCreateRenderTarget(IMG_UINT32 ui32DispatchTableEntry,
 {
 	RGX_RT_CLEANUP_DATA * pssRenderTargetMemDescInt = NULL;
 	IMG_UINT32 ui32RenderTargetFWDevVAddr = 0;
+	IMG_HANDLE hsRenderTargetMemDesc = NULL;
 
 
 
@@ -428,7 +429,6 @@ PVRSRVBridgeRGXCreateRenderTarget(IMG_UINT32 ui32DispatchTableEntry,
 					psRGXCreateRenderTargetIN->spsVHeapTableDevVAddr,
 					&pssRenderTargetMemDescInt,
 					&ui32RenderTargetFWDevVAddr);
-	psRGXCreateRenderTargetOUT->ui32sRenderTargetFWDevVAddr = ui32RenderTargetFWDevVAddr;
 	/* Exit early if bridged call fails */
 	if(psRGXCreateRenderTargetOUT->eError != PVRSRV_OK)
 	{
@@ -444,11 +444,15 @@ PVRSRVBridgeRGXCreateRenderTarget(IMG_UINT32 ui32DispatchTableEntry,
 
 	psRGXCreateRenderTargetOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psRGXCreateRenderTargetOUT->hsRenderTargetMemDesc,
+							&hsRenderTargetMemDesc,
 							(void *) pssRenderTargetMemDescInt,
 							PVRSRV_HANDLE_TYPE_RGX_FWIF_RENDERTARGET,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&RGXDestroyRenderTarget);
+	if (psRGXCreateRenderTargetOUT->eError == PVRSRV_OK) {
+		psRGXCreateRenderTargetOUT->hsRenderTargetMemDesc = hsRenderTargetMemDesc;
+		psRGXCreateRenderTargetOUT->ui32sRenderTargetFWDevVAddr = ui32RenderTargetFWDevVAddr;
+	}
 	if (psRGXCreateRenderTargetOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
