@@ -90,6 +90,7 @@ PVRSRVBridgePMRExportPMR(IMG_UINT32 ui32DispatchTableEntry,
 	PMR * psPMRInt = NULL;
 	PMR_EXPORT * psPMRExportInt = NULL;
 	IMG_HANDLE hPMRExportInt = NULL;
+	IMG_HANDLE hPMRExportOut = NULL;
 	__typeof__(psPMRExportPMROUT->ui64Size) ui64Size;
 	__typeof__(psPMRExportPMROUT->ui32Log2Contig) ui32Log2Contig;
 	__typeof__(psPMRExportPMROUT->ui64Password) ui64Password;
@@ -175,7 +176,7 @@ PVRSRVBridgePMRExportPMR(IMG_UINT32 ui32DispatchTableEntry,
 	}
 
 	psPMRExportPMROUT->eError = PVRSRVAllocHandleUnlocked(KERNEL_HANDLE_BASE,
-							&psPMRExportPMROUT->hPMRExport,
+							&hPMRExportOut,
 							(void *) psPMRExportInt,
 							PVRSRV_HANDLE_TYPE_PHYSMEM_PMR_EXPORT,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI,
@@ -185,6 +186,7 @@ PVRSRVBridgePMRExportPMR(IMG_UINT32 ui32DispatchTableEntry,
 		UnlockHandle();
 		goto PMRExportPMR_exit;
 	}
+	psPMRExportPMROUT->hPMRExport = hPMRExportOut;
 	/* Release now we have created handles. */
 	UnlockHandle();
 
