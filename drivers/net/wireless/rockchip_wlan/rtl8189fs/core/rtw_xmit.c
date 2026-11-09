@@ -329,6 +329,8 @@ _func_enter_;
 	rtw_hal_init_xmit_priv(padapter);
 
 exit:
+	memcpy((u8 *)hdr + offsetof(struct rtw_ieee80211_hdr, frame_ctl),
+	       &frame_ctl, sizeof(frame_ctl));
 
 _func_exit_;	
 
@@ -1728,7 +1730,8 @@ s32 rtw_make_wlanhdr (_adapter *padapter , u8 *hdr, struct pkt_attrib *pattrib)
 	struct qos_priv *pqospriv = &pmlmepriv->qospriv;
 	u8 qos_option = _FALSE;
 	sint res = _SUCCESS;
-	u16 *fctrl = &pwlanhdr->frame_ctl;
+	u16 frame_ctl = 0;
+	u16 *fctrl = &frame_ctl;
 
 	//struct sta_info *psta;
 
