@@ -323,7 +323,7 @@ static void issue_p2p_provision_resp(struct wifidirect_info *pwdinfo, u8* raddr,
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, raddr, ETH_ALEN);
@@ -428,7 +428,7 @@ static void issue_p2p_presence_resp(struct wifidirect_info *pwdinfo, u8 *da, u8 
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, da, ETH_ALEN);
