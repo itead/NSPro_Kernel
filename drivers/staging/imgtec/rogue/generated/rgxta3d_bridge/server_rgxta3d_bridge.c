@@ -237,6 +237,7 @@ PVRSRVBridgeRGXCreateHWRTData(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	psRGXCreateHWRTDataOUT->hCleanupCookie = hCleanupCookieOut;
 	psRGXCreateHWRTDataOUT->eError = PVRSRVAllocSubHandleUnlocked(psConnection->psHandleBase,
 
 							&psRGXCreateHWRTDataOUT->hRTACtlMemDesc,
@@ -268,7 +269,6 @@ PVRSRVBridgeRGXCreateHWRTData(IMG_UINT32 ui32DispatchTableEntry,
 		goto RGXCreateHWRTData_exit;
 	}
 
-	psRGXCreateHWRTDataOUT->hCleanupCookie = hCleanupCookieOut;
 	/* Release now we have created handles. */
 	UnlockHandle();
 
