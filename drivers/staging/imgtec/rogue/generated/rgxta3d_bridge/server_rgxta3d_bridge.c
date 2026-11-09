@@ -271,6 +271,7 @@ PVRSRVBridgeRGXCreateHWRTData(IMG_UINT32 ui32DispatchTableEntry,
 		UnlockHandle();
 		goto RGXCreateHWRTData_exit;
 	}
+	psRGXCreateHWRTDataOUT->hsHWRTDataMemDesc = hHWRTDataMemDescOut;
 
 	/* Release now we have created handles. */
 	UnlockHandle();
