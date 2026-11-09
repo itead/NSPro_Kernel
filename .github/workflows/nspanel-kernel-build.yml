@@ -1,0 +1,64 @@
+name: NSPanel kernel build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fix/rockchip-gem-zero-size
+    paths-ignore:
+      - "**/*.log"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nspanel-kernel-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build on dell5300
+    runs-on: [self-hosted, linux, x64, nspanel-build]
+    timeout-minutes: 240
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 1
+
+      - name: Verify cross toolchain
+        shell: bash
+        run: |
+          set -o pipefail
+          command -v make
+          command -v aarch64-unknown-linux-gnu-gcc
+          aarch64-unknown-linux-gnu-gcc --version | head -n 1
+          test -s .config
+
+      - name: Build kernel
+        shell: bash
+        run: |
+          LOG_FILE="$PWD/nspanel-kernel-build-$(date '+%Y%m%d-%H%M%S')-${GITHUB_RUN_ID}.log"
+          printf '===== NSPanel kernel build started: %s =====\n' "$(date '+%Y-%m-%d %H:%M:%S %z')" | tee "$LOG_FILE"
+          printf '===== Commit: %s =====\n' "$GITHUB_SHA" | tee -a "$LOG_FILE"
+          printf '===== Host: %s =====\n' "$(hostname -f)" | tee -a "$LOG_FILE"
+          printf '===== Compiler: %s =====\n' "$(aarch64-unknown-linux-gnu-gcc -dumpfullversion)" | tee -a "$LOG_FILE"
+          set +e
+          ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make -j"$(nproc)" \
+            HOSTCFLAGS="-Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -fcommon" \
+            Image dtbs modules 2>&1 | tee -a "$LOG_FILE"
+          BUILD_STATUS=${PIPESTATUS[0]}
+          set -e
+          printf '\n===== BUILD EXIT STATUS: %s =====\n' "$BUILD_STATUS" | tee -a "$LOG_FILE"
+          printf '===== NSPanel kernel build finished: %s =====\n' "$(date '+%Y-%m-%d %H:%M:%S %z')" | tee -a "$LOG_FILE"
+          exit "$BUILD_STATUS"
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nspanel-kernel-build-${{ github.run_id }}
+          path: nspanel-kernel-build-*.log
+          if-no-files-found: warn
+          retention-days: 14
