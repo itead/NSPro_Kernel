@@ -111,15 +111,14 @@ static int rockchip_gem_get_pages(struct rockchip_gem_object *rk_obj)
 	struct drm_device *drm = rk_obj->base.dev;
 	int ret, i;
 	struct scatterlist *s;
-	unsigned int cur_page;
+	unsigned int cur_page, j;
 	struct page **pages, **dst_pages;
-	int j;
-	int n_pages;
+	unsigned int n_pages;
 	unsigned long chunk_pages;
 	unsigned long remain;
 	struct list_head lists[PG_ROUND];
 	dma_addr_t phys;
-	int end = 0;
+	unsigned int end = 0;
 	unsigned int bit12_14;
 	unsigned int block_index[PG_ROUND] = {0};
 	struct page_info *info;
@@ -157,6 +156,10 @@ static int rockchip_gem_get_pages(struct rockchip_gem_object *rk_obj)
 		chunk_pages = j - cur_page;
 
 		if (chunk_pages > 7) {
+			if (chunk_pages > n_pages - end) {
+				ret = -EINVAL;
+				goto err_put_list;
+			}
 			for (i = 0; i < chunk_pages; i++)
 				dst_pages[end + i] = pages[cur_page + i];
 			end += chunk_pages;
@@ -192,6 +195,10 @@ static int rockchip_gem_get_pages(struct rockchip_gem_object *rk_obj)
 
 				info = list_first_entry(&lists[j],
 						      struct page_info, list);
+				if (end >= n_pages) {
+					ret = -EINVAL;
+					goto err_put_list;
+				}
 				dst_pages[end++] = info->page;
 				list_del(&info->list);
 				kfree(info);
@@ -199,12 +206,18 @@ static int rockchip_gem_get_pages(struct rockchip_gem_object *rk_obj)
 		}
 	}
 
-	DRM_DEBUG_KMS("%s, %d, end = %d, n_pages = %d\n", __func__, __LINE__,
+	if (end != n_pages) {
+		ret = -EINVAL;
+		goto err_put_list;
+	}
+
+	DRM_DEBUG_KMS("%s, %d, end = %u, n_pages = %u\n", __func__, __LINE__,
 		 end, n_pages);
 
 	rk_obj->sgt = drm_prime_pages_to_sg(dst_pages, rk_obj->num_pages);
 	if (IS_ERR(rk_obj->sgt)) {
 		ret = PTR_ERR(rk_obj->sgt);
+		rk_obj->sgt = NULL;
 		goto err_put_list;
 	}
 
@@ -232,6 +245,7 @@ err_put_list:
 	drm_free_large(dst_pages);
 err_put_pages:
 	drm_gem_put_pages(&rk_obj->base, rk_obj->pages, false, false);
+	rk_obj->pages = NULL;
 	return ret;
 }
 
