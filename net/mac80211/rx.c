@@ -214,7 +214,7 @@ ieee80211_add_rx_radiotap_header(struct ieee80211_local *local,
 	struct ieee80211_rx_status *status = IEEE80211_SKB_RXCB(skb);
 	struct ieee80211_radiotap_header *rthdr;
 	unsigned char *pos;
-	__le32 *it_present;
+	u8 *it_present;
 	u32 it_present_val;
 	u16 rx_flags = 0;
 	u16 channel_flags = 0;
@@ -234,7 +234,7 @@ ieee80211_add_rx_radiotap_header(struct ieee80211_local *local,
 
 	rthdr = (struct ieee80211_radiotap_header *)skb_push(skb, rtap_len);
 	memset(rthdr, 0, rtap_len - rtap.len - rtap.pad);
-	it_present = &rthdr->it_present;
+	it_present = (u8 *)rthdr + offsetof(struct ieee80211_radiotap_header, it_present);
 
 	/* radiotap header, set always present flags */
 	rthdr->it_len = cpu_to_le16(rtap_len);
@@ -250,7 +250,7 @@ ieee80211_add_rx_radiotap_header(struct ieee80211_local *local,
 			BIT(IEEE80211_RADIOTAP_EXT) |
 			BIT(IEEE80211_RADIOTAP_RADIOTAP_NAMESPACE);
 		put_unaligned_le32(it_present_val, it_present);
-		it_present++;
+		it_present += sizeof(__le32);
 		it_present_val = BIT(IEEE80211_RADIOTAP_ANTENNA) |
 				 BIT(IEEE80211_RADIOTAP_DBM_ANTSIGNAL);
 	}
@@ -259,13 +259,13 @@ ieee80211_add_rx_radiotap_header(struct ieee80211_local *local,
 		it_present_val |= BIT(IEEE80211_RADIOTAP_VENDOR_NAMESPACE) |
 				  BIT(IEEE80211_RADIOTAP_EXT);
 		put_unaligned_le32(it_present_val, it_present);
-		it_present++;
+		it_present += sizeof(__le32);
 		it_present_val = rtap.present;
 	}
 
 	put_unaligned_le32(it_present_val, it_present);
 
-	pos = (void *)(it_present + 1);
+	pos = it_present + sizeof(__le32);
 
 	/* the order of the following fields is important */
 
