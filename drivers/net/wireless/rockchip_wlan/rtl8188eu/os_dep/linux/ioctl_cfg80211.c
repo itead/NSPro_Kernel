@@ -2016,6 +2016,7 @@ static void _rtw_cfg80211_surveydone_event_callback(_adapter *padapter, struct c
 	struct	mlme_priv	*pmlmepriv = &(padapter->mlmepriv);
 	_queue				*queue	= &(pmlmepriv->scanned_queue);
 	struct	wlan_network	*pnetwork = NULL;
+	NDIS_802_11_SSID aligned_ssid;
 	u32 cnt = 0;
 	u32 wait_for_surveydone;
 	sint wait_status;
@@ -2046,11 +2047,14 @@ static void _rtw_cfg80211_surveydone_event_callback(_adapter *padapter, struct c
 			break;
 
 		pnetwork = LIST_CONTAINOR(plist, struct wlan_network, list);
+		memcpy(&aligned_ssid,
+		       (const u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, Ssid),
+		       sizeof(aligned_ssid));
 
 		/* report network only if the current channel set contains the channel to which this network belongs */
 		if (rtw_ch_set_search_ch(padapter->mlmeextpriv.channel_set, pnetwork->network.Configuration.DSConfig) >= 0
 			&& rtw_mlme_band_check(padapter, pnetwork->network.Configuration.DSConfig) == _TRUE
-			&& _TRUE == rtw_validate_ssid(&(pnetwork->network.Ssid))
+			&& _TRUE == rtw_validate_ssid(&aligned_ssid)
 		) {
 			if (target_wps_scan)
 				rtw_cfg80211_clear_wps_sr_of_non_target_bss(padapter, pnetwork, &target_ssid);
@@ -3577,7 +3581,7 @@ void rtw_cfg80211_indicate_sta_disassoc(_adapter *padapter, unsigned char *da, u
 	pmgmt_frame = mgmt_buf;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pmgmt_frame;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (u16 *)pwlanhdr;
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, adapter_mac_addr(padapter), ETH_ALEN);
@@ -4876,7 +4880,7 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (u16 *)pwlanhdr;
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, pwdinfo->tx_prov_disc_info.peerDevAddr, ETH_ALEN);
