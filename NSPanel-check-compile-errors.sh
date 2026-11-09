@@ -35,7 +35,8 @@ else
 fi
 
 if git rev-parse --show-toplevel >/dev/null 2>&1; then
-	if git diff --cached --name-only -- "$LOG_FILE" | grep -F -x -- "$LOG_FILE" >/dev/null 2>&1; then
+	LOG_GIT_PATH=$(basename "$LOG_FILE")
+	if git diff --cached --name-only | grep -F -x -- "$LOG_GIT_PATH" >/dev/null 2>&1; then
 		printf 'État Git : log ajouté à l’index, prêt pour le prochain commit.\n'
 	else
 		printf 'État Git : log pas encore indexé (compilation éventuellement en cours).\n'
