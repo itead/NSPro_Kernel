@@ -64,6 +64,7 @@ allowed_warnings = set([
     "sctp.h:741", # Intentional SCTP UAPI packed field offset
     "sctp.h:592", # Intentional SCTP UAPI packed field offset
     "sctp.h:579", # Intentional SCTP UAPI packed field offset
+    "compat.c:520", # Intentional 32-bit compat socket ABI layout
  ])
 
 # Capture the name of the object file, can find it.
