@@ -84,6 +84,7 @@ PVRSRVBridgeRGXCreateHWRTData(IMG_UINT32 ui32DispatchTableEntry,
 	__typeof__(psRGXCreateHWRTDataOUT->ui32FWHWRTData) ui32FWHWRTData;
 	IMG_HANDLE hCleanupCookieOut = NULL;
 	IMG_HANDLE hRTACtlMemDescOut = NULL;
+	IMG_HANDLE hHWRTDataMemDescOut = NULL;
 
 	IMG_UINT32 ui32NextOffset = 0;
 	IMG_BYTE   *pArrayArgsBuffer = NULL;
@@ -260,7 +261,7 @@ PVRSRVBridgeRGXCreateHWRTData(IMG_UINT32 ui32DispatchTableEntry,
 
 	psRGXCreateHWRTDataOUT->eError = PVRSRVAllocSubHandleUnlocked(psConnection->psHandleBase,
 
-							&psRGXCreateHWRTDataOUT->hsHWRTDataMemDesc,
+							&hHWRTDataMemDescOut,
 							(void *) pssHWRTDataMemDescInt,
 							PVRSRV_HANDLE_TYPE_RGX_FW_MEMDESC,
 							PVRSRV_HANDLE_ALLOC_FLAG_NONE
