@@ -1,0 +1,2 @@
+===== NSPanel kernel build started: 2026-11-09 22:24:10 +0100 =====\n===== Commit: eec81a0b78cf6cfc6a3f94e8364807a020861b65 =====\n===== Host:  =====\n===== Compiler: 11.5.0 =====\n/home/guillaume/actions-runner/_work/_temp/83e873b1-1042-431b-b575-040454eed65a.sh: line 10: Image: command not found
+\n===== BUILD EXIT STATUS: 127 =====\n===== NSPanel kernel build finished: 2026-11-09 22:24:20 +0100 =====\n
