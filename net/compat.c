@@ -513,6 +513,8 @@ COMPAT_SYSCALL_DEFINE5(getsockopt, int, fd, int, level, int, optname,
 	return err;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpacked-not-aligned"
 struct compat_group_req {
 	__u32				 gr_interface;
 	struct __kernel_sockaddr_storage gr_group
@@ -536,6 +538,7 @@ struct compat_group_filter {
 	struct __kernel_sockaddr_storage gf_slist[1]
 		__aligned(4);
 } __packed;
+#pragma GCC diagnostic pop
 
 #define __COMPAT_GF0_SIZE (sizeof(struct compat_group_filter) - \
 			sizeof(struct __kernel_sockaddr_storage))
