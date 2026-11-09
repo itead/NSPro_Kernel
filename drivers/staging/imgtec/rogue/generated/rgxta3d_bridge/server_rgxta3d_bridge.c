@@ -745,6 +745,7 @@ PVRSRVBridgeRGXPopulateZSBuffer(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_HANDLE hsZSBufferKM = psRGXPopulateZSBufferIN->hsZSBufferKM;
 	RGX_ZSBUFFER_DATA * pssZSBufferKMInt = NULL;
 	RGX_POPULATION * pssPopulationInt = NULL;
+	IMG_HANDLE hsPopulationInt = NULL;
 
 
 
@@ -795,7 +796,7 @@ PVRSRVBridgeRGXPopulateZSBuffer(IMG_UINT32 ui32DispatchTableEntry,
 
 	psRGXPopulateZSBufferOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psRGXPopulateZSBufferOUT->hsPopulation,
+							&hsPopulationInt,
 							(void *) pssPopulationInt,
 							PVRSRV_HANDLE_TYPE_RGX_POPULATION,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
@@ -805,6 +806,7 @@ PVRSRVBridgeRGXPopulateZSBuffer(IMG_UINT32 ui32DispatchTableEntry,
 		UnlockHandle();
 		goto RGXPopulateZSBuffer_exit;
 	}
+	psRGXPopulateZSBufferOUT->hsPopulation = hsPopulationInt;
 
 	/* Release now we have created handles. */
 	UnlockHandle();
