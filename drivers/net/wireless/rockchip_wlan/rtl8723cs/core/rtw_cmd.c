@@ -1473,7 +1473,7 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network *pnetwork)
 
 #ifdef CONFIG_80211N_HT
 	phtpriv->ht_option = _FALSE;
-	ptmp = rtw_get_ie(&pnetwork->network.IEs[12], _HT_CAPABILITY_IE_, &tmp_len, pnetwork->network.IELength - 12);
+	ptmp = rtw_get_ie((u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, IEs) + 12, _HT_CAPABILITY_IE_, &tmp_len, pnetwork->network.IELength - 12);
 	if (pregistrypriv->ht_enable && ptmp && tmp_len > 0) {
 		/*	Added by Albert 2010/06/23 */
 		/*	For the WEP mode, we will use the bg mode to do the connection to avoid some IOT issue. */
@@ -1486,7 +1486,7 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network *pnetwork)
 			rtw_build_wmm_ie_ht(padapter, &psecnetwork->IEs[0], &psecnetwork->IELength);
 
 			/* rtw_restructure_ht_ie */
-			rtw_restructure_ht_ie(padapter, &pnetwork->network.IEs[12], &psecnetwork->IEs[0],
+			rtw_restructure_ht_ie(padapter, (u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, IEs) + 12, &psecnetwork->IEs[0],
 				pnetwork->network.IELength - 12, &psecnetwork->IELength,
 				pnetwork->network.Configuration.DSConfig);
 		}
@@ -1509,11 +1509,11 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network *pnetwork)
 #endif /* CONFIG_80211N_HT */
 
 #ifdef CONFIG_RTW_80211R
-	/*IEEE802.11-2012 Std. Table 8-101¡XAKM suite selectors*/
+	/*IEEE802.11-2012 Std. Table 8-101Â¡XAKM suite selectors*/
 	if ((rtw_chk_ft_flags(padapter, RTW_FT_STA_SUPPORTED)) &&
 		((psecuritypriv->rsn_akm_suite_type == 3) || (psecuritypriv->rsn_akm_suite_type == 4))
 		) {
-		ptmp = rtw_get_ie(&pnetwork->network.IEs[12], _MDIE_, &tmp_len, pnetwork->network.IELength-12);
+		ptmp = rtw_get_ie((u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, IEs) + 12, _MDIE_, &tmp_len, pnetwork->network.IELength-12);
 		if (ptmp) {
 			_rtw_memcpy(&pftpriv->mdid, ptmp+2, 2);
 			pftpriv->ft_cap = *(ptmp+4);
