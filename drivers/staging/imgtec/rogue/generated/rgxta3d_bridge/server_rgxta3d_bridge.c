@@ -905,6 +905,7 @@ PVRSRVBridgeRGXCreateFreeList(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_RGXCREATEFREELIST *psRGXCreateFreeListOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	IMG_HANDLE hCleanupCookie = NULL;
 	IMG_HANDLE hsGlobalFreeList = psRGXCreateFreeListIN->hsGlobalFreeList;
 	RGX_FREELIST * pssGlobalFreeListInt = NULL;
 	IMG_HANDLE hsFreeListPMR = psRGXCreateFreeListIN->hsFreeListPMR;
@@ -987,11 +988,13 @@ PVRSRVBridgeRGXCreateFreeList(IMG_UINT32 ui32DispatchTableEntry,
 
 	psRGXCreateFreeListOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psRGXCreateFreeListOUT->hCleanupCookie,
+							&hCleanupCookie,
 							(void *) psCleanupCookieInt,
 							PVRSRV_HANDLE_TYPE_RGX_FREELIST,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&RGXDestroyFreeList);
+	if (psRGXCreateFreeListOUT->eError == PVRSRV_OK)
+		psRGXCreateFreeListOUT->hCleanupCookie = hCleanupCookie;
 	if (psRGXCreateFreeListOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
