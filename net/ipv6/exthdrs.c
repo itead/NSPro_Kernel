@@ -192,14 +192,15 @@ static bool ipv6_dest_hao(struct sk_buff *skb, int optoff)
 	opt->dst1 = 0;
 
 	hao = (struct ipv6_destopt_hao *)(skb_network_header(skb) + optoff);
-	memcpy(&hao_addr, (u8 *)hao + offsetof(struct ipv6_destopt_hao, addr),
-	       sizeof(hao_addr));
 
 	if (hao->length != 16) {
 		net_dbg_ratelimited("hao invalid option length = %d\n",
 				    hao->length);
 		goto discard;
 	}
+
+	memcpy(&hao_addr, (u8 *)hao + offsetof(struct ipv6_destopt_hao, addr),
+	       sizeof(hao_addr));
 
 	if (!(ipv6_addr_type(&hao_addr) & IPV6_ADDR_UNICAST)) {
 		net_dbg_ratelimited("hao is not an unicast addr: %pI6\n",
