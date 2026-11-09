@@ -41,18 +41,18 @@ jobs:
         run: |
           LOG_FILE="$PWD/nspanel-kernel-build-$(date '+%Y%m%d-%H%M%S')-${GITHUB_RUN_ID}.log"
           echo "NSPANEL_BUILD_LOG=$LOG_FILE" >> "$GITHUB_ENV"
-          printf '===== NSPanel kernel build started: %s =====\n' "$(date '+%Y-%m-%d %H:%M:%S %z')" | tee "$LOG_FILE"
-          printf '===== Commit: %s =====\n' "$GITHUB_SHA" | tee -a "$LOG_FILE"
-          printf '===== Host: %s =====\n' "$(hostname -f)" | tee -a "$LOG_FILE"
-          printf '===== Compiler: %s =====\n' "$(aarch64-unknown-linux-gnu-gcc -dumpfullversion)" | tee -a "$LOG_FILE"
+          printf '===== NSPanel kernel build started: %s =====\\n' "$(date '+%Y-%m-%d %H:%M:%S %z')" | tee "$LOG_FILE"
+          printf '===== Commit: %s =====\\n' "$GITHUB_SHA" | tee -a "$LOG_FILE"
+          printf '===== Host: %s =====\\n' "$(hostname -f)" | tee -a "$LOG_FILE"
+          printf '===== Compiler: %s =====\\n' "$(aarch64-unknown-linux-gnu-gcc -dumpfullversion)" | tee -a "$LOG_FILE"
           set +e
-          ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make -j3 \
-            HOSTCFLAGS="-Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -fcommon" \
+          ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make -j8 \\
+            HOSTCFLAGS="-Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -fcommon" \\
             Image dtbs modules 2>&1 | tee -a "$LOG_FILE"
           BUILD_STATUS=${PIPESTATUS[0]}
           set -e
-          printf '\n===== BUILD EXIT STATUS: %s =====\n' "$BUILD_STATUS" | tee -a "$LOG_FILE"
-          printf '===== NSPanel kernel build finished: %s =====\n' "$(date '+%Y-%m-%d %H:%M:%S %z')" | tee -a "$LOG_FILE"
+          printf '\\n===== BUILD EXIT STATUS: %s =====\\n' "$BUILD_STATUS" | tee -a "$LOG_FILE"
+          printf '===== NSPanel kernel build finished: %s =====\\n' "$(date '+%Y-%m-%d %H:%M:%S %z')" | tee -a "$LOG_FILE"
           exit "$BUILD_STATUS"
 
       - name: Commit and push build log
