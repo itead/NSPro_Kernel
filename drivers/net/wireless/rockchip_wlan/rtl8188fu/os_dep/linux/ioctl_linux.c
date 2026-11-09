@@ -9845,19 +9845,19 @@ static int rtw_mp_efuse_get(struct net_device *dev,
 		for (i = 0; i < EFUSE_MAP_SIZE; i += 16)
 		{
 //			DBG_871X("0x%02x\t", i);
-			sprintf(extra, "%s0x%02x\t", extra, i);
+			sprintf(extra + strlen(extra), "0x%02x\t", i);
 			for (j=0; j<8; j++) {
 //				DBG_871X("%02X ", data[i+j]);
-				sprintf(extra, "%s%02X ", extra, PROMContent[i+j]);
+				sprintf(extra + strlen(extra), "%02X ", PROMContent[i+j]);
 			}
 //			DBG_871X("\t");
-			sprintf(extra, "%s\t", extra);
+			sprintf(extra + strlen(extra), "\t");
 			for (; j<16; j++) {
 //				DBG_871X("%02X ", data[i+j]);
-				sprintf(extra, "%s%02X ", extra, PROMContent[i+j]);
+				sprintf(extra + strlen(extra), "%02X ", PROMContent[i+j]);
 			}
 //			DBG_871X("\n");
-			sprintf(extra,"%s\n",extra);
+			sprintf(extra + strlen(extra), "\n");
 		}
 //		DBG_871X("\n");
 	}
@@ -9876,19 +9876,19 @@ static int rtw_mp_efuse_get(struct net_device *dev,
 		for (i = 0; i < EFUSE_MAP_SIZE; i += 16)
 		{
 //			DBG_871X("0x%02x\t", i);
-			sprintf(extra, "%s0x%02x\t", extra, i);
+			sprintf(extra + strlen(extra), "0x%02x\t", i);
 			for (j=0; j<8; j++) {
 //				DBG_871X("%02X ", data[i+j]);
-				sprintf(extra, "%s%02X ", extra, pEfuseHal->fakeEfuseInitMap[i+j]);
+				sprintf(extra + strlen(extra), "%02X ", pEfuseHal->fakeEfuseInitMap[i+j]);
 			}
 //			DBG_871X("\t");
-			sprintf(extra, "%s\t", extra);
+			sprintf(extra + strlen(extra), "\t");
 			for (; j<16; j++) {
 //				DBG_871X("%02X ", data[i+j]);
-				sprintf(extra, "%s%02X ", extra, pEfuseHal->fakeEfuseInitMap[i+j]);
+				sprintf(extra + strlen(extra), "%02X ", pEfuseHal->fakeEfuseInitMap[i+j]);
 			}
 //			DBG_871X("\n");
-			sprintf(extra,"%s\n",extra);
+			sprintf(extra + strlen(extra), "\n");
 		}
 //		DBG_871X("\n");
 	}
@@ -9933,7 +9933,7 @@ static int rtw_mp_efuse_get(struct net_device *dev,
 		*extra = 0;
 		for (i=0; i<cnts; i++) {
 //			DBG_871X("0x%02x ", data[i]);
-			sprintf(extra, "%s0x%02X ", extra, data[i]);
+			sprintf(extra + strlen(extra), "0x%02X ", data[i]);
 		}
 //		DBG_871X("}\n");
 	}
@@ -9957,14 +9957,14 @@ static int rtw_mp_efuse_get(struct net_device *dev,
 		sprintf(extra, "\n0x00\t");
 
 		for (i = 0; i < mapLen ; i++) {
-			sprintf(extra, "%s%02X", extra, rawdata[i]);
+			sprintf(extra + strlen(extra), "%02X", rawdata[i]);
 			if ((i & 0xF) == 0xF) {
-				sprintf(extra, "%s\n", extra);
-				sprintf(extra, "%s0x%02x\t", extra, i+1);
+				sprintf(extra + strlen(extra), "\n");
+				sprintf(extra + strlen(extra), "0x%02x\t", i+1);
 			} else if ((i & 0x7) == 0x7) {
-				sprintf(extra, "%s \t", extra);
+				sprintf(extra + strlen(extra), " \t");
 			} else {
-				sprintf(extra, "%s ", extra);
+				sprintf(extra + strlen(extra), " ");
 			}
 		}
 
@@ -9984,18 +9984,18 @@ static int rtw_mp_efuse_get(struct net_device *dev,
 				for (i= 512; i< mapLen; i++)
 				{
 		//			DBG_871X("%02X", rawdata[i]);
-					sprintf(extra, "%s%02X", extra, rawdata[i]);
+					sprintf(extra + strlen(extra), "%02X", rawdata[i]);
 					if ((i & 0xF) == 0xF) {
 		//				DBG_871X("\n");
-						sprintf(extra, "%s\n", extra);
-						sprintf(extra, "%s0x%02x\t", extra, i+1);
+						sprintf(extra + strlen(extra), "\n");
+						sprintf(extra + strlen(extra), "0x%02x\t", i+1);
 					}
 					else if ((i & 0x7) == 0x7){
 		//				DBG_871X("\t");
-						sprintf(extra, "%s \t", extra);
+						sprintf(extra + strlen(extra), " \t");
 					} else {
 		//				DBG_871X(" ");
-						sprintf(extra, "%s ", extra);
+						sprintf(extra + strlen(extra), " ");
 					}
 				}
 		//		DBG_871X("}\n");
@@ -10029,11 +10029,11 @@ static int rtw_mp_efuse_get(struct net_device *dev,
 		for (i=0; i<cnts; i++)
 		{
 //			DBG_871X("%02X", data[i]);
-			sprintf(extra, "%s%02X", extra, data[i]);
+			sprintf(extra + strlen(extra), "%02X", data[i]);
 			if (i != (cnts-1))
 			{
 //				DBG_871X(":");
-				sprintf(extra,"%s:",extra);
+				sprintf(extra + strlen(extra), ":");
 			}
 		}
 //		DBG_871X("}\n");
@@ -10091,11 +10091,11 @@ static int rtw_mp_efuse_get(struct net_device *dev,
 		for (i=0; i<cnts; i++)
 		{
 //			DBG_871X("0x%02x", data[i]);
-			sprintf(extra, "%s0x%02X", extra, data[i]);
+			sprintf(extra + strlen(extra), "0x%02X", data[i]);
 			if (i != (cnts-1))
 			{
 //				DBG_871X(",");
-				sprintf(extra,"%s,",extra);
+				sprintf(extra + strlen(extra), ",");
 			}
 		}
 //		DBG_871X("}\n");
@@ -10124,19 +10124,19 @@ static int rtw_mp_efuse_get(struct net_device *dev,
 		for (i=0; i<512; i+=16) // set 512 because the iwpriv's extra size have limit 0x7FF
 		{
 //			DBG_871X("0x%03x\t", i);
-			sprintf(extra, "%s0x%03x\t", extra, i);
+			sprintf(extra + strlen(extra), "0x%03x\t", i);
 			for (j=0; j<8; j++) {
 //				DBG_871X("%02X ", pEfuseHal->BTEfuseInitMap[i+j]);
-				sprintf(extra, "%s%02X ", extra, pEfuseHal->BTEfuseInitMap[i+j]);
+				sprintf(extra + strlen(extra), "%02X ", pEfuseHal->BTEfuseInitMap[i+j]);
 			}
 //			DBG_871X("\t");
-			sprintf(extra,"%s\t",extra);
+			sprintf(extra + strlen(extra), "\t");
 			for (; j<16; j++) {
 //				DBG_871X("%02X ", pEfuseHal->BTEfuseInitMap[i+j]);
-				sprintf(extra, "%s%02X ", extra, pEfuseHal->BTEfuseInitMap[i+j]);
+				sprintf(extra + strlen(extra), "%02X ", pEfuseHal->BTEfuseInitMap[i+j]);
 			}
 //			DBG_871X("\n");
-			sprintf(extra, "%s\n", extra);
+			sprintf(extra + strlen(extra), "\n");
 		}
 //		DBG_871X("\n");
 	}
@@ -10157,20 +10157,20 @@ static int rtw_mp_efuse_get(struct net_device *dev,
 		for (i=512; i<1024 ; i+=16)
 		{
 //			DBG_871X("0x%03x\t", i);
-			sprintf(extra, "%s0x%03x\t", extra, i);
+			sprintf(extra + strlen(extra), "0x%03x\t", i);
 			for (j=0; j<8; j++)
 			{
 //				DBG_871X("%02X ", data[i+j]);
-				sprintf(extra, "%s%02X ", extra, pEfuseHal->BTEfuseInitMap[i+j]);
+				sprintf(extra + strlen(extra), "%02X ", pEfuseHal->BTEfuseInitMap[i+j]);
 			}
 //			DBG_871X("\t");
-			sprintf(extra,"%s\t",extra);
+			sprintf(extra + strlen(extra), "\t");
 			for (; j<16; j++) {
 //				DBG_871X("%02X ", data[i+j]);
-				sprintf(extra, "%s%02X ", extra, pEfuseHal->BTEfuseInitMap[i+j]);
+				sprintf(extra + strlen(extra), "%02X ", pEfuseHal->BTEfuseInitMap[i+j]);
 			}
 //			DBG_871X("\n");
-			sprintf(extra, "%s\n", extra);
+			sprintf(extra + strlen(extra), "\n");
 		}
 //		DBG_871X("\n");
 	}
@@ -10216,7 +10216,7 @@ static int rtw_mp_efuse_get(struct net_device *dev,
 		for (i=0; i<cnts; i++)
 		{
 //			DBG_871X("0x%02x ", data[i]);
-			sprintf(extra, "%s 0x%02X ", extra, data[i]);
+			sprintf(extra + strlen(extra), " 0x%02X ", data[i]);
 		}
 //		DBG_871X("}\n");
 		DBG_871X(FUNC_ADPT_FMT ": BT MAC=[%s]\n", FUNC_ADPT_ARG(padapter), extra);
@@ -10228,19 +10228,19 @@ static int rtw_mp_efuse_get(struct net_device *dev,
 		for (i=0; i<512; i+=16)
 		{
 //			DBG_871X("0x%03x\t", i);
-			sprintf(extra, "%s0x%03x\t", extra, i);
+			sprintf(extra + strlen(extra), "0x%03x\t", i);
 			for (j=0; j<8; j++) {
 //				DBG_871X("%02X ", pEfuseHal->fakeBTEfuseModifiedMap[i+j]);
-				sprintf(extra, "%s%02X ", extra, pEfuseHal->fakeBTEfuseModifiedMap[i+j]);
+				sprintf(extra + strlen(extra), "%02X ", pEfuseHal->fakeBTEfuseModifiedMap[i+j]);
 			}
 //			DBG_871X("\t");
-			sprintf(extra, "%s\t", extra);
+			sprintf(extra + strlen(extra), "\t");
 			for (; j<16; j++) {
 //				DBG_871X("%02X ", pEfuseHal->fakeBTEfuseModifiedMap[i+j]);
-				sprintf(extra, "%s%02X ", extra, pEfuseHal->fakeBTEfuseModifiedMap[i+j]);
+				sprintf(extra + strlen(extra), "%02X ", pEfuseHal->fakeBTEfuseModifiedMap[i+j]);
 			}
 //			DBG_871X("\n");
-			sprintf(extra, "%s\n", extra);
+			sprintf(extra + strlen(extra), "\n");
 		}
 //		DBG_871X("\n");
 	}
@@ -10251,19 +10251,19 @@ static int rtw_mp_efuse_get(struct net_device *dev,
 		for (i=512; i<1024; i+=16)
 		{
 //			DBG_871X("0x%03x\t", i);
-			sprintf(extra, "%s0x%03x\t", extra, i);
+			sprintf(extra + strlen(extra), "0x%03x\t", i);
 			for (j=0; j<8; j++) {
 //				DBG_871X("%02X ", pEfuseHal->fakeBTEfuseModifiedMap[i+j]);
-				sprintf(extra, "%s%02X ", extra, pEfuseHal->fakeBTEfuseModifiedMap[i+j]);
+				sprintf(extra + strlen(extra), "%02X ", pEfuseHal->fakeBTEfuseModifiedMap[i+j]);
 			}
 //			DBG_871X("\t");
-			sprintf(extra, "%s\t", extra);
+			sprintf(extra + strlen(extra), "\t");
 			for (; j<16; j++) {
 //				DBG_871X("%02X ", pEfuseHal->fakeBTEfuseModifiedMap[i+j]);
-				sprintf(extra, "%s%02X ", extra, pEfuseHal->fakeBTEfuseModifiedMap[i+j]);
+				sprintf(extra + strlen(extra), "%02X ", pEfuseHal->fakeBTEfuseModifiedMap[i+j]);
 			}
 //			DBG_871X("\n");
-			sprintf(extra, "%s\n", extra);
+			sprintf(extra + strlen(extra), "\n");
 		}
 //		DBG_871X("\n");
 	}
@@ -10274,19 +10274,19 @@ static int rtw_mp_efuse_get(struct net_device *dev,
 		for (i=0; i<EFUSE_MAP_SIZE; i+=16)
 		{
 //			DBG_871X("\t0x%02x\t", i);
-			sprintf(extra, "%s0x%02x\t", extra, i);
+			sprintf(extra + strlen(extra), "0x%02x\t", i);
 			for (j=0; j<8; j++) {
 //				DBG_871X("%02X ", pEfuseHal->fakeEfuseModifiedMap[i+j]);
-				sprintf(extra, "%s%02X ", extra, pEfuseHal->fakeEfuseModifiedMap[i+j]);
+				sprintf(extra + strlen(extra), "%02X ", pEfuseHal->fakeEfuseModifiedMap[i+j]);
 			}
 //			DBG_871X("\t");
-			sprintf(extra, "%s\t", extra);
+			sprintf(extra + strlen(extra), "\t");
 			for (; j<16; j++) {
 //				DBG_871X("%02X ", pEfuseHal->fakeEfuseModifiedMap[i+j]);
-				sprintf(extra, "%s %02X", extra, pEfuseHal->fakeEfuseModifiedMap[i+j]);
+				sprintf(extra + strlen(extra), " %02X", pEfuseHal->fakeEfuseModifiedMap[i+j]);
 			}
 //			DBG_871X("\n");
-			sprintf(extra, "%s\n", extra);
+			sprintf(extra + strlen(extra), "\n");
 		}
 //		DBG_871X("\n");
 
@@ -10316,7 +10316,7 @@ static int rtw_mp_efuse_get(struct net_device *dev,
 			*extra = 0;
 			for (i=0; i<cnts; i++) {
 					DBG_871X("wlrfkrmap = 0x%02x \n", pEfuseHal->fakeEfuseModifiedMap[addr+i]);
-					sprintf(extra, "%s0x%02X ", extra, pEfuseHal->fakeEfuseModifiedMap[addr+i]);
+					sprintf(extra + strlen(extra), "0x%02X ", pEfuseHal->fakeEfuseModifiedMap[addr+i]);
 			}
 	}
 	else if (strcmp(tmp[0],"btrfkrmap")== 0)
