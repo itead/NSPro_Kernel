@@ -1352,6 +1352,7 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network *pnetwork)
 	struct registry_priv	*pregistrypriv = &padapter->registrypriv;
 #ifdef CONFIG_80211N_HT
 	struct ht_priv			*phtpriv = &pmlmepriv->htpriv;
+	u32 new_ie_len;
 #endif /* CONFIG_80211N_HT */
 #ifdef CONFIG_80211AC_VHT
 	struct vht_priv		*pvhtpriv = &pmlmepriv->vhtpriv;
@@ -1473,11 +1474,13 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network *pnetwork)
 			rtw_ht_use_default_setting(padapter);
 
 			/* rtw_restructure_ht_ie */
+			new_ie_len = psecnetwork->IELength;
 			rtw_restructure_ht_ie(padapter,
 				(u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, IEs) + 12,
 				&psecnetwork->IEs[0],
-				pnetwork->network.IELength - 12, &psecnetwork->IELength,
+				pnetwork->network.IELength - 12, &new_ie_len,
 				pnetwork->network.Configuration.DSConfig);
+			psecnetwork->IELength = new_ie_len;
 		}
 	}
 
