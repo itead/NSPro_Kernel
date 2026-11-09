@@ -186,7 +186,7 @@ static __inline__ void __nat25_generate_ipx_network_addr_with_node(unsigned char
 
 
 static __inline__ void __nat25_generate_ipx_network_addr_with_socket(unsigned char *networkAddr,
-		unsigned int *ipxNetAddr, unsigned short *ipxSocketAddr)
+		const void *ipxNetAddr, const void *ipxSocketAddr)
 {
 	memset(networkAddr, 0, MAX_NETWORK_ADDR_LEN);
 
