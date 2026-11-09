@@ -281,6 +281,7 @@ PVRSRVBridgeDevmemIntAcquireRemoteCtx(IMG_UINT32 ui32DispatchTableEntry,
 	PMR * psPMRInt = NULL;
 	DEVMEMINT_CTX * psContextInt = NULL;
 	IMG_HANDLE hPrivDataInt = NULL;
+	IMG_HANDLE hContextOut = NULL;
 
 
 
@@ -333,7 +334,7 @@ PVRSRVBridgeDevmemIntAcquireRemoteCtx(IMG_UINT32 ui32DispatchTableEntry,
 
 	psDevmemIntAcquireRemoteCtxOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psDevmemIntAcquireRemoteCtxOUT->hContext,
+							&hContextOut,
 							(void *) psContextInt,
 							PVRSRV_HANDLE_TYPE_DEVMEMINT_CTX,
 							PVRSRV_HANDLE_ALLOC_FLAG_NONE
@@ -349,6 +350,7 @@ PVRSRVBridgeDevmemIntAcquireRemoteCtx(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	psDevmemIntAcquireRemoteCtxOUT->hContext = hContextOut;
 	psDevmemIntAcquireRemoteCtxOUT->eError = PVRSRVAllocSubHandleUnlocked(psConnection->psHandleBase,
 
 							&psDevmemIntAcquireRemoteCtxOUT->hPrivData,
