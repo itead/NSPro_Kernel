@@ -1349,18 +1349,22 @@ skip_linkparms:
 		for (p = ndopts.nd_opts_ri;
 		     p;
 		     p = ndisc_next_option(p, ndopts.nd_opts_ri_end)) {
-			struct route_info *ri = (struct route_info *)p;
+			u8 prefix_len;
+
+                        memcpy(&prefix_len,
+                               (u8 *)p + offsetof(struct route_info, prefix_len),
+                               sizeof(prefix_len));
 #ifdef CONFIG_IPV6_NDISC_NODETYPE
 			if (skb->ndisc_nodetype == NDISC_NODETYPE_NODEFAULT &&
-			    ri->prefix_len == 0)
+			    prefix_len == 0)
 				continue;
 #endif
-			if (ri->prefix_len == 0 &&
+			if (prefix_len == 0 &&
 			    !in6_dev->cnf.accept_ra_defrtr)
 				continue;
-			if (ri->prefix_len < in6_dev->cnf.accept_ra_rt_info_min_plen)
+			if (prefix_len < in6_dev->cnf.accept_ra_rt_info_min_plen)
 				continue;
-			if (ri->prefix_len > in6_dev->cnf.accept_ra_rt_info_max_plen)
+			if (prefix_len > in6_dev->cnf.accept_ra_rt_info_max_plen)
 				continue;
 			rt6_route_rcv(skb->dev, (u8 *)p, (p->nd_opt_len) << 3,
 				      &ipv6_hdr(skb)->saddr);

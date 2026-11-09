@@ -215,6 +215,7 @@ static int snd_pcm_status_user_compat(struct snd_pcm_substream *substream,
 				      bool ext)
 {
 	struct snd_pcm_status status;
+	u32 appl_ptr, hw_ptr;
 	int err;
 
 	memset(&status, 0, sizeof(status));
@@ -233,25 +234,27 @@ static int snd_pcm_status_user_compat(struct snd_pcm_substream *substream,
 
 	if (clear_user(src, sizeof(*src)))
 		return -EFAULT;
+	appl_ptr = status.appl_ptr;
+	hw_ptr = status.hw_ptr;
 	if (copy_to_user((u8 __user *)src +
                          offsetof(struct snd_pcm_status32, state),
                          &status.state, sizeof(status.state)) ||
 	    compat_put_timespec(&status.trigger_tstamp, (struct compat_timespec __user *)((char __user *)src + offsetof(struct snd_pcm_status32, trigger_tstamp))) ||
 	    compat_put_timespec(&status.tstamp, (struct compat_timespec __user *)((char __user *)src + offsetof(struct snd_pcm_status32, tstamp))) ||
-	    put_user(status.appl_ptr, &src->appl_ptr) ||
-	    put_user(status.hw_ptr, &src->hw_ptr) ||
-	    put_user(status.delay, &src->delay) ||
-	    put_user(status.avail, &src->avail) ||
-	    put_user(status.avail_max, &src->avail_max) ||
-	    put_user(status.overrange, &src->overrange) ||
-	    put_user(status.suspended_state, &src->suspended_state) ||
+	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status32, appl_ptr), &appl_ptr, sizeof(appl_ptr)) ||
+	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status32, hw_ptr), &hw_ptr, sizeof(hw_ptr)) ||
+	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status32, delay), &status.delay, sizeof(status.delay)) ||
+	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status32, avail), &status.avail, sizeof(status.avail)) ||
+	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status32, avail_max), &status.avail_max, sizeof(status.avail_max)) ||
+	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status32, overrange), &status.overrange, sizeof(status.overrange)) ||
+	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status32, suspended_state), &status.suspended_state, sizeof(status.suspended_state)) ||
 	    copy_to_user((u8 __user *)src +
                      offsetof(struct snd_pcm_status32, audio_tstamp_data),
                      &status.audio_tstamp_data,
                      sizeof(status.audio_tstamp_data)) ||
 	    compat_put_timespec(&status.audio_tstamp, &src->audio_tstamp) ||
 	    compat_put_timespec(&status.driver_tstamp, &src->driver_tstamp) ||
-	    put_user(status.audio_tstamp_accuracy, &src->audio_tstamp_accuracy))
+	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status32, audio_tstamp_accuracy), &status.audio_tstamp_accuracy, sizeof(status.audio_tstamp_accuracy)))
 		return -EFAULT;
 
 	return err;
@@ -285,6 +288,7 @@ static int snd_pcm_status_user_x32(struct snd_pcm_substream *substream,
 				   bool ext)
 {
 	struct snd_pcm_status status;
+	u32 appl_ptr, hw_ptr;
 	int err;
 
 	memset(&status, 0, sizeof(status));
@@ -302,20 +306,22 @@ static int snd_pcm_status_user_x32(struct snd_pcm_substream *substream,
 
 	if (clear_user(src, sizeof(*src)))
 		return -EFAULT;
+	appl_ptr = status.appl_ptr;
+	hw_ptr = status.hw_ptr;
 	if (put_user(status.state, &src->state) ||
 	    put_timespec(&status.trigger_tstamp, &src->trigger_tstamp) ||
 	    put_timespec(&status.tstamp, &src->tstamp) ||
-	    put_user(status.appl_ptr, &src->appl_ptr) ||
-	    put_user(status.hw_ptr, &src->hw_ptr) ||
-	    put_user(status.delay, &src->delay) ||
-	    put_user(status.avail, &src->avail) ||
-	    put_user(status.avail_max, &src->avail_max) ||
-	    put_user(status.overrange, &src->overrange) ||
-	    put_user(status.suspended_state, &src->suspended_state) ||
+	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status_x32, appl_ptr), &appl_ptr, sizeof(appl_ptr)) ||
+	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status_x32, hw_ptr), &hw_ptr, sizeof(hw_ptr)) ||
+	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status_x32, delay), &status.delay, sizeof(status.delay)) ||
+	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status_x32, avail), &status.avail, sizeof(status.avail)) ||
+	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status_x32, avail_max), &status.avail_max, sizeof(status.avail_max)) ||
+	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status_x32, overrange), &status.overrange, sizeof(status.overrange)) ||
+	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status_x32, suspended_state), &status.suspended_state, sizeof(status.suspended_state)) ||
 	    put_user(status.audio_tstamp_data, &src->audio_tstamp_data) ||
 	    put_timespec(&status.audio_tstamp, &src->audio_tstamp) ||
 	    put_timespec(&status.driver_tstamp, &src->driver_tstamp) ||
-	    put_user(status.audio_tstamp_accuracy, &src->audio_tstamp_accuracy))
+	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_status_x32, audio_tstamp_accuracy), &status.audio_tstamp_accuracy, sizeof(status.audio_tstamp_accuracy)))
 		return -EFAULT;
 
 	return err;
