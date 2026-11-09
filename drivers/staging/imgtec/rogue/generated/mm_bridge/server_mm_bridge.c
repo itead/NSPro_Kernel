@@ -955,6 +955,7 @@ PVRSRVBridgePhysmemNewRamBackedPMR(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_UINT32 *ui32MappingTableInt = NULL;
 	IMG_CHAR *uiAnnotationInt = NULL;
 	PMR * psPMRPtrInt = NULL;
+	IMG_HANDLE hPMRPtr = NULL;
 
 	IMG_UINT32 ui32NextOffset = 0;
 	IMG_BYTE   *pArrayArgsBuffer = NULL;
@@ -1059,7 +1060,7 @@ PVRSRVBridgePhysmemNewRamBackedPMR(IMG_UINT32 ui32DispatchTableEntry,
 
 	psPhysmemNewRamBackedPMROUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psPhysmemNewRamBackedPMROUT->hPMRPtr,
+							&hPMRPtr,
 							(void *) psPMRPtrInt,
 							PVRSRV_HANDLE_TYPE_PHYSMEM_PMR,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
@@ -1069,6 +1070,7 @@ PVRSRVBridgePhysmemNewRamBackedPMR(IMG_UINT32 ui32DispatchTableEntry,
 		UnlockHandle();
 		goto PhysmemNewRamBackedPMR_exit;
 	}
+	psPhysmemNewRamBackedPMROUT->hPMRPtr = hPMRPtr;
 
 	/* Release now we have created handles. */
 	UnlockHandle();
