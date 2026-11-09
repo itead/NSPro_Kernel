@@ -1351,9 +1351,9 @@ skip_linkparms:
 		     p = ndisc_next_option(p, ndopts.nd_opts_ri_end)) {
 			u8 prefix_len;
 
-                        memcpy(&prefix_len,
-                               (u8 *)p + offsetof(struct route_info, prefix_len),
-                               sizeof(prefix_len));
+			memcpy(&prefix_len,
+			       (u8 *)p + offsetof(struct route_info, prefix_len),
+			       sizeof(prefix_len));
 #ifdef CONFIG_IPV6_NDISC_NODETYPE
 			if (skb->ndisc_nodetype == NDISC_NODETYPE_NODEFAULT &&
 			    prefix_len == 0)
