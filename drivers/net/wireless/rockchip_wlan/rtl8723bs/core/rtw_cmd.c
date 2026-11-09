@@ -1496,7 +1496,9 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network *pnetwork)
 	}
 #endif
 
-	rtw_append_exented_cap(padapter, &psecnetwork->IEs[0], &psecnetwork->IELength);
+	new_ie_len = psecnetwork->IELength;
+	rtw_append_exented_cap(padapter, &psecnetwork->IEs[0], &new_ie_len);
+	psecnetwork->IELength = new_ie_len;
 
 #endif /* CONFIG_80211N_HT */
 
