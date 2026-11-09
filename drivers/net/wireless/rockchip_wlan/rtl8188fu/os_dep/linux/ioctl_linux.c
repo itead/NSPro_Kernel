@@ -10344,7 +10344,7 @@ static int rtw_mp_efuse_get(struct net_device *dev,
 			*extra = 0;
 			for (i=0; i<cnts; i++) {
 					DBG_871X("wlrfkrmap = 0x%02x \n", pEfuseHal->fakeBTEfuseModifiedMap[addr+i]);
-					sprintf(extra, "%s0x%02X ", extra, pEfuseHal->fakeBTEfuseModifiedMap[addr+i]);
+					sprintf(extra + strlen(extra), "0x%02X ", pEfuseHal->fakeBTEfuseModifiedMap[addr+i]);
 			}
 	}
 	else
