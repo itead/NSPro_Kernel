@@ -414,6 +414,7 @@ PVRSRVBridgeRGXCreateRenderTarget(IMG_UINT32 ui32DispatchTableEntry,
 					 CONNECTION_DATA *psConnection)
 {
 	RGX_RT_CLEANUP_DATA * pssRenderTargetMemDescInt = NULL;
+	IMG_UINT32 ui32RenderTargetFWDevVAddr = 0;
 
 
 
@@ -426,7 +427,8 @@ PVRSRVBridgeRGXCreateRenderTarget(IMG_UINT32 ui32DispatchTableEntry,
 		RGXCreateRenderTarget(psConnection, OSGetDevData(psConnection),
 					psRGXCreateRenderTargetIN->spsVHeapTableDevVAddr,
 					&pssRenderTargetMemDescInt,
-					&psRGXCreateRenderTargetOUT->ui32sRenderTargetFWDevVAddr);
+					&ui32RenderTargetFWDevVAddr);
+	psRGXCreateRenderTargetOUT->ui32sRenderTargetFWDevVAddr = ui32RenderTargetFWDevVAddr;
 	/* Exit early if bridged call fails */
 	if(psRGXCreateRenderTargetOUT->eError != PVRSRV_OK)
 	{
