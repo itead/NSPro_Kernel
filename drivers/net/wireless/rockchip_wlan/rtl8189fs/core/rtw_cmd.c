@@ -1514,7 +1514,7 @@ _func_enter_;
         
 	if ( pmlmepriv->assoc_by_bssid == _FALSE )
 	{
-		_rtw_memcpy( &pmlmepriv->assoc_bssid[ 0 ], &pnetwork->network.MacAddress[ 0 ], ETH_ALEN );
+		_rtw_memcpy( &pmlmepriv->assoc_bssid[ 0 ], (u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, MacAddress), ETH_ALEN );
 	}
 
 	psecnetwork->IELength = rtw_restruct_sec_ie(padapter, (u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, IEs), &psecnetwork->IEs[0], pnetwork->network.IELength);
