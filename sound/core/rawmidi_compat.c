@@ -34,14 +34,15 @@ static int snd_rawmidi_ioctl_params_compat(struct snd_rawmidi_file *rfile,
 					   struct snd_rawmidi_params32 __user *src)
 {
 	struct snd_rawmidi_params params;
-	unsigned int val;
+	struct snd_rawmidi_params32 params32;
 
-	if (get_user(params.stream, (s32 __user *)((char __user *)src + offsetof(struct snd_rawmidi_params32, stream))) ||
-	    get_user(params.buffer_size, (u32 __user *)((char __user *)src + offsetof(struct snd_rawmidi_params32, buffer_size))) ||
-	    get_user(params.avail_min, (u32 __user *)((char __user *)src + offsetof(struct snd_rawmidi_params32, avail_min))) ||
-	    get_user(val, (unsigned int __user *)((char __user *)src + offsetof(struct snd_rawmidi_params32, no_active_sensing))))
+	if (copy_from_user(&params32, src, sizeof(params32)))
 		return -EFAULT;
-	params.no_active_sensing = val;
+
+	params.stream = params32.stream;
+	params.buffer_size = params32.buffer_size;
+	params.avail_min = params32.avail_min;
+	params.no_active_sensing = params32.no_active_sensing;
 	switch (params.stream) {
 	case SNDRV_RAWMIDI_STREAM_OUTPUT:
 		if (!rfile->output)
