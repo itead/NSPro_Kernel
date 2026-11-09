@@ -180,7 +180,7 @@ static __inline__ void __nat25_generate_ipx_network_addr_with_node(unsigned char
 	memset(networkAddr, 0, MAX_NETWORK_ADDR_LEN);
 
 	networkAddr[0] = NAT25_IPX;
-	memcpy(networkAddr + 1, (unsigned char *)ipxNetAddr, 4);
+	memcpy(networkAddr + 1, ipxNetAddr, 4);
 	memcpy(networkAddr + 5, ipxNodeAddr, 6);
 }
 
@@ -191,8 +191,8 @@ static __inline__ void __nat25_generate_ipx_network_addr_with_socket(unsigned ch
 	memset(networkAddr, 0, MAX_NETWORK_ADDR_LEN);
 
 	networkAddr[0] = NAT25_IPX;
-	memcpy(networkAddr + 1, (unsigned char *)ipxNetAddr, 4);
-	memcpy(networkAddr + 5, (unsigned char *)ipxSocketAddr, 2);
+	memcpy(networkAddr + 1, ipxNetAddr, 4);
+	memcpy(networkAddr + 5, ipxSocketAddr, 2);
 }
 
 
