@@ -12516,8 +12516,13 @@ void linked_status_chk(_adapter *padapter, u8 from_timer)
 					SelectChannel(padapter, pmlmeext->cur_channel);
 				}
 
-				if (rx_chk != _SUCCESS)
-					issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, psta->hwaddr, 0, 0, 3, 1);
+				if (rx_chk != _SUCCESS) {
+					NDIS_802_11_SSID ssid;
+
+					memcpy(&ssid, (const u8 *)&pmlmeinfo->network +
+					       offsetof(WLAN_BSSID_EX, Ssid), sizeof(ssid));
+					issue_probereq_ex(padapter, &ssid, psta->hwaddr, 0, 0, 3, 1);
+				}
 
 				if ((tx_chk != _SUCCESS && pmlmeinfo->link_count++ == link_count_limit) || rx_chk != _SUCCESS) {
 					tx_chk = issue_nulldata(padapter, psta->hwaddr, 0, 3, 1);
@@ -12536,12 +12541,16 @@ void linked_status_chk(_adapter *padapter, u8 from_timer)
 			{
 				if (rx_chk != _SUCCESS) {
 					if (pmlmeext->retry == 0) {
+						NDIS_802_11_SSID ssid;
+
+						memcpy(&ssid, (const u8 *)&pmlmeinfo->network +
+						       offsetof(WLAN_BSSID_EX, Ssid), sizeof(ssid));
 						#ifdef DBG_EXPIRATION_CHK
 						DBG_871X("issue_probereq to trigger probersp, retry=%d\n", pmlmeext->retry);
 						#endif
-						issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
-						issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
-						issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
+						issue_probereq_ex(padapter, &ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
+						issue_probereq_ex(padapter, &ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
+						issue_probereq_ex(padapter, &ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
 					}
 				}
 
