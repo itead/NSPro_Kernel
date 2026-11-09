@@ -275,7 +275,9 @@ static void uas_stat_cmplt(struct urb *urb)
 		goto out;
 	}
 
-	idx = get_unaligned_be16((u8 *)iu + offsetof(struct iu, tag)) - 1;
+	idx = (((u8 *)iu)[offsetof(struct iu, tag)] << 8) |
+	      ((u8 *)iu)[offsetof(struct iu, tag) + 1];
+	idx--;
 	if (idx >= MAX_CMNDS || !devinfo->cmnd[idx]) {
 		dev_err(&urb->dev->dev,
 			"stat urb: no pending cmd for uas-tag %d\n", idx + 1);
