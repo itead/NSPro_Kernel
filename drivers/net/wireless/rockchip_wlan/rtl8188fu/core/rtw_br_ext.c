@@ -213,7 +213,7 @@ static __inline__ void __nat25_generate_pppoe_network_addr(unsigned char *networ
 	memset(networkAddr, 0, MAX_NETWORK_ADDR_LEN);
 
 	networkAddr[0] = NAT25_PPPOE;
-	memcpy(networkAddr+1, (unsigned char *)sid, 2);
+	memcpy(networkAddr+1, sid, 2);
 	memcpy(networkAddr+3, (unsigned char *)ac_mac, 6);
 }
 
