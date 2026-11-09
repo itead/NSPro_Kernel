@@ -329,6 +329,7 @@ PVRSRVBridgeRGXSubmitTransfer(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_UINT32 *ui32SyncPMRFlagsInt = NULL;
 	PMR * *psSyncPMRsInt = NULL;
 	IMG_HANDLE *hSyncPMRsInt2 = NULL;
+	__typeof__(psRGXSubmitTransferOUT->i32UpdateFenceFD) i32UpdateFenceFD = 0;
 
 	IMG_UINT32 ui32NextOffset = 0;
 	IMG_BYTE   *pArrayArgsBuffer = NULL;
@@ -1152,7 +1153,7 @@ PVRSRVBridgeRGXSubmitTransfer(IMG_UINT32 ui32DispatchTableEntry,
 					psServerSyncInt,
 					psRGXSubmitTransferIN->i32CheckFenceFD,
 					psRGXSubmitTransferIN->i32UpdateTimelineFD,
-					&psRGXSubmitTransferOUT->i32UpdateFenceFD,
+					&i32UpdateFenceFD,
 					uiUpdateFenceNameInt,
 					ui32CommandSizeInt,
 					ui8FWCommandInt,
@@ -1161,6 +1162,7 @@ PVRSRVBridgeRGXSubmitTransfer(IMG_UINT32 ui32DispatchTableEntry,
 					psRGXSubmitTransferIN->ui32SyncPMRCount,
 					ui32SyncPMRFlagsInt,
 					psSyncPMRsInt);
+	psRGXSubmitTransferOUT->i32UpdateFenceFD = i32UpdateFenceFD;
 
 
 
