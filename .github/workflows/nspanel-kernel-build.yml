@@ -46,9 +46,7 @@ jobs:
           printf '===== Host: %s =====\\n' "$(hostname -f)" | tee -a "$LOG_FILE"
           printf '===== Compiler: %s =====\\n' "$(aarch64-unknown-linux-gnu-gcc -dumpfullversion)" | tee -a "$LOG_FILE"
           set +e
-          ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make -j8 \\
-            HOSTCFLAGS="-Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -fcommon" \\
-            Image dtbs modules 2>&1 | tee -a "$LOG_FILE"
+          ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make -j8 HOSTCFLAGS="-Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -fcommon" Image dtbs modules 2>&1 | tee -a "$LOG_FILE"
           BUILD_STATUS=${PIPESTATUS[0]}
           set -e
           printf '\\n===== BUILD EXIT STATUS: %s =====\\n' "$BUILD_STATUS" | tee -a "$LOG_FILE"
