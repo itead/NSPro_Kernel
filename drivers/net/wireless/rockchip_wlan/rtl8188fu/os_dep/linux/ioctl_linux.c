@@ -2956,7 +2956,7 @@ static int rtw_wx_get_scan(struct net_device *dev, struct iw_request_info *a,
 		}
 
 		pnetwork = LIST_CONTAINOR(plist, struct wlan_network, list);
-		memcpy(&ssid, (const u8 *)&pnetwork->network + offsetof(NDIS_802_11_BSSID_EX, Ssid), sizeof(ssid));
+		memcpy(&ssid, (const u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, Ssid), sizeof(ssid));
 
 		//report network only if the current channel set contains the channel to which this network belongs
 		if(rtw_ch_set_search_ch(padapter->mlmeextpriv.channel_set, pnetwork->network.Configuration.DSConfig) >= 0
