@@ -379,7 +379,7 @@ PVRSRVBridgePMRGetUID(IMG_UINT32 ui32DispatchTableEntry,
 {
 	IMG_HANDLE hPMR = psPMRGetUIDIN->hPMR;
 	PMR * psPMRInt = NULL;
-	IMG_UINT64 ui64UID;
+	IMG_UINT64 ui64UID = 0;
 
 
 
