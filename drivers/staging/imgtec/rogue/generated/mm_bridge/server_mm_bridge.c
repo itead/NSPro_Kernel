@@ -658,7 +658,6 @@ PVRSRVBridgePMRImportPMR(IMG_UINT32 ui32DispatchTableEntry,
 					psPMRImportPMRIN->ui64uiSize,
 					psPMRImportPMRIN->ui32uiLog2Contig,
 					&psPMRInt);
-	psPMRImportPMROUT->hPMR = hPMR;
 	/* Exit early if bridged call fails */
 	if(psPMRImportPMROUT->eError != PVRSRV_OK)
 	{
@@ -679,6 +678,7 @@ PVRSRVBridgePMRImportPMR(IMG_UINT32 ui32DispatchTableEntry,
 							PVRSRV_HANDLE_TYPE_PHYSMEM_PMR,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&PMRUnrefPMR);
+	psPMRImportPMROUT->hPMR = hPMR;
 	if (psPMRImportPMROUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
