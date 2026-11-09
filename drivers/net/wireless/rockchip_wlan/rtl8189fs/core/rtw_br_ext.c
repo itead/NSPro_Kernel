@@ -1062,7 +1062,12 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 						}
 						else
 						{
-							__nat25_generate_ipx_network_addr_with_node(networkAddr, &ipx->ipx_source.net, ipx->ipx_source.node);
+							typeof(ipx->ipx_source) ipx_source;
+
+							memcpy(&ipx_source, (const u8 *)ipx +
+							       offsetof(struct ipxhdr, ipx_source),
+							       sizeof(ipx_source));
+							__nat25_generate_ipx_network_addr_with_node(networkAddr, &ipx_source.net, ipx_source.node);
 						}
 
 						__nat25_db_network_insert(priv, skb->data+ETH_ALEN, networkAddr);
