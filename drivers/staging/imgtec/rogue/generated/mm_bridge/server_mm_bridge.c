@@ -1636,6 +1636,7 @@ PVRSRVBridgeDevmemIntCtxCreate(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_HANDLE hDevMemServerContext = NULL;
 	DEVMEMINT_CTX * psDevMemServerContextInt = NULL;
 	IMG_HANDLE hPrivDataInt = NULL;
+	IMG_HANDLE hPrivDataHandle = NULL;
 	IMG_UINT32 ui32CPUCacheLineSize = 0;
 
 
@@ -1688,11 +1689,13 @@ PVRSRVBridgeDevmemIntCtxCreate(IMG_UINT32 ui32DispatchTableEntry,
 
 	psDevmemIntCtxCreateOUT->eError = PVRSRVAllocSubHandleUnlocked(psConnection->psHandleBase,
 
-							&psDevmemIntCtxCreateOUT->hPrivData,
+							&hPrivDataHandle,
 							(void *) hPrivDataInt,
 							PVRSRV_HANDLE_TYPE_DEV_PRIV_DATA,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,psDevmemIntCtxCreateOUT->hDevMemServerContext);
+	if (psDevmemIntCtxCreateOUT->eError == PVRSRV_OK)
+		psDevmemIntCtxCreateOUT->hPrivData = hPrivDataHandle;
 	if (psDevmemIntCtxCreateOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
