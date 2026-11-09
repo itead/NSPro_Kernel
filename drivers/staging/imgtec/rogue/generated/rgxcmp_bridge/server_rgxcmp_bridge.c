@@ -990,6 +990,8 @@ PVRSRVBridgeRGXGetLastComputeContextResetReason(IMG_UINT32 ui32DispatchTableEntr
 {
 	IMG_HANDLE hComputeContext = psRGXGetLastComputeContextResetReasonIN->hComputeContext;
 	RGX_SERVER_COMPUTE_CONTEXT * psComputeContextInt = NULL;
+	IMG_UINT32 ui32LastResetReason = 0;
+	IMG_UINT32 ui32LastResetJobRef = 0;
 
 
 	{
@@ -1036,8 +1038,10 @@ PVRSRVBridgeRGXGetLastComputeContextResetReason(IMG_UINT32 ui32DispatchTableEntr
 	psRGXGetLastComputeContextResetReasonOUT->eError =
 		PVRSRVRGXGetLastComputeContextResetReasonKM(
 					psComputeContextInt,
-					&psRGXGetLastComputeContextResetReasonOUT->ui32LastResetReason,
-					&psRGXGetLastComputeContextResetReasonOUT->ui32LastResetJobRef);
+					&ui32LastResetReason,
+					&ui32LastResetJobRef);
+	psRGXGetLastComputeContextResetReasonOUT->ui32LastResetReason = ui32LastResetReason;
+	psRGXGetLastComputeContextResetReasonOUT->ui32LastResetJobRef = ui32LastResetJobRef;
 
 
 
