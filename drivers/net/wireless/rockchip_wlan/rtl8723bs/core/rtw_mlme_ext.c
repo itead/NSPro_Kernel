@@ -3930,7 +3930,6 @@ void issue_p2p_GO_request(_adapter *padapter, u8 *raddr)
 	struct pkt_attrib			*pattrib;
 	unsigned char					*pframe;
 	struct rtw_ieee80211_hdr	*pwlanhdr;
-	unsigned short				*fctrl;
 	struct xmit_priv			*pxmitpriv = &(padapter->xmitpriv);
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
@@ -3951,8 +3950,12 @@ void issue_p2p_GO_request(_adapter *padapter, u8 *raddr)
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
-	*(fctrl) = 0;
+	{
+		u16 frame_ctl = 0;
+
+		memcpy(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl),
+		       &frame_ctl, sizeof(frame_ctl));
+	}
 
 	_rtw_memcpy(pwlanhdr->addr1, raddr, ETH_ALEN);
 	_rtw_memcpy(pwlanhdr->addr2, adapter_mac_addr(padapter), ETH_ALEN);
