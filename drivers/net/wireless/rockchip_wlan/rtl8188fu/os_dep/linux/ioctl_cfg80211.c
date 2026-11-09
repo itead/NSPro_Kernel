@@ -421,11 +421,11 @@ struct cfg80211_bss *rtw_cfg80211_inform_bss(_adapter *padapter, struct wlan_net
 		u8 *psr=NULL, sr = 0;
 		NDIS_802_11_SSID ssid;
 		NDIS_802_11_SSID *pssid = &ssid;
-		memcpy(&ssid, (const u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, Ssid), sizeof(ssid));
 		struct cfg80211_scan_request *request = adapter_wdev_data(padapter)->scan_request;
 		struct cfg80211_ssid *ssids = request->ssids;
 		u32 wpsielen=0;
-		u8 *wpsie=NULL;	
+		u8 *wpsie=NULL;
+		memcpy(&ssid, (const u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, Ssid), sizeof(ssid));	
 		
 		wpsie = rtw_get_wps_ie(pnetwork->network.IEs+_FIXED_IE_LENGTH_, pnetwork->network.IELength-_FIXED_IE_LENGTH_, NULL, &wpsielen);
 		
