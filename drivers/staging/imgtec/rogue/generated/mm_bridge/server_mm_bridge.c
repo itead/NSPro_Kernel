@@ -1633,6 +1633,7 @@ PVRSRVBridgeDevmemIntCtxCreate(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_DEVMEMINTCTXCREATE *psDevmemIntCtxCreateOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	IMG_HANDLE hDevMemServerContext = NULL;
 	DEVMEMINT_CTX * psDevMemServerContextInt = NULL;
 	IMG_HANDLE hPrivDataInt = NULL;
 	IMG_UINT32 ui32CPUCacheLineSize = 0;
@@ -1653,6 +1654,8 @@ PVRSRVBridgeDevmemIntCtxCreate(IMG_UINT32 ui32DispatchTableEntry,
 					&ui32CPUCacheLineSize);
 	psDevmemIntCtxCreateOUT->ui32CPUCacheLineSize = ui32CPUCacheLineSize;
 	/* Exit early if bridged call fails */
+	if (psDevmemIntCtxCreateOUT->eError == PVRSRV_OK)
+		psDevmemIntCtxCreateOUT->hDevMemServerContext = hDevMemServerContext;
 	if(psDevmemIntCtxCreateOUT->eError != PVRSRV_OK)
 	{
 		goto DevmemIntCtxCreate_exit;
@@ -1667,7 +1670,7 @@ PVRSRVBridgeDevmemIntCtxCreate(IMG_UINT32 ui32DispatchTableEntry,
 
 	psDevmemIntCtxCreateOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psDevmemIntCtxCreateOUT->hDevMemServerContext,
+							&hDevMemServerContext,
 							(void *) psDevMemServerContextInt,
 							PVRSRV_HANDLE_TYPE_DEVMEMINT_CTX,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
