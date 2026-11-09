@@ -456,6 +456,7 @@ PVRSRVBridgePMRMakeLocalImportHandle(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_HANDLE hBuffer = psPMRMakeLocalImportHandleIN->hBuffer;
 	PMR * psBufferInt = NULL;
 	PMR * psExtMemInt = NULL;
+	IMG_HANDLE hExtMemOut;
 
 
 
@@ -506,7 +507,7 @@ PVRSRVBridgePMRMakeLocalImportHandle(IMG_UINT32 ui32DispatchTableEntry,
 
 	psPMRMakeLocalImportHandleOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psPMRMakeLocalImportHandleOUT->hExtMem,
+							&hExtMemOut,
 							(void *) psExtMemInt,
 							PVRSRV_HANDLE_TYPE_DEVMEM_MEM_IMPORT,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
@@ -516,6 +517,7 @@ PVRSRVBridgePMRMakeLocalImportHandle(IMG_UINT32 ui32DispatchTableEntry,
 		UnlockHandle();
 		goto PMRMakeLocalImportHandle_exit;
 	}
+	psPMRMakeLocalImportHandleOUT->hExtMem = hExtMemOut;
 
 	/* Release now we have created handles. */
 	UnlockHandle();
