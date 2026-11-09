@@ -2624,6 +2624,8 @@ PVRSRVBridgeRGXGetLastRenderContextResetReason(IMG_UINT32 ui32DispatchTableEntry
 {
 	IMG_HANDLE hRenderContext = psRGXGetLastRenderContextResetReasonIN->hRenderContext;
 	RGX_SERVER_RENDER_CONTEXT * psRenderContextInt = NULL;
+	IMG_UINT32 ui32LastResetReason = 0;
+	IMG_UINT32 ui32LastResetJobRef = 0;
 
 
 
@@ -2658,8 +2660,10 @@ PVRSRVBridgeRGXGetLastRenderContextResetReason(IMG_UINT32 ui32DispatchTableEntry
 	psRGXGetLastRenderContextResetReasonOUT->eError =
 		PVRSRVRGXGetLastRenderContextResetReasonKM(
 					psRenderContextInt,
-					&psRGXGetLastRenderContextResetReasonOUT->ui32LastResetReason,
-					&psRGXGetLastRenderContextResetReasonOUT->ui32LastResetJobRef);
+					&ui32LastResetReason,
+					&ui32LastResetJobRef);
+	psRGXGetLastRenderContextResetReasonOUT->ui32LastResetReason = ui32LastResetReason;
+	psRGXGetLastRenderContextResetReasonOUT->ui32LastResetJobRef = ui32LastResetJobRef;
 
 
 
