@@ -508,14 +508,14 @@ u8 rtw_set_802_11_infrastructure_mode(_adapter *padapter,
 	_irqL irqL;
 	struct	mlme_priv	*pmlmepriv = &padapter->mlmepriv;
 	struct	wlan_network	*cur_network = &pmlmepriv->cur_network;
-	NDIS_802_11_NETWORK_INFRASTRUCTURE *pold_state = &(cur_network->network.InfrastructureMode);
+	NDIS_802_11_NETWORK_INFRASTRUCTURE old_state = cur_network->network.InfrastructureMode;
 	u8 ap2sta_mode = _FALSE;
 	u8 ret = _TRUE;
 
-	if (*pold_state != networktype) {
-		/* RTW_INFO("change mode, old_mode=%d, new_mode=%d, fw_state=0x%x\n", *pold_state, networktype, get_fwstate(pmlmepriv)); */
+	if (old_state != networktype) {
+		/* RTW_INFO("change mode, old_mode=%d, new_mode=%d, fw_state=0x%x\n", old_state, networktype, get_fwstate(pmlmepriv)); */
 
-		if (*pold_state == Ndis802_11APMode) {
+		if (old_state == Ndis802_11APMode) {
 			/* change to other mode from Ndis802_11APMode			 */
 			cur_network->join_res = -1;
 			ap2sta_mode = _TRUE;
@@ -526,20 +526,21 @@ u8 rtw_set_802_11_infrastructure_mode(_adapter *padapter,
 
 		_enter_critical_bh(&pmlmepriv->lock, &irqL);
 
-		if ((check_fwstate(pmlmepriv, _FW_LINKED) == _TRUE) || (*pold_state == Ndis802_11IBSS))
+		if ((check_fwstate(pmlmepriv, _FW_LINKED) == _TRUE) || (old_state == Ndis802_11IBSS))
 			rtw_disassoc_cmd(padapter, 0, 0);
 
 		if ((check_fwstate(pmlmepriv, _FW_LINKED) == _TRUE) ||
 		    (check_fwstate(pmlmepriv, WIFI_ADHOC_MASTER_STATE) == _TRUE))
 			rtw_free_assoc_resources(padapter, 1);
 
-		if ((*pold_state == Ndis802_11Infrastructure) || (*pold_state == Ndis802_11IBSS)) {
+		if ((old_state == Ndis802_11Infrastructure) || (old_state == Ndis802_11IBSS)) {
 			if (check_fwstate(pmlmepriv, _FW_LINKED) == _TRUE) {
 				rtw_indicate_disconnect(padapter, 0, _FALSE); /*will clr Linked_state; before this function, we must have checked whether issue dis-assoc_cmd or not*/
 			}
 		}
 
-		*pold_state = networktype;
+		cur_network->network.InfrastructureMode = networktype;
+		old_state = networktype;
 
 		_clr_fwstate_(pmlmepriv, ~WIFI_NULL_STATE);
 
