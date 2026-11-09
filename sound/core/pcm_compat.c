@@ -622,9 +622,9 @@ static int snd_pcm_ioctl_sync_ptr_x32(struct snd_pcm_substream *substream,
 	if (snd_BUG_ON(!runtime))
 		return -EINVAL;
 
-	if (get_user(sflags, &src->flags) ||
-	    get_user(scontrol.appl_ptr, &src->c.control.appl_ptr) ||
-	    get_user(scontrol.avail_min, &src->c.control.avail_min))
+	if (copy_from_user(&sflags, (u8 __user *)src + offsetof(struct snd_pcm_sync_ptr_x32, flags), sizeof(sflags)) ||
+	    copy_from_user(&scontrol.appl_ptr, (u8 __user *)src + offsetof(struct snd_pcm_sync_ptr_x32, c.control.appl_ptr), sizeof(scontrol.appl_ptr)) ||
+	    copy_from_user(&scontrol.avail_min, (u8 __user *)src + offsetof(struct snd_pcm_sync_ptr_x32, c.control.avail_min), sizeof(scontrol.avail_min)))
 		return -EFAULT;
 	if (sflags & SNDRV_PCM_SYNC_PTR_HWSYNC) {
 		err = snd_pcm_hwsync(substream);
@@ -652,13 +652,13 @@ static int snd_pcm_ioctl_sync_ptr_x32(struct snd_pcm_substream *substream,
 	sstatus.suspended_state = status->suspended_state;
 	sstatus.audio_tstamp = status->audio_tstamp;
 	snd_pcm_stream_unlock_irq(substream);
-	if (put_user(sstatus.state, &src->s.status.state) ||
-	    put_user(sstatus.hw_ptr, &src->s.status.hw_ptr) ||
-	    put_timespec(&sstatus.tstamp, &src->s.status.tstamp) ||
-	    put_user(sstatus.suspended_state, &src->s.status.suspended_state) ||
-	    put_timespec(&sstatus.audio_tstamp, &src->s.status.audio_tstamp) ||
-	    put_user(scontrol.appl_ptr, &src->c.control.appl_ptr) ||
-	    put_user(scontrol.avail_min, &src->c.control.avail_min))
+	if (copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_sync_ptr_x32, s.status.state), &sstatus.state, sizeof(sstatus.state)) ||
+	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_sync_ptr_x32, s.status.hw_ptr), &sstatus.hw_ptr, sizeof(sstatus.hw_ptr)) ||
+	    put_timespec(&sstatus.tstamp, (struct timespec __user *)((u8 __user *)src + offsetof(struct snd_pcm_sync_ptr_x32, s.status.tstamp))) ||
+	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_sync_ptr_x32, s.status.suspended_state), &sstatus.suspended_state, sizeof(sstatus.suspended_state)) ||
+	    put_timespec(&sstatus.audio_tstamp, (struct timespec __user *)((u8 __user *)src + offsetof(struct snd_pcm_sync_ptr_x32, s.status.audio_tstamp))) ||
+	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_sync_ptr_x32, c.control.appl_ptr), &scontrol.appl_ptr, sizeof(scontrol.appl_ptr)) ||
+	    copy_to_user((u8 __user *)src + offsetof(struct snd_pcm_sync_ptr_x32, c.control.avail_min), &scontrol.avail_min, sizeof(scontrol.avail_min)))
 		return -EFAULT;
 
 	return 0;
