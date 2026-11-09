@@ -208,7 +208,7 @@ static __inline__ void __nat25_generate_apple_network_addr(unsigned char *networ
 
 
 static __inline__ void __nat25_generate_pppoe_network_addr(unsigned char *networkAddr,
-				unsigned char *ac_mac, unsigned short *sid)
+				unsigned char *ac_mac, const void *sid)
 {
 	memset(networkAddr, 0, MAX_NETWORK_ADDR_LEN);
 
