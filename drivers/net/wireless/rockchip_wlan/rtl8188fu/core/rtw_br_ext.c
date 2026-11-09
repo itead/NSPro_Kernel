@@ -1272,7 +1272,7 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 				{
 						DBG_871X("NAT25: Insert PPPoE, insert session packet to %s\n", skb->dev->name);
 
-						__nat25_generate_pppoe_network_addr(networkAddr, skb->data, &(ph->sid));
+						__nat25_generate_pppoe_network_addr(networkAddr, skb->data, (const u8 *)ph + offsetof(struct pppoe_hdr, sid));
 
 						__nat25_db_network_insert(priv, skb->data+ETH_ALEN, networkAddr);
 
