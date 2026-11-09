@@ -378,7 +378,6 @@ struct cfg80211_bss *rtw_cfg80211_inform_bss(_adapter *padapter, struct wlan_net
 	size_t buf_size = MAX_BSSINFO_LEN;
 	size_t len,bssinf_len=0;
 	struct rtw_ieee80211_hdr *pwlanhdr;
-	unsigned short *fctrl;
 	u8	bc_addr[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 		
 	struct wireless_dev *wdev = padapter->rtw_wdev;
@@ -521,9 +520,14 @@ struct cfg80211_bss *rtw_cfg80211_inform_bss(_adapter *padapter, struct wlan_net
 
 	//pbuf = buf;
 	
-	pwlanhdr = (struct rtw_ieee80211_hdr *)pbuf;	
-	fctrl = &(pwlanhdr->frame_ctl);
-	*(fctrl) = 0;	
+	pwlanhdr = (struct rtw_ieee80211_hdr *)pbuf;
+	{
+		u16 frame_ctl = 0;
+
+		memcpy((u8 *)pwlanhdr +
+		       offsetof(struct rtw_ieee80211_hdr, frame_ctl),
+		       &frame_ctl, sizeof(frame_ctl));
+	}
 
 	SetSeqNum(pwlanhdr, 0/*pmlmeext->mgnt_seq*/);
 	//pmlmeext->mgnt_seq++;
