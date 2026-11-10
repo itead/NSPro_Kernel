@@ -76,8 +76,8 @@ PVRSRVBridgeTLOpenStream(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_TLOPENSTREAM *psTLOpenStreamOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psTLOpenStreamOUT->hSD) aligned_out_psTLOpenStreamOUT_hSD;
-	typeof(psTLOpenStreamOUT->hTLPMR) aligned_out_psTLOpenStreamOUT_hTLPMR;
+	typeof(psTLOpenStreamOUT->hSD) aligned_out_psTLOpenStreamOUT_hSD __attribute__((unused));
+	typeof(psTLOpenStreamOUT->hTLPMR) aligned_out_psTLOpenStreamOUT_hTLPMR __attribute__((unused));
 
 	IMG_CHAR *uiNameInt = NULL;
 	TL_STREAM_DESC * psSDInt = NULL;
@@ -312,8 +312,8 @@ PVRSRVBridgeTLAcquireData(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_TLACQUIREDATA *psTLAcquireDataOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psTLAcquireDataOUT->ui32ReadOffset) aligned_out_psTLAcquireDataOUT_ui32ReadOffset;
-	typeof(psTLAcquireDataOUT->ui32ReadLen) aligned_out_psTLAcquireDataOUT_ui32ReadLen;
+	typeof(psTLAcquireDataOUT->ui32ReadOffset) aligned_out_psTLAcquireDataOUT_ui32ReadOffset __attribute__((unused));
+	typeof(psTLAcquireDataOUT->ui32ReadLen) aligned_out_psTLAcquireDataOUT_ui32ReadLen __attribute__((unused));
 
 	IMG_HANDLE hSD = psTLAcquireDataIN->hSD;
 	TL_STREAM_DESC * psSDInt = NULL;
@@ -469,7 +469,7 @@ PVRSRVBridgeTLDiscoverStreams(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_TLDISCOVERSTREAMS *psTLDiscoverStreamsOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psTLDiscoverStreamsOUT->ui32NumFound) aligned_out_psTLDiscoverStreamsOUT_ui32NumFound;
+	typeof(psTLDiscoverStreamsOUT->ui32NumFound) aligned_out_psTLDiscoverStreamsOUT_ui32NumFound __attribute__((unused));
 
 	IMG_CHAR *uiNamePatternInt = NULL;
 	IMG_UINT32 *pui32StreamsInt = NULL;
@@ -590,8 +590,8 @@ PVRSRVBridgeTLReserveStream(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_TLRESERVESTREAM *psTLReserveStreamOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psTLReserveStreamOUT->ui32BufferOffset) aligned_out_psTLReserveStreamOUT_ui32BufferOffset;
-	typeof(psTLReserveStreamOUT->ui32Available) aligned_out_psTLReserveStreamOUT_ui32Available;
+	typeof(psTLReserveStreamOUT->ui32BufferOffset) aligned_out_psTLReserveStreamOUT_ui32BufferOffset __attribute__((unused));
+	typeof(psTLReserveStreamOUT->ui32Available) aligned_out_psTLReserveStreamOUT_ui32Available __attribute__((unused));
 
 	IMG_HANDLE hSD = psTLReserveStreamIN->hSD;
 	TL_STREAM_DESC * psSDInt = NULL;
