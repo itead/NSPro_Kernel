@@ -76,7 +76,7 @@ PVRSRVBridgeRGXCreateKickSyncContext(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_RGXCREATEKICKSYNCCONTEXT *psRGXCreateKickSyncContextOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psRGXCreateKickSyncContextOUT->hKickSyncContext) aligned_out_psRGXCreateKickSyncContextOUT_hKickSyncContext;
+	typeof(psRGXCreateKickSyncContextOUT->hKickSyncContext) aligned_out_psRGXCreateKickSyncContextOUT_hKickSyncContext __attribute__((unused));
 
 	IMG_HANDLE hPrivData = psRGXCreateKickSyncContextIN->hPrivData;
 	IMG_HANDLE hPrivDataInt = NULL;
@@ -241,7 +241,7 @@ PVRSRVBridgeRGXKickSync(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_RGXKICKSYNC *psRGXKickSyncOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psRGXKickSyncOUT->i32UpdateFenceFD) aligned_out_psRGXKickSyncOUT_i32UpdateFenceFD;
+	typeof(psRGXKickSyncOUT->i32UpdateFenceFD) aligned_out_psRGXKickSyncOUT_i32UpdateFenceFD __attribute__((unused));
 
 	IMG_HANDLE hKickSyncContext = psRGXKickSyncIN->hKickSyncContext;
 	RGX_SERVER_KICKSYNC_CONTEXT * psKickSyncContextInt = NULL;
