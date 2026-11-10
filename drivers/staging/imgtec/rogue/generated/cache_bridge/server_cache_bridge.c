@@ -76,7 +76,7 @@ PVRSRVBridgeCacheOpQueue(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_CACHEOPQUEUE *psCacheOpQueueOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psCacheOpQueueOUT->ui32CacheOpSeqNum) aligned_out_psCacheOpQueueOUT_ui32CacheOpSeqNum;
+	typeof(psCacheOpQueueOUT->ui32CacheOpSeqNum) aligned_out_psCacheOpQueueOUT_ui32CacheOpSeqNum __attribute__((unused));
 
 	PMR * *psPMRInt = NULL;
 	IMG_HANDLE *hPMRInt2 = NULL;
@@ -475,7 +475,7 @@ PVRSRVBridgeCacheOpGetLineSize(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_CACHEOPGETLINESIZE *psCacheOpGetLineSizeOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psCacheOpGetLineSizeOUT->ui32L1DataCacheLineSize) aligned_out_psCacheOpGetLineSizeOUT_ui32L1DataCacheLineSize;
+	typeof(psCacheOpGetLineSizeOUT->ui32L1DataCacheLineSize) aligned_out_psCacheOpGetLineSizeOUT_ui32L1DataCacheLineSize __attribute__((unused));
 
 
 
