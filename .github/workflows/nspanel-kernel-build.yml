@@ -13,7 +13,7 @@ permissions:
 
 concurrency:
   group: nspanel-kernel-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 # Keep the self-hosted kernel runner single-flight; only the newest pending fix batch should run.
 
 jobs:
