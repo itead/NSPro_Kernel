@@ -12477,8 +12477,13 @@ void linked_status_chk(_adapter *padapter, u8 from_timer)
 					set_channel_bwmode(padapter, union_ch, union_offset, union_bw);
 				}
 
-				if (rx_chk != _SUCCESS)
-					issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, psta->cmn.mac_addr, 0, 0, 3, 1);
+				if (rx_chk != _SUCCESS) {
+					NDIS_802_11_SSID ssid;
+
+					memcpy(&ssid, (const u8 *)&pmlmeinfo->network +
+					       offsetof(WLAN_BSSID_EX, Ssid), sizeof(ssid));
+					issue_probereq_ex(padapter, &ssid, psta->cmn.mac_addr, 0, 0, 3, 1);
+				}
 
 				if ((tx_chk != _SUCCESS && pmlmeinfo->link_count++ == link_count_limit) || rx_chk != _SUCCESS) {
 					tx_chk = issue_nulldata(padapter, psta->cmn.mac_addr, 0, 3, 1);
