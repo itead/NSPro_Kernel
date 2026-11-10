@@ -156,7 +156,6 @@ static void issue_group_disc_req(struct wifidirect_info *pwdinfo, u8 *da)
 	struct pkt_attrib			*pattrib;
 	unsigned char					*pframe;
 	struct rtw_ieee80211_hdr	*pwlanhdr;
-	unsigned short				*fctrl;
 	_adapter *padapter = pwdinfo->padapter;
 	struct xmit_priv			*pxmitpriv = &(padapter->xmitpriv);
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);	
@@ -181,8 +180,7 @@ static void issue_group_disc_req(struct wifidirect_info *pwdinfo, u8 *da)
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
-	*(fctrl) = 0;
+	pwlanhdr->frame_ctl = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, da, ETH_ALEN);
 	_rtw_memcpy(pwlanhdr->addr2, pwdinfo->interface_addr, ETH_ALEN);

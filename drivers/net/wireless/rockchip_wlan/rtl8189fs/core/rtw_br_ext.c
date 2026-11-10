@@ -830,11 +830,6 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 
 			case NAT25_LOOKUP:
 				{
-						typeof(ipx->ipx_dest) ipx_dest;
-
-						memcpy(&ipx_dest, (const u8 *)ipx +
-						       offsetof(struct ipxhdr, ipx_dest),
-						       sizeof(ipx_dest));
 					DBG_871X("NAT25: Lookup IP, SA=%08x, DA=%08x\n", iph->saddr, iph->daddr);
 #ifdef SUPPORT_TX_MCAST2UNI
 					if (priv->pshare->rf_ft_var.mc2u_disable ||
@@ -1083,6 +1078,12 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 
 				case NAT25_LOOKUP:
 					{
+						typeof(ipx->ipx_dest) ipx_dest;
+
+						memcpy(&ipx_dest, (const u8 *)ipx +
+						       offsetof(struct ipxhdr, ipx_dest),
+						       sizeof(ipx_dest));
+
                                                 if(!memcmp(GET_MY_HWADDR(priv), ipx_dest.node, ETH_ALEN))
 						{
 							DBG_871X("NAT25: Lookup IPX, Modify Destination IPX Node addr\n");
@@ -1126,7 +1127,7 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 				case NAT25_INSERT:
 					{
 						// change to AARP source mac address to wlan STA address
-                                                memcpy(ea->hw_src, GET_MY_HWADDR(priv), ETH_ALEN);
+                                                memcpy((u8 *)ea + offsetof(struct elapaarp, hw_src), GET_MY_HWADDR(priv), ETH_ALEN);
 
 						DBG_871X("NAT25: Insert AARP, Source=%d,%d Destination=%d,%d\n",
 							ea->pa_src_net,
