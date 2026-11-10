@@ -163,17 +163,17 @@ jobs:
           JOB_STATUS: ${{ job.status }}
         run: |
           {
-            printf '%s\\n\\n' '## NSPanel kernel CI/CD'
-            printf -- '- **Commit:** `%s`\\n' "$GITHUB_SHA"
-            printf -- '- **Ref:** `%s`\\n' "$GITHUB_REF"
-            printf -- '- **Build job:** `%s`\\n' "$JOB_STATUS"
+            printf '%s\n\n' '## NSPanel kernel CI/CD'
+            printf -- '- **Commit:** `%s`\n' "$GITHUB_SHA"
+            printf -- '- **Ref:** `%s`\n' "$GITHUB_REF"
+            printf -- '- **Build job:** `%s`\n' "$JOB_STATUS"
             if [ -n "${NSPANEL_BUILD_LOG:-}" ] && [ -f "$NSPANEL_BUILD_LOG" ]; then
-              printf -- '- **Log:** `%s`\\n' "$(basename "$NSPANEL_BUILD_LOG")"
+              printf -- '- **Log:** `%s`\n' "$(basename "$NSPANEL_BUILD_LOG")"
               ERROR_COUNT=$(grep -Ec '(^| )error:|fatal error:|undefined reference|Error [0-9]+' "$NSPANEL_BUILD_LOG" || true)
               WARNING_COUNT=$(grep -Ec 'warning:' "$NSPANEL_BUILD_LOG" || true)
-              printf -- '- **Errors:** %s\\n' "$ERROR_COUNT"
-              printf -- '- **Warnings:** %s\\n\\n' "$WARNING_COUNT"
-              printf '%s\\n' '### Last diagnostics'
+              printf -- '- **Errors:** %s\n' "$ERROR_COUNT"
+              printf -- '- **Warnings:** %s\n\n' "$WARNING_COUNT"
+              printf '%s\n' '### Last diagnostics'
               grep -n -E 'error:|fatal error:|undefined reference|Error [0-9]+' "$NSPANEL_BUILD_LOG" | tail -n 30 || true
             fi
           } >> "$GITHUB_STEP_SUMMARY"
