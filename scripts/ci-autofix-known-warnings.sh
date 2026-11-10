@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Bounded, source-wide fixes for compiler diagnostics with a proven semantics-preserving rewrite.
 set -Eeo pipefail
-LOG_FILE="\${1:-}"
+LOG_FILE="${1:-}"
 if [ -z "$LOG_FILE" ] || [ ! -f "$LOG_FILE" ]; then
   echo "Usage: $0 <build-log>" >&2
   exit 2
