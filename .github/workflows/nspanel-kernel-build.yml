@@ -6,6 +6,8 @@ on:
       - fix/rockchip-gem-zero-size
     tags:
       - "v*"
+    # Legacy log-export scripts may still push *.log files. Ignore those pushes
+    # to prevent a log-upload loop while moving diagnostics to Actions artifacts.
     paths-ignore:
       - "**/*.log"
   pull_request:
@@ -14,9 +16,9 @@ on:
 permissions:
   contents: read
 
+# A new push must never cancel a kernel build already running on dell5300.
+# GitHub retains one pending run per ref; newer pushes replace only that pending run.
 concurrency:
-  # Never cancel a running kernel build. GitHub keeps one pending run per ref;
-  # newer pushes replace only the pending run, not the active build.
   group: nspanel-kernel-${{ github.ref }}
   cancel-in-progress: false
 
@@ -36,7 +38,7 @@ jobs:
           BEFORE_SHA: ${{ github.event.before || '' }}
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
         run: |
-          set -Eeuo pipefail
+          set -Eeo pipefail
           if [ -n "$PR_BASE_SHA" ]; then
             git diff --check "$PR_BASE_SHA" "$GITHUB_SHA"
           elif [ -n "$BEFORE_SHA" ] && [[ ! "$BEFORE_SHA" =~ ^0+$ ]]; then
@@ -52,7 +54,6 @@ jobs:
     # Never execute untrusted fork code on the persistent self-hosted runner.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     needs: validate
-    # Match the runner's registered labels; do not require a custom label.
     runs-on: [self-hosted, linux, x64]
     timeout-minutes: 240
     steps:
@@ -62,24 +63,26 @@ jobs:
           clean: true
           fetch-depth: 2
 
-      - name: Initialize persistent build diagnostics
+      # Create the log before any runner/toolchain checks so even early failures
+      # are retained and uploaded by the always() artifact step below.
+      - name: Initialize build diagnostics
         shell: bash
         run: |
-          set -Eeuo pipefail
+          set -Eeo pipefail
           LOG_FILE="$PWD/nspanel-kernel-build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.log"
           echo "NSPANEL_BUILD_LOG=$LOG_FILE" >> "$GITHUB_ENV"
           {
-            printf '===== NSPanel kernel CI/CD started: %s =====\\n' "$(date '+%Y-%m-%d %H:%M:%S %z')"
-            printf '===== Repository: %s =====\\n' "$GITHUB_REPOSITORY"
-            printf '===== Ref: %s =====\\n' "$GITHUB_REF"
-            printf '===== Commit: %s =====\\n' "$GITHUB_SHA"
-            printf '===== Runner: %s =====\\n' "$(hostname -f 2>/dev/null || hostname)"
+            printf '===== NSPanel kernel CI/CD started: %s =====\n' "$(date '+%Y-%m-%d %H:%M:%S %z')"
+            printf '===== Repository: %s =====\n' "$GITHUB_REPOSITORY"
+            printf '===== Ref: %s =====\n' "$GITHUB_REF"
+            printf '===== Commit: %s =====\n' "$GITHUB_SHA"
+            printf '===== Runner: %s =====\n' "$(hostname -f 2>/dev/null || hostname)"
           } | tee "$LOG_FILE"
 
       - name: Validate build environment
         shell: bash
         run: |
-          set -Eeuo pipefail
+          set -Eeo pipefail
           exec > >(tee -a "$NSPANEL_BUILD_LOG") 2>&1
           for tool in make flock aarch64-unknown-linux-gnu-gcc depmod tar sha256sum; do
             command -v "$tool" >/dev/null || {
@@ -102,31 +105,25 @@ jobs:
           echo "===== Kernel configuration ====="
           grep -E '^(CONFIG_ARCH_ROCKCHIP|CONFIG_MODULES|CONFIG_DRM_ROCKCHIP)=' .config || true
 
-      - name: Build kernel and capture diagnostics
+      - name: Build kernel
         id: build
         shell: bash
         run: |
-          set -Eeuo pipefail
-          LOG_FILE="$PWD/nspanel-kernel-build-${GITHUB_RUN_ID}.log"
-          echo "NSPANEL_BUILD_LOG=$LOG_FILE" >> "$GITHUB_ENV"
-          {
-            printf '===== NSPanel kernel build started: %s =====\n' "$(date '+%Y-%m-%d %H:%M:%S %z')"
-            printf '===== Repository: %s =====\n' "$GITHUB_REPOSITORY"
-            printf '===== Ref: %s =====\n' "$GITHUB_REF"
-            printf '===== Commit: %s =====\n' "$GITHUB_SHA"
-            printf '===== Host: %s =====\n' "$(hostname -f 2>/dev/null || hostname)"
-            printf '===== Compiler: %s =====\n' "$(aarch64-unknown-linux-gnu-gcc -dumpfullversion)"
-          } | tee "$LOG_FILE"
+          set -Eeo pipefail
+          exec > >(tee -a "$NSPANEL_BUILD_LOG") 2>&1
+          echo "===== Compiler version ====="
+          aarch64-unknown-linux-gnu-gcc --version | head -n 1
+          echo "===== Build started: $(date '+%Y-%m-%d %H:%M:%S %z') ====="
 
           set +e
           ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make -j3 \
             HOSTCFLAGS="-Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -fcommon" \
-            Image dtbs modules 2>&1 | tee -a "$LOG_FILE"
-          BUILD_STATUS=${PIPESTATUS[0]}
+            Image dtbs modules
+          BUILD_STATUS=$?
           set -e
 
-          printf '\n===== BUILD EXIT STATUS: %s =====\n' "$BUILD_STATUS" | tee -a "$LOG_FILE"
-          printf '===== Build finished: %s =====\n' "$(date '+%Y-%m-%d %H:%M:%S %z')" | tee -a "$LOG_FILE"
+          printf '\n===== BUILD EXIT STATUS: %s =====\n' "$BUILD_STATUS"
+          printf '===== Build finished: %s =====\n' "$(date '+%Y-%m-%d %H:%M:%S %z')"
           echo "build_status=$BUILD_STATUS" >> "$GITHUB_OUTPUT"
           if [ "$BUILD_STATUS" -ne 0 ]; then
             echo "::error::Kernel build failed with exit status $BUILD_STATUS"
@@ -137,7 +134,7 @@ jobs:
         if: success()
         shell: bash
         run: |
-          set -Eeuo pipefail
+          set -Eeo pipefail
           exec > >(tee -a "$NSPANEL_BUILD_LOG") 2>&1
           PACKAGE_ROOT="$PWD/dist/package"
           mkdir -p "$PACKAGE_ROOT/boot/dtb" "$PACKAGE_ROOT/config"
@@ -196,7 +193,9 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload build log and deliverables
+      # One source of truth for logs: downloadable Actions artifacts, not commits
+      # of generated log files back into the source repository.
+      - name: Upload build diagnostics and deliverables
         if: always()
         uses: actions/upload-artifact@v4
         with:
