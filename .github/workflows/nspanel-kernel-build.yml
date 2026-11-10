@@ -51,7 +51,7 @@ jobs:
     # Never execute untrusted fork code on the persistent self-hosted runner.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     needs: validate
-    runs-on: [self-hosted, linux, x64, nspanel-build]
+    runs-on: [self-hosted, linux, x64]
     timeout-minutes: 240
     steps:
       - name: Checkout sources
