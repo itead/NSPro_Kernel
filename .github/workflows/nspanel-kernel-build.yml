@@ -44,7 +44,7 @@ jobs:
 
   build:
     name: Build and package on dell5300
-    if: false # Temporarily disabled while repairing the self-appending diagnostics pipeline
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     needs: validate
     permissions:
       contents: write
@@ -93,7 +93,9 @@ jobs:
         shell: bash
         run: |
           if [ -f "$NSPANEL_BUILD_LOG" ]; then
-            ./NSPanel-check-compile-errors.sh "$NSPANEL_BUILD_LOG" | tee -a "$NSPANEL_BUILD_LOG"
+            DIAGNOSTICS_FILE="$PWD/nspanel-kernel-diagnostics-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.txt"
+            ./NSPanel-check-compile-errors.sh "$NSPANEL_BUILD_LOG" | tee "$DIAGNOSTICS_FILE"
+            echo "NSPANEL_DIAGNOSTICS=$DIAGNOSTICS_FILE" >> "$GITHUB_ENV"
           fi
       - name: Package kernel, DTBs and modules
         if: success()
@@ -150,6 +152,7 @@ jobs:
           name: nspanel-ci-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             nspanel-kernel-build-*.log
+            nspanel-kernel-diagnostics-*.txt
             dist/*.tar.gz
             dist/*.sha256
             dist/manifest.txt
