@@ -76,6 +76,8 @@ PVRSRVBridgeCacheOpQueue(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_CACHEOPQUEUE *psCacheOpQueueOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psCacheOpQueueOUT->ui32CacheOpSeqNum) aligned_out_psCacheOpQueueOUT_ui32CacheOpSeqNum;
+
 	PMR * *psPMRInt = NULL;
 	IMG_HANDLE *hPMRInt2 = NULL;
 	IMG_DEVMEM_OFFSET_T *uiOffsetInt = NULL;
@@ -225,6 +227,7 @@ PVRSRVBridgeCacheOpQueue(IMG_UINT32 ui32DispatchTableEntry,
 	/* Release now we have looked up handles. */
 	UnlockHandle();
 
+	aligned_out_psCacheOpQueueOUT_ui32CacheOpSeqNum = psCacheOpQueueOUT->ui32CacheOpSeqNum;
 	psCacheOpQueueOUT->eError =
 		CacheOpQueue(
 					psCacheOpQueueIN->ui32NumCacheOps,
@@ -232,7 +235,8 @@ PVRSRVBridgeCacheOpQueue(IMG_UINT32 ui32DispatchTableEntry,
 					uiOffsetInt,
 					uiSizeInt,
 					iuCacheOpInt,
-					&psCacheOpQueueOUT->ui32CacheOpSeqNum);
+					&aligned_out_psCacheOpQueueOUT_ui32CacheOpSeqNum);
+	psCacheOpQueueOUT->ui32CacheOpSeqNum = aligned_out_psCacheOpQueueOUT_ui32CacheOpSeqNum;
 
 
 
@@ -471,6 +475,8 @@ PVRSRVBridgeCacheOpGetLineSize(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_CACHEOPGETLINESIZE *psCacheOpGetLineSizeOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psCacheOpGetLineSizeOUT->ui32L1DataCacheLineSize) aligned_out_psCacheOpGetLineSizeOUT_ui32L1DataCacheLineSize;
+
 
 
 
@@ -481,9 +487,11 @@ PVRSRVBridgeCacheOpGetLineSize(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psCacheOpGetLineSizeOUT_ui32L1DataCacheLineSize = psCacheOpGetLineSizeOUT->ui32L1DataCacheLineSize;
 	psCacheOpGetLineSizeOUT->eError =
 		CacheOpGetLineSize(
-					&psCacheOpGetLineSizeOUT->ui32L1DataCacheLineSize);
+					&aligned_out_psCacheOpGetLineSizeOUT_ui32L1DataCacheLineSize);
+	psCacheOpGetLineSizeOUT->ui32L1DataCacheLineSize = aligned_out_psCacheOpGetLineSizeOUT_ui32L1DataCacheLineSize;
 
 
 
