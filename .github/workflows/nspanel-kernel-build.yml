@@ -60,11 +60,19 @@ jobs:
           done
           echo "All Rockchip Realtek frame_ctl declarations have explicit 2-byte alignment."
 
+          # Prevent recurrence of snprintf destination/source overlap in thread names.
+          if git grep -n -F 'rtw_sprintf(thread_name, 20, "%s-"ADPT_FMT, thread_name, ADPT_ARG(padapter));' -- drivers/net/wireless/rockchip_wlan; then
+            echo "::error::Overlapping thread_name snprintf pattern remains in Rockchip wireless sources"
+            exit 1
+          fi
+
   build:
     name: Build and package on dell5300
     # Never execute untrusted fork code on the persistent self-hosted runner.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     needs: validate
+    permissions:
+      contents: write
     runs-on: [self-hosted, linux, x64]
     timeout-minutes: 240
     steps:
@@ -116,7 +124,7 @@ jobs:
           echo "===== Kernel configuration ====="
           grep -E '^(CONFIG_ARCH_ROCKCHIP|CONFIG_MODULES|CONFIG_DRM_ROCKCHIP)=' .config || true
 
-      - name: Build kernel
+      - name: Build kernel with bounded automatic repair
         id: build
         shell: bash
         run: |
@@ -126,20 +134,49 @@ jobs:
           aarch64-unknown-linux-gnu-gcc --version | head -n 1
           echo "===== Build started: $(date '+%Y-%m-%d %H:%M:%S %z') ====="
 
-          set +e
-          ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make -j3 \
-            HOSTCFLAGS="-Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -fcommon" \
-            Image dtbs modules
-          BUILD_STATUS=$?
-          set -e
+          BUILD_STATUS=1
+          for attempt in 1 2 3; do
+            echo "===== Kernel build attempt $attempt/3 ====="
+            set +e
+            ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make -j3 \
+              HOSTCFLAGS="-Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -fcommon" \
+              Image dtbs modules
+            BUILD_STATUS=$?
+            set -e
+            if [ "$BUILD_STATUS" -eq 0 ]; then
+              echo "===== Kernel build succeeded on attempt $attempt ====="
+              break
+            fi
+
+            echo "===== Kernel build attempt $attempt failed: $BUILD_STATUS ====="
+            if [ "$attempt" -eq 3 ] || [ "$GITHUB_REF" != "refs/heads/fix/rockchip-gem-zero-size" ]; then
+              echo "::error::No further automatic repair/retry is permitted for this failure"
+              exit "$BUILD_STATUS"
+            fi
+
+            echo "===== Searching and applying repository-wide known-safe fixes ====="
+            if ! bash scripts/ci-autofix-known-warnings.sh "$NSPANEL_BUILD_LOG" 2>&1 | tee -a "$NSPANEL_BUILD_LOG"; then
+              echo "::error::No fully verified automatic repair matched the compiler diagnostics"
+              exit "$BUILD_STATUS"
+            fi
+            git diff --check
+            if git diff --quiet; then
+              echo "::error::Automatic repair reported success but produced no source changes"
+              exit "$BUILD_STATUS"
+            fi
+
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -- drivers/net/wireless/rockchip_wlan
+            git commit -m "ci: apply verified Rockchip compiler warning fixes"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+            echo "===== Pushed automatic repair commit $(git rev-parse HEAD); retrying in this same run ====="
+          done
 
           printf '\n===== BUILD EXIT STATUS: %s =====\n' "$BUILD_STATUS"
           printf '===== Build finished: %s =====\n' "$(date '+%Y-%m-%d %H:%M:%S %z')"
           echo "build_status=$BUILD_STATUS" >> "$GITHUB_OUTPUT"
-          if [ "$BUILD_STATUS" -ne 0 ]; then
-            echo "::error::Kernel build failed with exit status $BUILD_STATUS"
-            exit "$BUILD_STATUS"
-          fi
+          [ "$BUILD_STATUS" -eq 0 ]
 
       - name: Package kernel, DTBs and modules
         if: success()
@@ -168,13 +205,14 @@ jobs:
 
           KERNEL_RELEASE=$(make -s ARCH=arm64 kernelrelease)
           test -d "$PACKAGE_ROOT/rootfs/lib/modules/$KERNEL_RELEASE"
-          PACKAGE="$PWD/dist/nspanel-kernel-$KERNEL_RELEASE-${GITHUB_SHA::12}.tar.gz"
+          BUILD_COMMIT=$(git rev-parse HEAD)
+          PACKAGE="$PWD/dist/nspanel-kernel-$KERNEL_RELEASE-${BUILD_COMMIT::12}.tar.gz"
           tar -czf "$PACKAGE" -C "$PACKAGE_ROOT" .
           sha256sum "$PACKAGE" > "$PACKAGE.sha256"
 
           {
             echo "repository=$GITHUB_REPOSITORY"
-            echo "commit=$GITHUB_SHA"
+            echo "commit=$BUILD_COMMIT"
             echo "ref=$GITHUB_REF"
             echo "kernel_release=$KERNEL_RELEASE"
             echo "dtb_count=$DTB_COUNT"
