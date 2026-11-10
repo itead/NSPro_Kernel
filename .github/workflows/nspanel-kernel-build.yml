@@ -1,24 +1,26 @@
-name: NSPanel kernel build
+name: NSPanel kernel CI/CD
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - fix/rockchip-gem-zero-size
+    tags:
+      - "v*"
     paths-ignore:
       - "**/*.log"
+  pull_request:
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: nspanel-kernel-${{ github.ref }}
   cancel-in-progress: false
-# Never cancel an active kernel build. GitHub keeps one running and one latest pending run per ref.
 
 jobs:
   build:
-    name: Build on dell5300
+    name: Validate, build and package on dell5300
     runs-on: [self-hosted, linux, x64, nspanel-build]
     timeout-minutes: 240
     steps:
@@ -26,62 +28,175 @@ jobs:
         uses: actions/checkout@v4
         with:
           clean: true
-          fetch-depth: 1
+          fetch-depth: 2
 
-      - name: Verify cross toolchain
+      - name: Validate build environment
         shell: bash
         run: |
-          set -o pipefail
-          command -v make
-          command -v aarch64-unknown-linux-gnu-gcc
+          set -Eeuo pipefail
+          for tool in make flock aarch64-unknown-linux-gnu-gcc depmod tar sha256sum; do
+            command -v "$tool" >/dev/null || {
+              echo "::error::Required build tool missing: $tool"
+              exit 1
+            }
+          done
+          test -s .config || {
+            echo "::error::.config is missing or empty"
+            exit 1
+          }
+          echo "===== Runner ====="
+          hostname -f || hostname
+          echo "===== Resources ====="
+          nproc
+          free -h
+          df -h .
+          echo "===== Cross compiler ====="
           aarch64-unknown-linux-gnu-gcc --version | head -n 1
-          test -s .config
+          echo "===== Kernel configuration ====="
+          grep -E '^(CONFIG_ARCH_ROCKCHIP|CONFIG_MODULES|CONFIG_DRM_ROCKCHIP)=' .config || true
 
-      - name: Build kernel
+      - name: Check patch hygiene
+        shell: bash
+        env:
+          BEFORE_SHA: ${{ github.event.before || '' }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+        run: |
+          set -Eeuo pipefail
+          if [ -n "$PR_BASE_SHA" ]; then
+            git diff --check "$PR_BASE_SHA" "$GITHUB_SHA"
+          elif [ -n "$BEFORE_SHA" ] && [[ ! "$BEFORE_SHA" =~ ^0+$ ]]; then
+            git diff --check "$BEFORE_SHA" "$GITHUB_SHA"
+          elif git rev-parse HEAD^ >/dev/null 2>&1; then
+            git diff --check HEAD^ HEAD
+          else
+            echo "No parent commit available; whitespace check skipped."
+          fi
+
+      - name: Build kernel and capture diagnostics
+        id: build
         shell: bash
         run: |
-          LOG_FILE="$PWD/nspanel-kernel-build-$(date '+%Y%m%d-%H%M%S')-${GITHUB_RUN_ID}.log"
+          set -Eeuo pipefail
+          LOG_FILE="$PWD/nspanel-kernel-build-${GITHUB_RUN_ID}.log"
           echo "NSPANEL_BUILD_LOG=$LOG_FILE" >> "$GITHUB_ENV"
-          printf '===== NSPanel kernel build started: %s =====\n' "$(date '+%Y-%m-%d %H:%M:%S %z')" | tee "$LOG_FILE"
-          printf '===== Commit: %s =====\n' "$GITHUB_SHA" | tee -a "$LOG_FILE"
-          printf '===== Host: %s =====\n' "$(hostname -f)" | tee -a "$LOG_FILE"
-          printf '===== Compiler: %s =====\n' "$(aarch64-unknown-linux-gnu-gcc -dumpfullversion)" | tee -a "$LOG_FILE"
+          {
+            printf '===== NSPanel kernel build started: %s =====\n' "$(date '+%Y-%m-%d %H:%M:%S %z')"
+            printf '===== Repository: %s =====\n' "$GITHUB_REPOSITORY"
+            printf '===== Ref: %s =====\n' "$GITHUB_REF"
+            printf '===== Commit: %s =====\n' "$GITHUB_SHA"
+            printf '===== Host: %s =====\n' "$(hostname -f 2>/dev/null || hostname)"
+            printf '===== Compiler: %s =====\n' "$(aarch64-unknown-linux-gnu-gcc -dumpfullversion)"
+          } | tee "$LOG_FILE"
+
           set +e
-          ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make -j3 HOSTCFLAGS="-Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -fcommon" Image dtbs modules 2>&1 | tee -a "$LOG_FILE"
+          ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make -j3 \
+            HOSTCFLAGS="-Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -fcommon" \
+            Image dtbs modules 2>&1 | tee -a "$LOG_FILE"
           BUILD_STATUS=${PIPESTATUS[0]}
           set -e
-          printf '\n===== BUILD EXIT STATUS: %s =====\n' "$BUILD_STATUS" | tee -a "$LOG_FILE"
-          printf '===== NSPanel kernel build finished: %s =====\n' "$(date '+%Y-%m-%d %H:%M:%S %z')" | tee -a "$LOG_FILE"
-          exit "$BUILD_STATUS"
 
-      - name: Commit and push build log
+          printf '\n===== BUILD EXIT STATUS: %s =====\n' "$BUILD_STATUS" | tee -a "$LOG_FILE"
+          printf '===== Build finished: %s =====\n' "$(date '+%Y-%m-%d %H:%M:%S %z')" | tee -a "$LOG_FILE"
+          echo "build_status=$BUILD_STATUS" >> "$GITHUB_OUTPUT"
+          if [ "$BUILD_STATUS" -ne 0 ]; then
+            echo "::error::Kernel build failed with exit status $BUILD_STATUS"
+            exit "$BUILD_STATUS"
+          fi
+
+      - name: Package kernel, DTBs and modules
+        if: success()
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          PACKAGE_ROOT="$PWD/dist/package"
+          mkdir -p "$PACKAGE_ROOT/boot/dtb" "$PACKAGE_ROOT/config"
+
+          test -s arch/arm64/boot/Image
+          cp arch/arm64/boot/Image "$PACKAGE_ROOT/boot/Image"
+          cp .config "$PACKAGE_ROOT/config/kernel.config"
+          if [ -s System.map ]; then cp System.map "$PACKAGE_ROOT/boot/System.map"; fi
+
+          DTB_COUNT=$(find arch/arm64/boot/dts -type f -name '*.dtb' | wc -l)
+          if [ "$DTB_COUNT" -eq 0 ]; then
+            echo "::error::No compiled DTB files found"
+            exit 1
+          fi
+          find arch/arm64/boot/dts -type f -name '*.dtb' -exec cp --parents {} "$PACKAGE_ROOT/" \;
+
+          ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make -j3 \
+            HOSTCFLAGS="-Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -fcommon" \
+            modules_install INSTALL_MOD_PATH="$PACKAGE_ROOT/rootfs"
+
+          KERNEL_RELEASE=$(make -s ARCH=arm64 kernelrelease)
+          test -d "$PACKAGE_ROOT/rootfs/lib/modules/$KERNEL_RELEASE"
+          PACKAGE="$PWD/dist/nspanel-kernel-$KERNEL_RELEASE-${GITHUB_SHA::12}.tar.gz"
+          tar -czf "$PACKAGE" -C "$PACKAGE_ROOT" .
+          sha256sum "$PACKAGE" > "$PACKAGE.sha256"
+
+          {
+            echo "repository=$GITHUB_REPOSITORY"
+            echo "commit=$GITHUB_SHA"
+            echo "ref=$GITHUB_REF"
+            echo "kernel_release=$KERNEL_RELEASE"
+            echo "dtb_count=$DTB_COUNT"
+            echo "compiler=$(aarch64-unknown-linux-gnu-gcc -dumpfullversion)"
+            echo "built_at=$(date --iso-8601=seconds)"
+          } | tee dist/manifest.txt
+
+      - name: Publish build summary
         if: always()
         shell: bash
         env:
-          GH_TOKEN: ${{ github.token }}
+          JOB_STATUS: ${{ job.status }}
         run: |
-          if [ -z "${NSPANEL_BUILD_LOG:-}" ] || [ ! -f "$NSPANEL_BUILD_LOG" ]; then
-            echo "No build log was generated; nothing to commit."
-            exit 0
-          fi
-          LOG_NAME="$(basename "$NSPANEL_BUILD_LOG")"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- "$LOG_NAME"
-          if git diff --cached --quiet; then
-            echo "Build log has no changes."
-            exit 0
-          fi
-          git commit -m "Add NSPanel kernel build log"
-          git fetch origin "$GITHUB_REF_NAME"
-          git rebase "origin/$GITHUB_REF_NAME"
-          git push origin "HEAD:refs/heads/$GITHUB_REF_NAME"
+          {
+            echo "## NSPanel kernel CI/CD"
+            echo
+            echo "- **Commit:** `$GITHUB_SHA`"
+            echo "- **Ref:** `$GITHUB_REF`"
+            echo "- **Build job:** `$JOB_STATUS`"
+            if [ -n "${NSPANEL_BUILD_LOG:-}" ] && [ -f "$NSPANEL_BUILD_LOG" ]; then
+              echo "- **Log:** `$(basename "$NSPANEL_BUILD_LOG")`"
+              echo "- **Errors:** $(grep -Ec '(^| )error:|fatal error:|undefined reference|Error [0-9]+' "$NSPANEL_BUILD_LOG" || true)"
+              echo "- **Warnings:** $(grep -Ec 'warning:' "$NSPANEL_BUILD_LOG" || true)"
+              echo
+              echo "### Last diagnostics"
+              grep -n -E 'error:|fatal error:|undefined reference|Error [0-9]+' "$NSPANEL_BUILD_LOG" | tail -n 30 || true
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload build log
+      - name: Upload build log and deliverables
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: nspanel-kernel-build-${{ github.run_id }}
-          path: nspanel-kernel-build-*.log
+          name: nspanel-ci-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            nspanel-kernel-build-*.log
+            dist/*.tar.gz
+            dist/*.sha256
+            dist/manifest.txt
           if-no-files-found: warn
-          retention-days: 14
+          retention-days: 30
+
+  release:
+    name: Publish versioned GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download validated build deliverables
+        uses: actions/download-artifact@v4
+        with:
+          name: nspanel-ci-${{ github.run_id }}-${{ github.run_attempt }}
+          path: release-assets
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            release-assets/dist/*.tar.gz
+            release-assets/dist/*.sha256
+            release-assets/dist/manifest.txt
