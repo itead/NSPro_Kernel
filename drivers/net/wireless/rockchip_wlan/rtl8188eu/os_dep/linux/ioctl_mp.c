@@ -27,6 +27,7 @@
 #include <rtw_mp_ioctl.h>
 #include "../../hal/phydm/phydm_precomp.h"
 
+/* Bounded append avoids sprintf source/destination overlap in MP output. */
 #define RTW_MP_APPEND_EXTRA(_extra, _fmt, ...) \
 	do { \
 		size_t rtw_mp_extra_len = strnlen((_extra), IW_PRIV_SIZE_MASK); \
