@@ -49,3 +49,5 @@
 /scripts/kconfig/zconf.hash.c
 /scripts/kconfig/zconf.lex.c
 /scripts/kconfig/zconf.tab.c
+# Build diagnostics are retained as GitHub Actions artifacts, not source files.
+/nspanel-kernel-build-*.log
