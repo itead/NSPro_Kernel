@@ -77,7 +77,7 @@ PVRSRVBridgeRGXTDMCreateTransferContext(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_RGXTDMCREATETRANSFERCONTEXT *psRGXTDMCreateTransferContextOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psRGXTDMCreateTransferContextOUT->hTransferContext) aligned_out_psRGXTDMCreateTransferContextOUT_hTransferContext;
+	typeof(psRGXTDMCreateTransferContextOUT->hTransferContext) aligned_out_psRGXTDMCreateTransferContextOUT_hTransferContext __attribute__((unused));
 
 	IMG_BYTE *psFrameworkCmdInt = NULL;
 	IMG_HANDLE hPrivData = psRGXTDMCreateTransferContextIN->hPrivData;
@@ -333,7 +333,7 @@ PVRSRVBridgeRGXTDMSubmitTransfer(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_RGXTDMSUBMITTRANSFER *psRGXTDMSubmitTransferOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psRGXTDMSubmitTransferOUT->i32UpdateFenceFD) aligned_out_psRGXTDMSubmitTransferOUT_i32UpdateFenceFD;
+	typeof(psRGXTDMSubmitTransferOUT->i32UpdateFenceFD) aligned_out_psRGXTDMSubmitTransferOUT_i32UpdateFenceFD __attribute__((unused));
 
 	IMG_HANDLE hTransferContext = psRGXTDMSubmitTransferIN->hTransferContext;
 	RGX_SERVER_TQ_TDM_CONTEXT * psTransferContextInt = NULL;
