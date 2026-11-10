@@ -1981,6 +1981,7 @@ PVRSRVBridgeDevmemIntMapPMR(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_HANDLE hPMR = psDevmemIntMapPMRIN->hPMR;
 	PMR * psPMRInt = NULL;
 	DEVMEMINT_MAPPING * psMappingInt = NULL;
+	IMG_HANDLE hMappingHandle = NULL;
 
 
 
@@ -2072,11 +2073,13 @@ PVRSRVBridgeDevmemIntMapPMR(IMG_UINT32 ui32DispatchTableEntry,
 
 	psDevmemIntMapPMROUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psDevmemIntMapPMROUT->hMapping,
+							&hMappingHandle,
 							(void *) psMappingInt,
 							PVRSRV_HANDLE_TYPE_DEVMEMINT_MAPPING,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&DevmemIntUnmapPMR);
+	if (psDevmemIntMapPMROUT->eError == PVRSRV_OK)
+		psDevmemIntMapPMROUT->hMapping = hMappingHandle;
 	if (psDevmemIntMapPMROUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -2211,6 +2214,7 @@ PVRSRVBridgeDevmemIntReserveRange(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_HANDLE hDevmemServerHeap = psDevmemIntReserveRangeIN->hDevmemServerHeap;
 	DEVMEMINT_HEAP * psDevmemServerHeapInt = NULL;
 	DEVMEMINT_RESERVATION * psReservationInt = NULL;
+	IMG_HANDLE hReservationHandle = NULL;
 
 
 
@@ -2263,11 +2267,13 @@ PVRSRVBridgeDevmemIntReserveRange(IMG_UINT32 ui32DispatchTableEntry,
 
 	psDevmemIntReserveRangeOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psDevmemIntReserveRangeOUT->hReservation,
+							&hReservationHandle,
 							(void *) psReservationInt,
 							PVRSRV_HANDLE_TYPE_DEVMEMINT_RESERVATION,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&DevmemIntUnreserveRange);
+	if (psDevmemIntReserveRangeOUT->eError == PVRSRV_OK)
+		psDevmemIntReserveRangeOUT->hReservation = hReservationHandle;
 	if (psDevmemIntReserveRangeOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -2831,8 +2837,7 @@ PVRSRVBridgeHeapCfgHeapConfigCount(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_HEAPCFGHEAPCONFIGCOUNT *psHeapCfgHeapConfigCountOUT,
 					 CONNECTION_DATA *psConnection)
 {
-
-
+	typeof(psHeapCfgHeapConfigCountOUT->ui32NumHeapConfigs) ui32NumHeapConfigs = 0;
 
 	PVR_UNREFERENCED_PARAMETER(psHeapCfgHeapConfigCountIN);
 
@@ -2842,7 +2847,8 @@ PVRSRVBridgeHeapCfgHeapConfigCount(IMG_UINT32 ui32DispatchTableEntry,
 
 	psHeapCfgHeapConfigCountOUT->eError =
 		HeapCfgHeapConfigCount(psConnection, OSGetDevData(psConnection),
-					&psHeapCfgHeapConfigCountOUT->ui32NumHeapConfigs);
+					&ui32NumHeapConfigs);
+	psHeapCfgHeapConfigCountOUT->ui32NumHeapConfigs = ui32NumHeapConfigs;
 
 
 
@@ -2861,6 +2867,7 @@ PVRSRVBridgeHeapCfgHeapCount(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_HEAPCFGHEAPCOUNT *psHeapCfgHeapCountOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psHeapCfgHeapCountOUT->ui32NumHeaps) ui32NumHeaps = 0;
 
 
 
@@ -2872,7 +2879,8 @@ PVRSRVBridgeHeapCfgHeapCount(IMG_UINT32 ui32DispatchTableEntry,
 	psHeapCfgHeapCountOUT->eError =
 		HeapCfgHeapCount(psConnection, OSGetDevData(psConnection),
 					psHeapCfgHeapCountIN->ui32HeapConfigIndex,
-					&psHeapCfgHeapCountOUT->ui32NumHeaps);
+					&ui32NumHeaps);
+	psHeapCfgHeapCountOUT->ui32NumHeaps = ui32NumHeaps;
 
 
 
@@ -2989,6 +2997,10 @@ PVRSRVBridgeHeapCfgHeapDetails(IMG_UINT32 ui32DispatchTableEntry,
 					 CONNECTION_DATA *psConnection)
 {
 	IMG_CHAR *puiHeapNameOutInt = NULL;
+	typeof(psHeapCfgHeapDetailsOUT->sDevVAddrBase) sDevVAddrBase = { 0 };
+	typeof(psHeapCfgHeapDetailsOUT->uiHeapLength) uiHeapLength = 0;
+	typeof(psHeapCfgHeapDetailsOUT->ui32Log2DataPageSizeOut) ui32Log2DataPageSizeOut = 0;
+	typeof(psHeapCfgHeapDetailsOUT->ui32Log2ImportAlignmentOut) ui32Log2ImportAlignmentOut = 0;
 
 	IMG_UINT32 ui32NextOffset = 0;
 	IMG_BYTE   *pArrayArgsBuffer = NULL;
@@ -3046,10 +3058,14 @@ PVRSRVBridgeHeapCfgHeapDetails(IMG_UINT32 ui32DispatchTableEntry,
 					psHeapCfgHeapDetailsIN->ui32HeapIndex,
 					psHeapCfgHeapDetailsIN->ui32HeapNameBufSz,
 					puiHeapNameOutInt,
-					&psHeapCfgHeapDetailsOUT->sDevVAddrBase,
-					&psHeapCfgHeapDetailsOUT->uiHeapLength,
-					&psHeapCfgHeapDetailsOUT->ui32Log2DataPageSizeOut,
-					&psHeapCfgHeapDetailsOUT->ui32Log2ImportAlignmentOut);
+					&sDevVAddrBase,
+					&uiHeapLength,
+					&ui32Log2DataPageSizeOut,
+					&ui32Log2ImportAlignmentOut);
+	psHeapCfgHeapDetailsOUT->sDevVAddrBase = sDevVAddrBase;
+	psHeapCfgHeapDetailsOUT->uiHeapLength = uiHeapLength;
+	psHeapCfgHeapDetailsOUT->ui32Log2DataPageSizeOut = ui32Log2DataPageSizeOut;
+	psHeapCfgHeapDetailsOUT->ui32Log2ImportAlignmentOut = ui32Log2ImportAlignmentOut;
 
 
 
