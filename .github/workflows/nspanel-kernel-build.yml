@@ -155,7 +155,7 @@ jobs:
             fi
 
             echo "===== Searching and applying repository-wide known-safe fixes ====="
-            if ! bash scripts/ci-autofix-known-warnings.sh "$NSPANEL_BUILD_LOG" 2>&1 | tee -a "$NSPANEL_BUILD_LOG"; then
+            if ! bash scripts/ci-autofix-known-warnings.sh "$NSPANEL_BUILD_LOG"; then
               echo "::error::No fully verified automatic repair matched the compiler diagnostics"
               exit "$BUILD_STATUS"
             fi
