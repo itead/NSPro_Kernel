@@ -6084,7 +6084,7 @@ static int rtw_p2p_prov_disc(struct net_device *dev,
 		rtw_p2p_set_state(pwdinfo, P2P_STATE_TX_PROVISION_DIS_REQ);
 
 		if (rtw_p2p_chk_role(pwdinfo, P2P_ROLE_CLIENT))
-			_rtw_memcpy(&pwdinfo->tx_prov_disc_info.ssid, &pnetwork->network.Ssid, sizeof(NDIS_802_11_SSID));
+			_rtw_memcpy(&pwdinfo->tx_prov_disc_info.ssid, (const u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, Ssid), sizeof(NDIS_802_11_SSID));
 		else if (rtw_p2p_chk_role(pwdinfo, P2P_ROLE_DEVICE) || rtw_p2p_chk_role(pwdinfo, P2P_ROLE_GO)) {
 			_rtw_memcpy(pwdinfo->tx_prov_disc_info.ssid.Ssid, pwdinfo->p2p_wildcard_ssid, P2P_WILDCARD_SSID_LEN);
 			pwdinfo->tx_prov_disc_info.ssid.SsidLength = P2P_WILDCARD_SSID_LEN;
