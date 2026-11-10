@@ -76,6 +76,10 @@ PVRSRVBridgeConnect(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_CONNECT *psConnectOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psConnectOUT->ui8KernelArch) aligned_out_psConnectOUT_ui8KernelArch;
+	typeof(psConnectOUT->ui32CapabilityFlags) aligned_out_psConnectOUT_ui32CapabilityFlags;
+	typeof(psConnectOUT->ui32PVRBridges) aligned_out_psConnectOUT_ui32PVRBridges;
+	typeof(psConnectOUT->ui32RGXBridges) aligned_out_psConnectOUT_ui32RGXBridges;
 
 
 
@@ -84,16 +88,25 @@ PVRSRVBridgeConnect(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+
+	aligned_out_psConnectOUT_ui8KernelArch = psConnectOUT->ui8KernelArch;
+	aligned_out_psConnectOUT_ui32CapabilityFlags = psConnectOUT->ui32CapabilityFlags;
+	aligned_out_psConnectOUT_ui32PVRBridges = psConnectOUT->ui32PVRBridges;
+	aligned_out_psConnectOUT_ui32RGXBridges = psConnectOUT->ui32RGXBridges;
 	psConnectOUT->eError =
 		PVRSRVConnectKM(psConnection, OSGetDevData(psConnection),
 					psConnectIN->ui32Flags,
 					psConnectIN->ui32ClientBuildOptions,
 					psConnectIN->ui32ClientDDKVersion,
 					psConnectIN->ui32ClientDDKBuild,
-					&psConnectOUT->ui8KernelArch,
-					&psConnectOUT->ui32CapabilityFlags,
-					&psConnectOUT->ui32PVRBridges,
-					&psConnectOUT->ui32RGXBridges);
+					&aligned_out_psConnectOUT_ui8KernelArch,
+					&aligned_out_psConnectOUT_ui32CapabilityFlags,
+					&aligned_out_psConnectOUT_ui32PVRBridges,
+					&aligned_out_psConnectOUT_ui32RGXBridges);
+	psConnectOUT->ui8KernelArch = aligned_out_psConnectOUT_ui8KernelArch;
+	psConnectOUT->ui32CapabilityFlags = aligned_out_psConnectOUT_ui32CapabilityFlags;
+	psConnectOUT->ui32PVRBridges = aligned_out_psConnectOUT_ui32PVRBridges;
+	psConnectOUT->ui32RGXBridges = aligned_out_psConnectOUT_ui32RGXBridges;
 
 
 
@@ -173,6 +186,8 @@ PVRSRVBridgeAcquireGlobalEventObject(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_ACQUIREGLOBALEVENTOBJECT *psAcquireGlobalEventObjectOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psAcquireGlobalEventObjectOUT->hGlobalEventObject) aligned_out_psAcquireGlobalEventObjectOUT_hGlobalEventObject;
+
 	IMG_HANDLE hGlobalEventObjectInt = NULL;
 
 
@@ -199,13 +214,15 @@ PVRSRVBridgeAcquireGlobalEventObject(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psAcquireGlobalEventObjectOUT_hGlobalEventObject = psAcquireGlobalEventObjectOUT->hGlobalEventObject;
 	psAcquireGlobalEventObjectOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psAcquireGlobalEventObjectOUT->hGlobalEventObject,
+							&aligned_out_psAcquireGlobalEventObjectOUT_hGlobalEventObject,
 							(void *) hGlobalEventObjectInt,
 							PVRSRV_HANDLE_TYPE_SHARED_EVENT_OBJECT,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&PVRSRVReleaseGlobalEventObjectKM);
+	psAcquireGlobalEventObjectOUT->hGlobalEventObject = aligned_out_psAcquireGlobalEventObjectOUT_hGlobalEventObject;
 	if (psAcquireGlobalEventObjectOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -291,6 +308,8 @@ PVRSRVBridgeEventObjectOpen(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_EVENTOBJECTOPEN *psEventObjectOpenOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psEventObjectOpenOUT->hOSEvent) aligned_out_psEventObjectOpenOUT_hOSEvent;
+
 	IMG_HANDLE hEventObject = psEventObjectOpenIN->hEventObject;
 	IMG_HANDLE hEventObjectInt = NULL;
 	IMG_HANDLE hOSEventInt = NULL;
@@ -342,13 +361,15 @@ PVRSRVBridgeEventObjectOpen(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psEventObjectOpenOUT_hOSEvent = psEventObjectOpenOUT->hOSEvent;
 	psEventObjectOpenOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psEventObjectOpenOUT->hOSEvent,
+							&aligned_out_psEventObjectOpenOUT_hOSEvent,
 							(void *) hOSEventInt,
 							PVRSRV_HANDLE_TYPE_EVENT_OBJECT_CONNECT,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&OSEventObjectClose);
+	psEventObjectOpenOUT->hOSEvent = aligned_out_psEventObjectOpenOUT_hOSEvent;
 	if (psEventObjectOpenOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -554,6 +575,8 @@ PVRSRVBridgeGetDevClockSpeed(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_GETDEVCLOCKSPEED *psGetDevClockSpeedOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psGetDevClockSpeedOUT->ui32ui32ClockSpeed) aligned_out_psGetDevClockSpeedOUT_ui32ui32ClockSpeed;
+
 
 
 
@@ -563,9 +586,11 @@ PVRSRVBridgeGetDevClockSpeed(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psGetDevClockSpeedOUT_ui32ui32ClockSpeed = psGetDevClockSpeedOUT->ui32ui32ClockSpeed;
 	psGetDevClockSpeedOUT->eError =
 		PVRSRVGetDevClockSpeedKM(psConnection, OSGetDevData(psConnection),
-					&psGetDevClockSpeedOUT->ui32ui32ClockSpeed);
+					&aligned_out_psGetDevClockSpeedOUT_ui32ui32ClockSpeed);
+	psGetDevClockSpeedOUT->ui32ui32ClockSpeed = aligned_out_psGetDevClockSpeedOUT_ui32ui32ClockSpeed;
 
 
 
@@ -712,6 +737,8 @@ PVRSRVBridgeGetDeviceStatus(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_GETDEVICESTATUS *psGetDeviceStatusOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psGetDeviceStatusOUT->ui32DeviceSatus) aligned_out_psGetDeviceStatusOUT_ui32DeviceSatus;
+
 
 
 
@@ -721,9 +748,11 @@ PVRSRVBridgeGetDeviceStatus(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psGetDeviceStatusOUT_ui32DeviceSatus = psGetDeviceStatusOUT->ui32DeviceSatus;
 	psGetDeviceStatusOUT->eError =
 		PVRSRVGetDeviceStatusKM(psConnection, OSGetDevData(psConnection),
-					&psGetDeviceStatusOUT->ui32DeviceSatus);
+					&aligned_out_psGetDeviceStatusOUT_ui32DeviceSatus);
+	psGetDeviceStatusOUT->ui32DeviceSatus = aligned_out_psGetDeviceStatusOUT_ui32DeviceSatus;
 
 
 
