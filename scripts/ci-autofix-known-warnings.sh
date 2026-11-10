@@ -52,50 +52,71 @@ fi
 if [ "$HAS_PACKED_SSID" -eq 1 ]; then
 python3 - <<'PY'
 from pathlib import Path
+import re
 
 root = Path("drivers/net/wireless/rockchip_wlan")
-old = "&pmlmeinfo->network.Ssid"
+old_pmlme = "&pmlmeinfo->network.Ssid"
+old_scanned = "&(scanned->network.Ssid)"
+old_pnetwork = "&(pnetwork->Ssid)"
 copy = (
     "\t/* WLAN_BSSID_EX is packed; copy SSID into aligned storage before use. */\n"
     "\tmemcpy(&aligned_network_ssid, (const u8 *)&pmlmeinfo->network +\n"
     "\t       offsetof(WLAN_BSSID_EX, Ssid), sizeof(aligned_network_ssid));\n\n"
 )
+compare_pattern = re.compile(
+    r'(?m)^(?P<indent>[ \t]*)if \(_rtw_memcmp\(&\(scanned->network\.Ssid\),[ \t]*&\(pnetwork->Ssid\),[ \t]*sizeof\(NDIS_802_11_SSID\)\) == _TRUE'
+)
+
+def replace_compare(match):
+    indent = match.group("indent")
+    return (
+        f"{indent}if (_rtw_memcmp((const u8 *)&scanned->network + offsetof(WLAN_BSSID_EX, Ssid),\n"
+        f"{indent}                (const u8 *)pnetwork + offsetof(WLAN_BSSID_EX, Ssid),\n"
+        f"{indent}                sizeof(NDIS_802_11_SSID)) == _TRUE"
+    )
+
 changed = []
 for path in root.glob("*/core/rtw_mlme_ext.c"):
     source = path.read_text(encoding="utf-8")
-    if old not in source:
-        continue
-    fn = source.find("void linked_status_chk(")
-    if fn < 0:
-        raise SystemExit(f"Packed SSID reference outside expected function: {path}")
-    decl = source.find("pmlmeinfo =", fn)
-    if decl < 0:
-        raise SystemExit(f"Cannot locate pmlmeinfo declaration: {path}")
-    decl_end = source.find("\n", decl)
-    declaration = "\tNDIS_802_11_SSID aligned_network_ssid;\n"
-    assoc = source.find("if (is_client_associated_to_ap(padapter))", fn)
-    if assoc < 0:
-        raise SystemExit(f"Cannot locate associated-client guard: {path}")
-    assoc_line_start = source.rfind("\n", 0, assoc) + 1
-    if declaration not in source[decl:assoc_line_start]:
-        source = source[:decl_end + 1] + declaration + source[decl_end + 1:]
+    count_pmlme = source.count(old_pmlme)
+    if count_pmlme:
+        fn = source.find("void linked_status_chk(")
+        if fn < 0:
+            raise SystemExit(f"Packed SSID reference outside expected function: {path}")
+        decl = source.find("pmlmeinfo =", fn)
+        if decl < 0:
+            raise SystemExit(f"Cannot locate pmlmeinfo declaration: {path}")
+        decl_end = source.find("\n", decl)
+        declaration = "\tNDIS_802_11_SSID aligned_network_ssid;\n"
         assoc = source.find("if (is_client_associated_to_ap(padapter))", fn)
+        if assoc < 0:
+            raise SystemExit(f"Cannot locate associated-client guard: {path}")
         assoc_line_start = source.rfind("\n", 0, assoc) + 1
-    if copy not in source[fn:assoc_line_start]:
-        source = source[:assoc_line_start] + copy + source[assoc_line_start:]
-    count = source.count(old)
-    source = source.replace(old, "&aligned_network_ssid")
-    path.write_text(source, encoding="utf-8")
-    changed.append((str(path), count))
+        if declaration not in source[decl:assoc_line_start]:
+            source = source[:decl_end + 1] + declaration + source[decl_end + 1:]
+            assoc = source.find("if (is_client_associated_to_ap(padapter))", fn)
+            assoc_line_start = source.rfind("\n", 0, assoc) + 1
+        if copy not in source[fn:assoc_line_start]:
+            source = source[:assoc_line_start] + copy + source[assoc_line_start:]
+        source = source.replace(old_pmlme, "&aligned_network_ssid")
 
-remaining = [str(path) for path in root.rglob("*.c") if old in path.read_text(encoding="utf-8")]
+    source, count_compare = compare_pattern.subn(replace_compare, source)
+    if count_pmlme or count_compare:
+        path.write_text(source, encoding="utf-8")
+        changed.append((str(path), count_pmlme, count_compare))
+
+remaining = []
+for path in root.rglob("*.c"):
+    source = path.read_text(encoding="utf-8")
+    if old_pmlme in source or old_scanned in source or old_pnetwork in source:
+        remaining.append(str(path))
 if remaining:
     raise SystemExit("Packed SSID references remain: " + ", ".join(remaining))
 if not changed:
     raise SystemExit("-Waddress-of-packed-member was present, but no known WLAN_BSSID_EX SSID pattern was found")
 
 print(f"Aligned packed BSSID SSID access in {len(changed)} driver source files:")
-for path, count in changed:
-    print(f"  {path}: {count} call sites")
+for path, pmlme_count, compare_count in changed:
+    print(f"  {path}: {pmlme_count} linked-status calls, {compare_count} packed comparisons")
 PY
 fi

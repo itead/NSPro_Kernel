@@ -44,6 +44,11 @@ jobs:
           if git grep -n -F '&pmlmeinfo->network.Ssid' -- drivers/net/wireless/rockchip_wlan; then
             echo "::error::Packed WLAN_BSSID_EX SSID pointers must use aligned local copies"; exit 1
           fi
+          for packed_ssid_ref in '&(pmlmeinfo->network.Ssid)' '&(scanned->network.Ssid)' '&(pnetwork->Ssid)'; do
+            if git grep -n -F "$packed_ssid_ref" -- drivers/net/wireless/rockchip_wlan; then
+              echo "::error::Direct address of packed WLAN_BSSID_EX SSID remains: $packed_ssid_ref"; exit 1
+            fi
+          done
 
   build:
     name: Build and package on dell5300

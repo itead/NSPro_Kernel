@@ -10871,7 +10871,9 @@ void start_clnt_join(_adapter* padapter)
 				
 				scanned = LIST_CONTAINOR(pos, struct wlan_network, list);
 
-				if (_rtw_memcmp(&(scanned->network.Ssid), &(pnetwork->Ssid), sizeof(NDIS_802_11_SSID)) == _TRUE
+				if (_rtw_memcmp((const u8 *)&scanned->network + offsetof(WLAN_BSSID_EX, Ssid),
+				                (const u8 *)pnetwork + offsetof(WLAN_BSSID_EX, Ssid),
+				                sizeof(NDIS_802_11_SSID)) == _TRUE
 					&& _rtw_memcmp(scanned->network.MacAddress, pnetwork->MacAddress, sizeof(NDIS_802_11_MAC_ADDRESS)) == _TRUE
 				) {
 					ie_offset = (scanned->network.Reserved[0] == 2? 0:12);
