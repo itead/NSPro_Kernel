@@ -77,7 +77,7 @@ PVRSRVBridgePVRSRVPDumpIsCapturing(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_PVRSRVPDUMPISCAPTURING *psPVRSRVPDumpIsCapturingOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psPVRSRVPDumpIsCapturingOUT->bIsCapturing) aligned_out_psPVRSRVPDumpIsCapturingOUT_bIsCapturing;
+	typeof(psPVRSRVPDumpIsCapturingOUT->bIsCapturing) aligned_out_psPVRSRVPDumpIsCapturingOUT_bIsCapturing __attribute__((unused));
 
 
 
@@ -112,7 +112,7 @@ PVRSRVBridgePVRSRVPDumpGetFrame(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_PVRSRVPDUMPGETFRAME *psPVRSRVPDumpGetFrameOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psPVRSRVPDumpGetFrameOUT->ui32Frame) aligned_out_psPVRSRVPDumpGetFrameOUT_ui32Frame;
+	typeof(psPVRSRVPDumpGetFrameOUT->ui32Frame) aligned_out_psPVRSRVPDumpGetFrameOUT_ui32Frame __attribute__((unused));
 
 
 
@@ -180,7 +180,7 @@ PVRSRVBridgePVRSRVPDumpIsLastCaptureFrame(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_PVRSRVPDUMPISLASTCAPTUREFRAME *psPVRSRVPDumpIsLastCaptureFrameOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psPVRSRVPDumpIsLastCaptureFrameOUT->bpbIsLastCaptureFrame) aligned_out_psPVRSRVPDumpIsLastCaptureFrameOUT_bpbIsLastCaptureFrame;
+	typeof(psPVRSRVPDumpIsLastCaptureFrameOUT->bpbIsLastCaptureFrame) aligned_out_psPVRSRVPDumpIsLastCaptureFrameOUT_bpbIsLastCaptureFrame __attribute__((unused));
 
 
 
