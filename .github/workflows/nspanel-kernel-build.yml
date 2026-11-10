@@ -28,6 +28,23 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check patch hygiene
+        shell: bash
+        env:
+          BEFORE_SHA: ${{ github.event.before || '' }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+        run: |
+          set -Eeuo pipefail
+          if [ -n "$PR_BASE_SHA" ]; then
+            git diff --check "$PR_BASE_SHA" "$GITHUB_SHA"
+          elif [ -n "$BEFORE_SHA" ] && [[ ! "$BEFORE_SHA" =~ ^0+$ ]]; then
+            git diff --check "$BEFORE_SHA" "$GITHUB_SHA"
+          elif git rev-parse HEAD^ >/dev/null 2>&1; then
+            git diff --check HEAD^ HEAD
+          else
+            echo "No parent commit available; whitespace check skipped."
+          fi
+
   build:
     name: Build and package on dell5300
     # Never execute untrusted fork code on the persistent self-hosted runner.
@@ -66,23 +83,6 @@ jobs:
           aarch64-unknown-linux-gnu-gcc --version | head -n 1
           echo "===== Kernel configuration ====="
           grep -E '^(CONFIG_ARCH_ROCKCHIP|CONFIG_MODULES|CONFIG_DRM_ROCKCHIP)=' .config || true
-
-      - name: Check patch hygiene
-        shell: bash
-        env:
-          BEFORE_SHA: ${{ github.event.before || '' }}
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
-        run: |
-          set -Eeuo pipefail
-          if [ -n "$PR_BASE_SHA" ]; then
-            git diff --check "$PR_BASE_SHA" "$GITHUB_SHA"
-          elif [ -n "$BEFORE_SHA" ] && [[ ! "$BEFORE_SHA" =~ ^0+$ ]]; then
-            git diff --check "$BEFORE_SHA" "$GITHUB_SHA"
-          elif git rev-parse HEAD^ >/dev/null 2>&1; then
-            git diff --check HEAD^ HEAD
-          else
-            echo "No parent commit available; whitespace check skipped."
-          fi
 
       - name: Build kernel and capture diagnostics
         id: build
