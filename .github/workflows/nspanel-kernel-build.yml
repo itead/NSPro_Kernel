@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - __disabled_until_batch_fix__
+      - fix/rockchip-gem-zero-size
     paths-ignore:
       - "**/*.log"
 
