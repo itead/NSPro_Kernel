@@ -1519,6 +1519,7 @@ PVRSRVBridgeRGXKickTA3D(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_HANDLE hPRFenceUFOSyncPrimBlock = psRGXKickTA3DIN->hPRFenceUFOSyncPrimBlock;
 	SYNC_PRIMITIVE_BLOCK * psPRFenceUFOSyncPrimBlockInt = NULL;
 	IMG_CHAR *uiUpdateFenceNameInt = NULL;
+	IMG_INT32 i32UpdateFenceFD = -1;
 	IMG_BYTE *psTACmdInt = NULL;
 	IMG_BYTE *ps3DPRCmdInt = NULL;
 	IMG_BYTE *ps3DCmdInt = NULL;
@@ -2284,7 +2285,7 @@ PVRSRVBridgeRGXKickTA3D(IMG_UINT32 ui32DispatchTableEntry,
 					psRGXKickTA3DIN->ui32FRFenceValue,
 					psRGXKickTA3DIN->i32CheckFenceFD,
 					psRGXKickTA3DIN->i32UpdateTimelineFD,
-					&psRGXKickTA3DOUT->i32UpdateFenceFD,
+					&i32UpdateFenceFD,
 					uiUpdateFenceNameInt,
 					psRGXKickTA3DIN->ui32TACmdSize,
 					psTACmdInt,
@@ -2314,6 +2315,7 @@ PVRSRVBridgeRGXKickTA3D(IMG_UINT32 ui32DispatchTableEntry,
 					psRGXKickTA3DIN->ui32NumberOfIndices,
 					psRGXKickTA3DIN->ui32NumberOfMRTs,
 					psRGXKickTA3DIN->ui64Deadline);
+	psRGXKickTA3DOUT->i32UpdateFenceFD = i32UpdateFenceFD;
 
 
 

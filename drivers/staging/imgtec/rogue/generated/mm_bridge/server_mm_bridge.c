@@ -1810,6 +1810,7 @@ PVRSRVBridgeDevmemIntHeapCreate(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_HANDLE hDevmemCtx = psDevmemIntHeapCreateIN->hDevmemCtx;
 	DEVMEMINT_CTX * psDevmemCtxInt = NULL;
 	DEVMEMINT_HEAP * psDevmemHeapPtrInt = NULL;
+	IMG_HANDLE hDevmemHeapPtrHandle = NULL;
 
 
 
@@ -1863,11 +1864,13 @@ PVRSRVBridgeDevmemIntHeapCreate(IMG_UINT32 ui32DispatchTableEntry,
 
 	psDevmemIntHeapCreateOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psDevmemIntHeapCreateOUT->hDevmemHeapPtr,
+							&hDevmemHeapPtrHandle,
 							(void *) psDevmemHeapPtrInt,
 							PVRSRV_HANDLE_TYPE_DEVMEMINT_HEAP,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&DevmemIntHeapDestroy);
+	if (psDevmemIntHeapCreateOUT->eError == PVRSRV_OK)
+		psDevmemIntHeapCreateOUT->hDevmemHeapPtr = hDevmemHeapPtrHandle;
 	if (psDevmemIntHeapCreateOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
