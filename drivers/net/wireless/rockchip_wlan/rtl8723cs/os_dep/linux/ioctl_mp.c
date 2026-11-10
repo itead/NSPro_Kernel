@@ -20,9 +20,21 @@
 #if defined(CONFIG_MP_INCLUDED)
 
 #include <drv_types.h>
+#include <linux/kernel.h>
+#include <linux/string.h>
+#include <linux/wireless.h>
 #include <rtw_mp.h>
 #include <rtw_mp_ioctl.h>
 #include "../../hal/phydm/phydm_precomp.h"
+
+#define RTW_MP_APPEND_EXTRA(_extra, _fmt, ...) \
+	do { \
+		size_t rtw_mp_extra_len = strnlen((_extra), IW_PRIV_SIZE_MASK); \
+		if (rtw_mp_extra_len < IW_PRIV_SIZE_MASK) \
+			scnprintf((_extra) + rtw_mp_extra_len, \
+				  IW_PRIV_SIZE_MASK - rtw_mp_extra_len, \
+				  (_fmt), ##__VA_ARGS__); \
+	} while (0)
 
 
 #if defined(CONFIG_RTL8723B)
@@ -198,7 +210,7 @@ int rtw_mp_read_reg(struct net_device *dev,
 			if (*pnext != '\0') {
 				/*strtout = simple_strtoul(pnext , &ptmp, 16);*/
 				ret = sscanf(pnext, "%x", &strtout);
-				sprintf(extra, "%s %d" , extra , strtout);
+				RTW_MP_APPEND_EXTRA(extra, " %d", strtout);
 			} else
 				break;
 			pch = pnext;
@@ -230,7 +242,7 @@ int rtw_mp_read_reg(struct net_device *dev,
 			pnext++;
 			if (*pnext != '\0') {
 				ret = sscanf(pnext, "%x", &strtout);
-				sprintf(extra, "%s %d" , extra , strtout);
+				RTW_MP_APPEND_EXTRA(extra, " %d", strtout);
 			} else
 				break;
 			pch = pnext;
@@ -349,7 +361,7 @@ int rtw_mp_read_rf(struct net_device *dev,
 		if (*pnext != '\0') {
 			/*strtou =simple_strtoul(pnext , &ptmp, 16);*/
 			ret = sscanf(pnext, "%x", &strtou);
-			sprintf(extra, "%s %d" , extra , strtou);
+			RTW_MP_APPEND_EXTRA(extra, " %d", strtou);
 		} else
 			break;
 		pch = pnext;
@@ -1417,7 +1429,7 @@ int rtw_mp_pretx_proc(PADAPTER padapter, u8 bStartTest, char *extra)
 			pmp_priv->mode = MP_ON;
 			sprintf(extra, "Stop continuous Tx");
 		} else if (pmp_priv->tx.stop == 1) {
-			sprintf(extra, "%s\nStart continuous DA=ffffffffffff len=1500 count=%u\n", extra, pmp_priv->tx.count);
+			RTW_MP_APPEND_EXTRA(extra, "\nStart continuous DA=ffffffffffff len=1500 count=%u\n", pmp_priv->tx.count);
 			pmp_priv->tx.stop = 0;
 			SetPacketTx(padapter);
 		} else
@@ -1425,26 +1437,26 @@ int rtw_mp_pretx_proc(PADAPTER padapter, u8 bStartTest, char *extra)
 		return 0;
 	case MP_SINGLE_TONE_TX:
 		if (bStartTest != 0)
-			sprintf(extra, "%s\nStart continuous DA=ffffffffffff len=1500\n infinite=yes.", extra);
+			RTW_MP_APPEND_EXTRA(extra, "\nStart continuous DA=ffffffffffff len=1500\n infinite=yes.");
 		SetSingleToneTx(padapter, (u8)bStartTest);
 		break;
 	case MP_CONTINUOUS_TX:
 		if (bStartTest != 0)
-			sprintf(extra, "%s\nStart continuous DA=ffffffffffff len=1500\n infinite=yes.", extra);
+			RTW_MP_APPEND_EXTRA(extra, "\nStart continuous DA=ffffffffffff len=1500\n infinite=yes.");
 		SetContinuousTx(padapter, (u8)bStartTest);
 		break;
 	case MP_CARRIER_SUPPRISSION_TX:
 		if (bStartTest != 0) {
 			if (HwRateToMPTRate(pmp_priv->rateidx) <= MPT_RATE_11M)
-				sprintf(extra, "%s\nStart continuous DA=ffffffffffff len=1500\n infinite=yes.", extra);
+				RTW_MP_APPEND_EXTRA(extra, "\nStart continuous DA=ffffffffffff len=1500\n infinite=yes.");
 			else
-				sprintf(extra, "%s\nSpecify carrier suppression but not CCK rate", extra);
+				RTW_MP_APPEND_EXTRA(extra, "\nSpecify carrier suppression but not CCK rate");
 		}
 		SetCarrierSuppressionTx(padapter, (u8)bStartTest);
 		break;
 	case MP_SINGLE_CARRIER_TX:
 		if (bStartTest != 0)
-			sprintf(extra, "%s\nStart continuous DA=ffffffffffff len=1500\n infinite=yes.", extra);
+			RTW_MP_APPEND_EXTRA(extra, "\nStart continuous DA=ffffffffffff len=1500\n infinite=yes.");
 		SetSingleCarrierTx(padapter, (u8)bStartTest);
 		break;
 
@@ -1523,12 +1535,12 @@ int rtw_mp_tx(struct net_device *dev,
 	} else if (strncmp(extra, "setting", 7) == 0) {
 		_rtw_memset(extra, 0, wrqu->data.length);
 		sprintf(extra, "Current Setting :\n Channel:%d", pmp_priv->channel);
-		sprintf(extra, "%s\n Bandwidth:%d", extra, pmp_priv->bandwidth);
-		sprintf(extra, "%s\n Rate index:%d", extra, pmp_priv->rateidx);
-		sprintf(extra, "%s\n TxPower index:%d", extra, pmp_priv->txpoweridx);
-		sprintf(extra, "%s\n Antenna TxPath:%d", extra, pmp_priv->antenna_tx);
-		sprintf(extra, "%s\n Antenna RxPath:%d", extra, pmp_priv->antenna_rx);
-		sprintf(extra, "%s\n MP Mode:%d", extra, pmp_priv->mode);
+		RTW_MP_APPEND_EXTRA(extra, "\n Bandwidth:%d", pmp_priv->bandwidth);
+		RTW_MP_APPEND_EXTRA(extra, "\n Rate index:%d", pmp_priv->rateidx);
+		RTW_MP_APPEND_EXTRA(extra, "\n TxPower index:%d", pmp_priv->txpoweridx);
+		RTW_MP_APPEND_EXTRA(extra, "\n Antenna TxPath:%d", pmp_priv->antenna_tx);
+		RTW_MP_APPEND_EXTRA(extra, "\n Antenna RxPath:%d", pmp_priv->antenna_rx);
+		RTW_MP_APPEND_EXTRA(extra, "\n MP Mode:%d", pmp_priv->mode);
 		wrqu->data.length = strlen(extra);
 		return 0;
 #ifdef CONFIG_MP_VHT_HW_TX_MODE
@@ -1667,17 +1679,17 @@ int rtw_mp_tx(struct net_device *dev,
 			RTW_INFO("Invalid format [ch=%d,bw=%d,rate=%d,pwr=%d,ant=%d,tx=%d]\n", channel, bandwidth, rate, txpower, ant, txmode);
 			_rtw_memset(extra, 0, wrqu->data.length);
 			sprintf(extra, "\n Please input correct format as bleow:\n");
-			sprintf(extra, "%s\t ch=%d,bw=%d,rate=%d,pwr=%d,ant=%d,tx=%d\n", extra, channel, bandwidth, rate, txpower, ant, txmode);
-			sprintf(extra, "%s\n [ ch : BGN = <1~14> , A or AC = <36~165> ]", extra);
-			sprintf(extra, "%s\n [ bw : Bandwidth: 0 = 20M, 1 = 40M, 2 = 80M ]", extra);
-			sprintf(extra, "%s\n [ rate :	CCK: 1 2 5.5 11M X 2 = < 2 4 11 22 >]", extra);
-			sprintf(extra, "%s\n [		OFDM: 6 9 12 18 24 36 48 54M X 2 = < 12 18 24 36 48 72 96 108>", extra);
-			sprintf(extra, "%s\n [		HT 1S2SS MCS0 ~ MCS15 : < [MCS0]=128 ~ [MCS7]=135 ~ [MCS15]=143 >", extra);
-			sprintf(extra, "%s\n [		HT 3SS MCS16 ~ MCS32 : < [MCS16]=144 ~ [MCS23]=151 ~ [MCS32]=159 >", extra);
-			sprintf(extra, "%s\n [		VHT 1SS MCS0 ~ MCS9 : < [MCS0]=160 ~ [MCS9]=169 >", extra);
-			sprintf(extra, "%s\n [ txpower : 1~63 power index", extra);
-			sprintf(extra, "%s\n [ ant : <A = 1, B = 2, C = 4, D = 8> ,2T ex: AB=3 BC=6 CD=12", extra);
-			sprintf(extra, "%s\n [ txmode : < 0 = CONTINUOUS_TX, 1 = PACKET_TX, 2 = SINGLE_TONE_TX, 3 = CARRIER_SUPPRISSION_TX, 4 = SINGLE_CARRIER_TX>\n", extra);
+			RTW_MP_APPEND_EXTRA(extra, "\t ch=%d,bw=%d,rate=%d,pwr=%d,ant=%d,tx=%d\n", channel, bandwidth, rate, txpower, ant, txmode);
+			RTW_MP_APPEND_EXTRA(extra, "\n [ ch : BGN = <1~14> , A or AC = <36~165> ]");
+			RTW_MP_APPEND_EXTRA(extra, "\n [ bw : Bandwidth: 0 = 20M, 1 = 40M, 2 = 80M ]");
+			RTW_MP_APPEND_EXTRA(extra, "\n [ rate :	CCK: 1 2 5.5 11M X 2 = < 2 4 11 22 >]");
+			RTW_MP_APPEND_EXTRA(extra, "\n [		OFDM: 6 9 12 18 24 36 48 54M X 2 = < 12 18 24 36 48 72 96 108>");
+			RTW_MP_APPEND_EXTRA(extra, "\n [		HT 1S2SS MCS0 ~ MCS15 : < [MCS0]=128 ~ [MCS7]=135 ~ [MCS15]=143 >");
+			RTW_MP_APPEND_EXTRA(extra, "\n [		HT 3SS MCS16 ~ MCS32 : < [MCS16]=144 ~ [MCS23]=151 ~ [MCS32]=159 >");
+			RTW_MP_APPEND_EXTRA(extra, "\n [		VHT 1SS MCS0 ~ MCS9 : < [MCS0]=160 ~ [MCS9]=169 >");
+			RTW_MP_APPEND_EXTRA(extra, "\n [ txpower : 1~63 power index");
+			RTW_MP_APPEND_EXTRA(extra, "\n [ ant : <A = 1, B = 2, C = 4, D = 8> ,2T ex: AB=3 BC=6 CD=12");
+			RTW_MP_APPEND_EXTRA(extra, "\n [ txmode : < 0 = CONTINUOUS_TX, 1 = PACKET_TX, 2 = SINGLE_TONE_TX, 3 = CARRIER_SUPPRISSION_TX, 4 = SINGLE_CARRIER_TX>\n");
 			wrqu->data.length = strlen(extra);
 			return status;
 
@@ -1693,13 +1705,13 @@ int rtw_mp_tx(struct net_device *dev,
 				bandwidth = CHANNEL_WIDTH_40;
 			else if (bandwidth == 2)
 				bandwidth = CHANNEL_WIDTH_80;
-			sprintf(extra, "%s\nChange Current Bandwidth %d to Bandwidth %d", extra, padapter->mppriv.bandwidth , bandwidth);
+			RTW_MP_APPEND_EXTRA(extra, "\nChange Current Bandwidth %d to Bandwidth %d", padapter->mppriv.bandwidth, bandwidth);
 			padapter->mppriv.bandwidth = (u8)bandwidth;
 			padapter->mppriv.preamble = sg;
 			SetBandwidth(padapter);
 			pHalData->current_channel_bw = bandwidth;
 
-			sprintf(extra, "%s\nSet power level :%d", extra, txpower);
+			RTW_MP_APPEND_EXTRA(extra, "\nSet power level :%d", txpower);
 			padapter->mppriv.txpoweridx = (u8)txpower;
 			pMptCtx->TxPwrLevel[ODM_RF_PATH_A] = (u8)txpower;
 			pMptCtx->TxPwrLevel[ODM_RF_PATH_B] = (u8)txpower;
@@ -1722,13 +1734,13 @@ int rtw_mp_tx(struct net_device *dev,
 			RTW_INFO("%s: rate index=%d\n", __func__, rate);
 			if (rate >= MPT_RATE_LAST)
 				return -EINVAL;
-			sprintf(extra, "%s\nSet data rate to %d index %d", extra, padapter->mppriv.rateidx, rate);
+			RTW_MP_APPEND_EXTRA(extra, "\nSet data rate to %d index %d", padapter->mppriv.rateidx, rate);
 
 			padapter->mppriv.rateidx = rate;
 			pMptCtx->mpt_rate_index = rate;
 			SetDataRate(padapter);
 
-			sprintf(extra, "%s\nSet Antenna Path :%d",  extra, ant);
+			RTW_MP_APPEND_EXTRA(extra, "\nSet Antenna Path :%d", ant);
 			switch (ant) {
 			case 1:
 				antenna = ANTENNA_A;
@@ -1837,10 +1849,10 @@ int rtw_mp_rx(struct net_device *dev,
 		RTW_INFO("Invalid format [ch=%d,bw=%d,ant=%d]\n", channel, bandwidth, ant);
 		_rtw_memset(extra, 0, wrqu->data.length);
 		sprintf(extra, "\n Please input correct format as bleow:\n");
-		sprintf(extra, "%s\t ch=%d,bw=%d,ant=%d\n", extra, channel, bandwidth, ant);
-		sprintf(extra, "%s\n [ ch : BGN = <1~14> , A or AC = <36~165> ]", extra);
-		sprintf(extra, "%s\n [ bw : Bandwidth: 0 = 20M, 1 = 40M, 2 = 80M ]", extra);
-		sprintf(extra, "%s\n [ ant : <A = 1, B = 2, C = 4, D = 8> ,2T ex: AB=3 BC=6 CD=12", extra);
+		RTW_MP_APPEND_EXTRA(extra, "\t ch=%d,bw=%d,ant=%d\n", channel, bandwidth, ant);
+		RTW_MP_APPEND_EXTRA(extra, "\n [ ch : BGN = <1~14> , A or AC = <36~165> ]");
+		RTW_MP_APPEND_EXTRA(extra, "\n [ bw : Bandwidth: 0 = 20M, 1 = 40M, 2 = 80M ]");
+		RTW_MP_APPEND_EXTRA(extra, "\n [ ant : <A = 1, B = 2, C = 4, D = 8> ,2T ex: AB=3 BC=6 CD=12");
 		wrqu->data.length = strlen(extra);
 		return 0;
 
@@ -1857,13 +1869,13 @@ int rtw_mp_rx(struct net_device *dev,
 			bandwidth = CHANNEL_WIDTH_40;
 		else if (bandwidth == 2)
 			bandwidth = CHANNEL_WIDTH_80;
-		sprintf(extra, "%s\nChange Current Bandwidth %d to Bandwidth %d", extra, padapter->mppriv.bandwidth , bandwidth);
+		RTW_MP_APPEND_EXTRA(extra, "\nChange Current Bandwidth %d to Bandwidth %d", padapter->mppriv.bandwidth, bandwidth);
 		padapter->mppriv.bandwidth = (u8)bandwidth;
 		padapter->mppriv.preamble = sg;
 		SetBandwidth(padapter);
 		pHalData->current_channel_bw = bandwidth;
 
-		sprintf(extra, "%s\nSet Antenna Path :%d",  extra, ant);
+		RTW_MP_APPEND_EXTRA(extra, "\nSet Antenna Path :%d", ant);
 		switch (ant) {
 		case 1:
 			antenna = ANTENNA_A;
@@ -1914,7 +1926,7 @@ int rtw_mp_rx(struct net_device *dev,
 		pHalData->antenna_tx_path = antenna;
 		SetAntenna(padapter);
 
-		sprintf(extra, "%s\nstart Rx", extra);
+		RTW_MP_APPEND_EXTRA(extra, "\nstart Rx");
 		SetPacketRx(padapter, bStartRx, _FALSE);
 	}
 	wrqu->data.length = strlen(extra);
@@ -2006,11 +2018,11 @@ int rtw_efuse_mask_file(struct net_device *dev,
 		 } while (count < 64);
 
 		for (i = 0; i < count; i++)
-			sprintf(extra, "%s:%02x", extra, maskfileBuffer[i]);
+			RTW_MP_APPEND_EXTRA(extra, ":%02x", maskfileBuffer[i]);
 
 		padapter->registrypriv.bFileMaskEfuse = _TRUE;
 
-		sprintf(extra, "%s\nLoad Efuse Mask data %d hex ok\n", extra, count);
+		RTW_MP_APPEND_EXTRA(extra, "\nLoad Efuse Mask data %d hex ok\n", count);
 		wrqu->data.length = strlen(extra);
 		return 0;
 	}
@@ -2393,11 +2405,11 @@ todo:
 			if ((pMptCtx->mptOutBuf[i] == 0x00) && (pMptCtx->mptOutBuf[i + 1] == 0x00))
 				goto exit;
 
-			sprintf(extra, "%s %d ", extra, (pMptCtx->mptOutBuf[i] & 0x1f));
+			RTW_MP_APPEND_EXTRA(extra, " %d ", (pMptCtx->mptOutBuf[i] & 0x1f));
 		}
 	} else {
 		for (i = 4; i < pMptCtx->mptOutLen; i++)
-			sprintf(extra, "%s 0x%x ", extra, pMptCtx->mptOutBuf[i]);
+			RTW_MP_APPEND_EXTRA(extra, " 0x%x ", pMptCtx->mptOutBuf[i]);
 	}
 
 exit:
