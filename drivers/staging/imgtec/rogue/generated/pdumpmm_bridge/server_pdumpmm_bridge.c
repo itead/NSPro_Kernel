@@ -448,8 +448,8 @@ PVRSRVBridgePMRPDumpSymbolicAddr(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_PMRPDUMPSYMBOLICADDR *psPMRPDumpSymbolicAddrOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psPMRPDumpSymbolicAddrOUT->uiNewOffset) aligned_out_psPMRPDumpSymbolicAddrOUT_uiNewOffset;
-	typeof(psPMRPDumpSymbolicAddrOUT->uiNextSymName) aligned_out_psPMRPDumpSymbolicAddrOUT_uiNextSymName;
+	typeof(psPMRPDumpSymbolicAddrOUT->uiNewOffset) aligned_out_psPMRPDumpSymbolicAddrOUT_uiNewOffset __attribute__((unused));
+	typeof(psPMRPDumpSymbolicAddrOUT->uiNextSymName) aligned_out_psPMRPDumpSymbolicAddrOUT_uiNextSymName __attribute__((unused));
 
 	IMG_HANDLE hPMR = psPMRPDumpSymbolicAddrIN->hPMR;
 	PMR * psPMRInt = NULL;
