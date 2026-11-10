@@ -128,7 +128,7 @@ PVRSRVBridgeSyncRecordAdd(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_SYNCRECORDADD *psSyncRecordAddOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psSyncRecordAddOUT->hhRecord) aligned_out_psSyncRecordAddOUT_hhRecord;
+	typeof(psSyncRecordAddOUT->hhRecord) aligned_out_psSyncRecordAddOUT_hhRecord __attribute__((unused));
 
 	SYNC_RECORD_HANDLE pshRecordInt = NULL;
 	IMG_HANDLE hhServerSyncPrimBlock = psSyncRecordAddIN->hhServerSyncPrimBlock;
