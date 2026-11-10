@@ -56,11 +56,10 @@ if [ "$CI_MODE" = 1 ]; then
         set +e
         ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make -j3 \
             HOSTCFLAGS="-Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -fcommon" \
-            Image dtbs modules 2>&1 | tee -a "$LOG_FILE"
-        BUILD_STATUS=${PIPESTATUS:-}
-        # POSIX sh has no PIPESTATUS; capture make status without losing the log.
-        if [ "$BUILD_STATUS" = "" ]; then BUILD_STATUS=0; fi
+            Image dtbs modules >> "$LOG_FILE" 2>&1
+        BUILD_STATUS=$?
         set -e
+        tail -n 80 "$LOG_FILE"
         if [ "$BUILD_STATUS" -eq 0 ]; then break; fi
         if [ "$ATTEMPT" -eq 3 ] || [ "${GITHUB_REF:-}" != "refs/heads/fix/rockchip-gem-zero-size" ]; then break; fi
         if ! bash scripts/ci-autofix-known-warnings.sh "$LOG_FILE"; then break; fi
