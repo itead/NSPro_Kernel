@@ -168,8 +168,8 @@ PVRSRVBridgePhysmemImportSecBuf(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_PHYSMEMIMPORTSECBUF *psPhysmemImportSecBufOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psPhysmemImportSecBufOUT->ui64SecBufHandle) aligned_out_psPhysmemImportSecBufOUT_ui64SecBufHandle;
-	typeof(psPhysmemImportSecBufOUT->hPMRPtr) aligned_out_psPhysmemImportSecBufOUT_hPMRPtr;
+	typeof(psPhysmemImportSecBufOUT->ui64SecBufHandle) aligned_out_psPhysmemImportSecBufOUT_ui64SecBufHandle __attribute__((unused));
+	typeof(psPhysmemImportSecBufOUT->hPMRPtr) aligned_out_psPhysmemImportSecBufOUT_hPMRPtr __attribute__((unused));
 
 	PMR * psPMRPtrInt = NULL;
 
