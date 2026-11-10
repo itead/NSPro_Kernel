@@ -203,7 +203,7 @@ static __inline__ void __nat25_generate_apple_network_addr(unsigned char *networ
 
 	networkAddr[0] = NAT25_APPLE;
 	memcpy(networkAddr+1, network, 2);
-	networkAddr[3] = *node;
+	networkAddr[3] = *(const u8 *)node;
 }
 
 
@@ -1116,7 +1116,7 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 							ea->pa_dst_net,
 							ea->pa_dst_node);
 
-						__nat25_generate_apple_network_addr(networkAddr, &ea->pa_src_net, &ea->pa_src_node);
+						__nat25_generate_apple_network_addr(networkAddr, (const u8 *)ea + offsetof(struct elapaarp, pa_src_net), (const u8 *)ea + offsetof(struct elapaarp, pa_src_node));
 
 						__nat25_db_network_insert(priv, skb->data+ETH_ALEN, networkAddr);
 
@@ -1132,7 +1132,7 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 							ea->pa_dst_net,
 							ea->pa_dst_node);
 
-						__nat25_generate_apple_network_addr(networkAddr, &ea->pa_dst_net, &ea->pa_dst_node);
+						__nat25_generate_apple_network_addr(networkAddr, (const u8 *)ea + offsetof(struct elapaarp, pa_dst_net), (const u8 *)ea + offsetof(struct elapaarp, pa_dst_node));
 
 						__nat25_db_network_lookup_and_replace(priv, skb, networkAddr);
 
@@ -1162,7 +1162,7 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 							ddp->deh_dnet,
 							ddp->deh_dnode);
 
-						__nat25_generate_apple_network_addr(networkAddr, &ddp->deh_snet, &ddp->deh_snode);
+						__nat25_generate_apple_network_addr(networkAddr, (const u8 *)ddp + offsetof(struct ddpehdr, deh_snet), (const u8 *)ddp + offsetof(struct ddpehdr, deh_snode));
 
 						__nat25_db_network_insert(priv, skb->data+ETH_ALEN, networkAddr);
 
@@ -1178,7 +1178,7 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 							ddp->deh_dnet,
 							ddp->deh_dnode);
 
-						__nat25_generate_apple_network_addr(networkAddr, &ddp->deh_dnet, &ddp->deh_dnode);
+						__nat25_generate_apple_network_addr(networkAddr, (const u8 *)ddp + offsetof(struct ddpehdr, deh_dnet), (const u8 *)ddp + offsetof(struct ddpehdr, deh_dnode));
 
 						__nat25_db_network_lookup_and_replace(priv, skb, networkAddr);
 					}
