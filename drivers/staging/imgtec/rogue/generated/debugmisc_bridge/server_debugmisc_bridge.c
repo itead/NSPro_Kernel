@@ -168,6 +168,9 @@ PVRSRVBridgePhysmemImportSecBuf(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_PHYSMEMIMPORTSECBUF *psPhysmemImportSecBufOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psPhysmemImportSecBufOUT->ui64SecBufHandle) aligned_out_psPhysmemImportSecBufOUT_ui64SecBufHandle;
+	typeof(psPhysmemImportSecBufOUT->hPMRPtr) aligned_out_psPhysmemImportSecBufOUT_hPMRPtr;
+
 	PMR * psPMRPtrInt = NULL;
 
 
@@ -177,13 +180,15 @@ PVRSRVBridgePhysmemImportSecBuf(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psPhysmemImportSecBufOUT_ui64SecBufHandle = psPhysmemImportSecBufOUT->ui64SecBufHandle;
 	psPhysmemImportSecBufOUT->eError =
 		PhysmemImportSecBuf(psConnection, OSGetDevData(psConnection),
 					psPhysmemImportSecBufIN->uiSize,
 					psPhysmemImportSecBufIN->ui32Log2Align,
 					psPhysmemImportSecBufIN->uiFlags,
 					&psPMRPtrInt,
-					&psPhysmemImportSecBufOUT->ui64SecBufHandle);
+					&aligned_out_psPhysmemImportSecBufOUT_ui64SecBufHandle);
+	psPhysmemImportSecBufOUT->ui64SecBufHandle = aligned_out_psPhysmemImportSecBufOUT_ui64SecBufHandle;
 	/* Exit early if bridged call fails */
 	if(psPhysmemImportSecBufOUT->eError != PVRSRV_OK)
 	{
@@ -197,13 +202,15 @@ PVRSRVBridgePhysmemImportSecBuf(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psPhysmemImportSecBufOUT_hPMRPtr = psPhysmemImportSecBufOUT->hPMRPtr;
 	psPhysmemImportSecBufOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psPhysmemImportSecBufOUT->hPMRPtr,
+							&aligned_out_psPhysmemImportSecBufOUT_hPMRPtr,
 							(void *) psPMRPtrInt,
 							PVRSRV_HANDLE_TYPE_PHYSMEM_PMR,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&PMRUnrefPMR);
+	psPhysmemImportSecBufOUT->hPMRPtr = aligned_out_psPhysmemImportSecBufOUT_hPMRPtr;
 	if (psPhysmemImportSecBufOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
