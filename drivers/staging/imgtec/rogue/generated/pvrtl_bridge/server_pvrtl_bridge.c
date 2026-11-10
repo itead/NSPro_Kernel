@@ -76,6 +76,9 @@ PVRSRVBridgeTLOpenStream(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_TLOPENSTREAM *psTLOpenStreamOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psTLOpenStreamOUT->hSD) aligned_out_psTLOpenStreamOUT_hSD;
+	typeof(psTLOpenStreamOUT->hTLPMR) aligned_out_psTLOpenStreamOUT_hTLPMR;
+
 	IMG_CHAR *uiNameInt = NULL;
 	TL_STREAM_DESC * psSDInt = NULL;
 	PMR * psTLPMRInt = NULL;
@@ -159,13 +162,15 @@ PVRSRVBridgeTLOpenStream(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psTLOpenStreamOUT_hSD = psTLOpenStreamOUT->hSD;
 	psTLOpenStreamOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psTLOpenStreamOUT->hSD,
+							&aligned_out_psTLOpenStreamOUT_hSD,
 							(void *) psSDInt,
 							PVRSRV_HANDLE_TYPE_PVR_TL_SD,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&TLServerCloseStreamKM);
+	psTLOpenStreamOUT->hSD = aligned_out_psTLOpenStreamOUT_hSD;
 	if (psTLOpenStreamOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -177,13 +182,15 @@ PVRSRVBridgeTLOpenStream(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psTLOpenStreamOUT_hTLPMR = psTLOpenStreamOUT->hTLPMR;
 	psTLOpenStreamOUT->eError = PVRSRVAllocSubHandleUnlocked(psConnection->psHandleBase,
 
-							&psTLOpenStreamOUT->hTLPMR,
+							&aligned_out_psTLOpenStreamOUT_hTLPMR,
 							(void *) psTLPMRInt,
 							PVRSRV_HANDLE_TYPE_PMR_LOCAL_EXPORT_HANDLE,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,psTLOpenStreamOUT->hSD);
+	psTLOpenStreamOUT->hTLPMR = aligned_out_psTLOpenStreamOUT_hTLPMR;
 	if (psTLOpenStreamOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -305,6 +312,9 @@ PVRSRVBridgeTLAcquireData(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_TLACQUIREDATA *psTLAcquireDataOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psTLAcquireDataOUT->ui32ReadOffset) aligned_out_psTLAcquireDataOUT_ui32ReadOffset;
+	typeof(psTLAcquireDataOUT->ui32ReadLen) aligned_out_psTLAcquireDataOUT_ui32ReadLen;
+
 	IMG_HANDLE hSD = psTLAcquireDataIN->hSD;
 	TL_STREAM_DESC * psSDInt = NULL;
 
@@ -338,11 +348,15 @@ PVRSRVBridgeTLAcquireData(IMG_UINT32 ui32DispatchTableEntry,
 	/* Release now we have looked up handles. */
 	UnlockHandle();
 
+	aligned_out_psTLAcquireDataOUT_ui32ReadOffset = psTLAcquireDataOUT->ui32ReadOffset;
+	aligned_out_psTLAcquireDataOUT_ui32ReadLen = psTLAcquireDataOUT->ui32ReadLen;
 	psTLAcquireDataOUT->eError =
 		TLServerAcquireDataKM(
 					psSDInt,
-					&psTLAcquireDataOUT->ui32ReadOffset,
-					&psTLAcquireDataOUT->ui32ReadLen);
+					&aligned_out_psTLAcquireDataOUT_ui32ReadOffset,
+					&aligned_out_psTLAcquireDataOUT_ui32ReadLen);
+	psTLAcquireDataOUT->ui32ReadOffset = aligned_out_psTLAcquireDataOUT_ui32ReadOffset;
+	psTLAcquireDataOUT->ui32ReadLen = aligned_out_psTLAcquireDataOUT_ui32ReadLen;
 
 
 
@@ -455,6 +469,8 @@ PVRSRVBridgeTLDiscoverStreams(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_TLDISCOVERSTREAMS *psTLDiscoverStreamsOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psTLDiscoverStreamsOUT->ui32NumFound) aligned_out_psTLDiscoverStreamsOUT_ui32NumFound;
+
 	IMG_CHAR *uiNamePatternInt = NULL;
 	IMG_UINT32 *pui32StreamsInt = NULL;
 
@@ -526,12 +542,14 @@ PVRSRVBridgeTLDiscoverStreams(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psTLDiscoverStreamsOUT_ui32NumFound = psTLDiscoverStreamsOUT->ui32NumFound;
 	psTLDiscoverStreamsOUT->eError =
 		TLServerDiscoverStreamsKM(
 					uiNamePatternInt,
 					psTLDiscoverStreamsIN->ui32Max,
 					pui32StreamsInt,
-					&psTLDiscoverStreamsOUT->ui32NumFound);
+					&aligned_out_psTLDiscoverStreamsOUT_ui32NumFound);
+	psTLDiscoverStreamsOUT->ui32NumFound = aligned_out_psTLDiscoverStreamsOUT_ui32NumFound;
 
 
 
@@ -572,6 +590,9 @@ PVRSRVBridgeTLReserveStream(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_TLRESERVESTREAM *psTLReserveStreamOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psTLReserveStreamOUT->ui32BufferOffset) aligned_out_psTLReserveStreamOUT_ui32BufferOffset;
+	typeof(psTLReserveStreamOUT->ui32Available) aligned_out_psTLReserveStreamOUT_ui32Available;
+
 	IMG_HANDLE hSD = psTLReserveStreamIN->hSD;
 	TL_STREAM_DESC * psSDInt = NULL;
 
@@ -605,13 +626,17 @@ PVRSRVBridgeTLReserveStream(IMG_UINT32 ui32DispatchTableEntry,
 	/* Release now we have looked up handles. */
 	UnlockHandle();
 
+	aligned_out_psTLReserveStreamOUT_ui32BufferOffset = psTLReserveStreamOUT->ui32BufferOffset;
+	aligned_out_psTLReserveStreamOUT_ui32Available = psTLReserveStreamOUT->ui32Available;
 	psTLReserveStreamOUT->eError =
 		TLServerReserveStreamKM(
 					psSDInt,
-					&psTLReserveStreamOUT->ui32BufferOffset,
+					&aligned_out_psTLReserveStreamOUT_ui32BufferOffset,
 					psTLReserveStreamIN->ui32Size,
 					psTLReserveStreamIN->ui32SizeMin,
-					&psTLReserveStreamOUT->ui32Available);
+					&aligned_out_psTLReserveStreamOUT_ui32Available);
+	psTLReserveStreamOUT->ui32BufferOffset = aligned_out_psTLReserveStreamOUT_ui32BufferOffset;
+	psTLReserveStreamOUT->ui32Available = aligned_out_psTLReserveStreamOUT_ui32Available;
 
 
 
