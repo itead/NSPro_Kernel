@@ -197,7 +197,7 @@ static __inline__ void __nat25_generate_ipx_network_addr_with_socket(unsigned ch
 
 
 static __inline__ void __nat25_generate_apple_network_addr(unsigned char *networkAddr,
-				const void *network, unsigned char *node)
+				const void *network, const void *node)
 {
 	memset(networkAddr, 0, MAX_NETWORK_ADDR_LEN);
 
