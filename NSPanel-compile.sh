@@ -74,7 +74,8 @@ if [ "$CI_MODE" = 1 ]; then
         ATTEMPT=$((ATTEMPT + 1))
     done
     printf '\n===== BUILD EXIT STATUS: %s =====\n' "$BUILD_STATUS" | tee -a "$LOG_FILE"
-    "$BUILD_DIR/NSPanel-check-compile-errors.sh" "$LOG_FILE" || true
+    # The workflow runs the canonical analyzer once, writing to a separate report.
+    # Never pipe analysis output back into the build log being scanned.
     exit "$BUILD_STATUS"
 fi
 
