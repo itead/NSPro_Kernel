@@ -12573,12 +12573,18 @@ bypass_active_keep_alive:
 			{
 				if (rx_chk != _SUCCESS) {
 					if (pmlmeext->retry == 0) {
+						u8 ap_mac_addr[ETH_ALEN];
+						int mac_idx;
+
+						/* Copy packed BSSID bytes into aligned storage before passing a pointer. */
+						for (mac_idx = 0; mac_idx < ETH_ALEN; mac_idx++)
+							ap_mac_addr[mac_idx] = pmlmeinfo->network.MacAddress[mac_idx];
 #ifdef DBG_EXPIRATION_CHK
 						RTW_INFO("issue_probereq to trigger probersp, retry=%d\n", pmlmeext->retry);
 #endif
-						issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
-						issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
-						issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
+						issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, ap_mac_addr, 0, 0, 0, 0);
+						issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, ap_mac_addr, 0, 0, 0, 0);
+						issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, ap_mac_addr, 0, 0, 0, 0);
 					}
 				}
 
