@@ -15,9 +15,10 @@ permissions:
   contents: read
 
 concurrency:
-  # Coalesce rapid pushes: only the newest branch head should reach the build runner.
+  # Never cancel a running kernel build. GitHub keeps one pending run per ref;
+  # newer pushes replace only the pending run, not the active build.
   group: nspanel-kernel-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   validate:
@@ -61,10 +62,25 @@ jobs:
           clean: true
           fetch-depth: 2
 
+      - name: Initialize persistent build diagnostics
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          LOG_FILE="$PWD/nspanel-kernel-build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.log"
+          echo "NSPANEL_BUILD_LOG=$LOG_FILE" >> "$GITHUB_ENV"
+          {
+            printf '===== NSPanel kernel CI/CD started: %s =====\\n' "$(date '+%Y-%m-%d %H:%M:%S %z')"
+            printf '===== Repository: %s =====\\n' "$GITHUB_REPOSITORY"
+            printf '===== Ref: %s =====\\n' "$GITHUB_REF"
+            printf '===== Commit: %s =====\\n' "$GITHUB_SHA"
+            printf '===== Runner: %s =====\\n' "$(hostname -f 2>/dev/null || hostname)"
+          } | tee "$LOG_FILE"
+
       - name: Validate build environment
         shell: bash
         run: |
           set -Eeuo pipefail
+          exec > >(tee -a "$NSPANEL_BUILD_LOG") 2>&1
           for tool in make flock aarch64-unknown-linux-gnu-gcc depmod tar sha256sum; do
             command -v "$tool" >/dev/null || {
               echo "::error::Required build tool missing: $tool"
@@ -122,6 +138,7 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
+          exec > >(tee -a "$NSPANEL_BUILD_LOG") 2>&1
           PACKAGE_ROOT="$PWD/dist/package"
           mkdir -p "$PACKAGE_ROOT/boot/dtb" "$PACKAGE_ROOT/config"
 
@@ -190,7 +207,7 @@ jobs:
             dist/*.sha256
             dist/manifest.txt
           if-no-files-found: warn
-          retention-days: 30
+          retention-days: 14
 
   release:
     name: Publish versioned GitHub Release
