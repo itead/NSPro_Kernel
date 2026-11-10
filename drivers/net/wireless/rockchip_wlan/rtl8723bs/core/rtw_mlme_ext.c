@@ -12480,6 +12480,7 @@ void linked_status_chk(_adapter *padapter, u8 from_timer)
 				if (rx_chk != _SUCCESS) {
 					NDIS_802_11_SSID ssid;
 
+					/* WLAN_BSSID_EX is packed; use aligned storage for the SSID. */
 					memcpy(&ssid, (const u8 *)&pmlmeinfo->network +
 					       offsetof(WLAN_BSSID_EX, Ssid), sizeof(ssid));
 					issue_probereq_ex(padapter, &ssid, psta->cmn.mac_addr, 0, 0, 3, 1);
