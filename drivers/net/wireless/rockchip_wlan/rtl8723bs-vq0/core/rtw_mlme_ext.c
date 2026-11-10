@@ -11701,10 +11701,15 @@ void linked_status_chk(_adapter *padapter, u8 from_timer)
 	struct xmit_priv		*pxmitpriv = &(padapter->xmitpriv);
 	struct mlme_ext_priv	*pmlmeext = &padapter->mlmeextpriv;
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
+	NDIS_802_11_SSID aligned_network_ssid;
 	struct sta_priv		*pstapriv = &padapter->stapriv;
 	
 
-	if (is_client_associated_to_ap(padapter))
+		/* WLAN_BSSID_EX is packed; copy SSID into aligned storage before use. */
+	memcpy(&aligned_network_ssid, (const u8 *)&pmlmeinfo->network +
+	       offsetof(WLAN_BSSID_EX, Ssid), sizeof(aligned_network_ssid));
+
+if (is_client_associated_to_ap(padapter))
 	{
 		//linked infrastructure client mode
 
@@ -11768,7 +11773,7 @@ void linked_status_chk(_adapter *padapter, u8 from_timer)
 				}
 
 				if (rx_chk != _SUCCESS)
-					issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, psta->hwaddr, 0, 0, 3, 1);
+					issue_probereq_ex(padapter, &aligned_network_ssid, psta->hwaddr, 0, 0, 3, 1);
 
 				if ((tx_chk != _SUCCESS && pmlmeinfo->link_count++ == link_count_limit) || rx_chk != _SUCCESS) {
 					tx_chk = issue_nulldata(padapter, psta->hwaddr, 0, 3, 1);
@@ -11790,9 +11795,9 @@ void linked_status_chk(_adapter *padapter, u8 from_timer)
 						#ifdef DBG_EXPIRATION_CHK
 						DBG_871X("issue_probereq to trigger probersp, retry=%d\n", pmlmeext->retry);
 						#endif
-						issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
-						issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
-						issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
+						issue_probereq_ex(padapter, &aligned_network_ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
+						issue_probereq_ex(padapter, &aligned_network_ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
+						issue_probereq_ex(padapter, &aligned_network_ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
 					}
 				}
 

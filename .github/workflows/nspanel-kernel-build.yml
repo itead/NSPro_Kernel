@@ -41,6 +41,9 @@ jobs:
           if git grep -n -F 'rtw_sprintf(thread_name, 20, "%s-"ADPT_FMT, thread_name, ADPT_ARG(padapter));' -- drivers/net/wireless/rockchip_wlan; then
             echo "::error::Overlapping thread_name snprintf pattern remains"; exit 1
           fi
+          if git grep -n -F '&pmlmeinfo->network.Ssid' -- drivers/net/wireless/rockchip_wlan; then
+            echo "::error::Packed WLAN_BSSID_EX SSID pointers must use aligned local copies"; exit 1
+          fi
 
   build:
     name: Build and package on dell5300
