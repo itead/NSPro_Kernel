@@ -1454,7 +1454,8 @@ s32 rtw_make_wlanhdr (_adapter *padapter , u8 *hdr, struct pkt_attrib *pattrib)
 	struct qos_priv *pqospriv = &pmlmepriv->qospriv;
 	u8 qos_option = _FALSE;
 	sint res = _SUCCESS;
-	u16 *fctrl = &pwlanhdr->frame_ctl;
+	u16 fctrl_val = 0;
+	u16 *fctrl = &fctrl_val;
 
 	//struct sta_info *psta;
 
@@ -1762,6 +1763,7 @@ int rtw_build_tdls_ies(_adapter * padapter, struct xmit_frame * pxmitframe, u8 *
 			break;
 	}
 
+	_rtw_memcpy(hdr, &fctrl_val, sizeof(fctrl_val));
 	return res;
 }
 
@@ -1776,7 +1778,8 @@ s32 rtw_make_tdls_wlanhdr (_adapter *padapter , u8 *hdr, struct pkt_attrib *patt
 	u8 tdls_seq=0, baddr[ETH_ALEN] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
 	sint res = _SUCCESS;
-	u16 *fctrl = &pwlanhdr->frame_ctl;
+	u16 fctrl_val = 0;
+	u16 *fctrl = &fctrl_val;
 
 _func_enter_;
 
@@ -1876,6 +1879,7 @@ exit:
 
 _func_exit_;
 
+	_rtw_memcpy(hdr, &fctrl_val, sizeof(fctrl_val));
 	return res;
 }
 
@@ -2308,7 +2312,7 @@ _func_enter_;
 		frame_body_len = pattrib->pktlen - sizeof(struct rtw_ieee80211_hdr_3addr);
 		
 		//conscruct AAD, copy frame control field
-		_rtw_memcpy(BIP_AAD, &pwlanhdr->frame_ctl, 2);
+		_rtw_memcpy(BIP_AAD, (const u8 *)pwlanhdr, 2);
 		ClearRetry(BIP_AAD);
 		ClearPwrMgt(BIP_AAD);
 		ClearMData(BIP_AAD);
