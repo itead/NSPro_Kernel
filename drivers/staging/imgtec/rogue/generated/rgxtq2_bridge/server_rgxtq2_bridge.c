@@ -77,6 +77,8 @@ PVRSRVBridgeRGXTDMCreateTransferContext(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_RGXTDMCREATETRANSFERCONTEXT *psRGXTDMCreateTransferContextOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psRGXTDMCreateTransferContextOUT->hTransferContext) aligned_out_psRGXTDMCreateTransferContextOUT_hTransferContext;
+
 	IMG_BYTE *psFrameworkCmdInt = NULL;
 	IMG_HANDLE hPrivData = psRGXTDMCreateTransferContextIN->hPrivData;
 	IMG_HANDLE hPrivDataInt = NULL;
@@ -197,13 +199,15 @@ PVRSRVBridgeRGXTDMCreateTransferContext(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psRGXTDMCreateTransferContextOUT_hTransferContext = psRGXTDMCreateTransferContextOUT->hTransferContext;
 	psRGXTDMCreateTransferContextOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psRGXTDMCreateTransferContextOUT->hTransferContext,
+							&aligned_out_psRGXTDMCreateTransferContextOUT_hTransferContext,
 							(void *) psTransferContextInt,
 							PVRSRV_HANDLE_TYPE_RGX_SERVER_TQ_TDM_CONTEXT,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&PVRSRVRGXTDMDestroyTransferContextKM);
+	psRGXTDMCreateTransferContextOUT->hTransferContext = aligned_out_psRGXTDMCreateTransferContextOUT_hTransferContext;
 	if (psRGXTDMCreateTransferContextOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -329,6 +333,8 @@ PVRSRVBridgeRGXTDMSubmitTransfer(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_RGXTDMSUBMITTRANSFER *psRGXTDMSubmitTransferOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psRGXTDMSubmitTransferOUT->i32UpdateFenceFD) aligned_out_psRGXTDMSubmitTransferOUT_i32UpdateFenceFD;
+
 	IMG_HANDLE hTransferContext = psRGXTDMSubmitTransferIN->hTransferContext;
 	RGX_SERVER_TQ_TDM_CONTEXT * psTransferContextInt = NULL;
 	SYNC_PRIMITIVE_BLOCK * *psFenceUFOSyncPrimBlockInt = NULL;
@@ -745,6 +751,7 @@ PVRSRVBridgeRGXTDMSubmitTransfer(IMG_UINT32 ui32DispatchTableEntry,
 	/* Release now we have looked up handles. */
 	UnlockHandle();
 
+	aligned_out_psRGXTDMSubmitTransferOUT_i32UpdateFenceFD = psRGXTDMSubmitTransferOUT->i32UpdateFenceFD;
 	psRGXTDMSubmitTransferOUT->eError =
 		PVRSRVRGXTDMSubmitTransferKM(
 					psTransferContextInt,
@@ -763,7 +770,7 @@ PVRSRVBridgeRGXTDMSubmitTransfer(IMG_UINT32 ui32DispatchTableEntry,
 					psServerSyncInt,
 					psRGXTDMSubmitTransferIN->i32CheckFenceFD,
 					psRGXTDMSubmitTransferIN->i32UpdateTimelineFD,
-					&psRGXTDMSubmitTransferOUT->i32UpdateFenceFD,
+					&aligned_out_psRGXTDMSubmitTransferOUT_i32UpdateFenceFD,
 					uiUpdateFenceNameInt,
 					psRGXTDMSubmitTransferIN->ui32CommandSize,
 					ui8FWCommandInt,
@@ -771,6 +778,7 @@ PVRSRVBridgeRGXTDMSubmitTransfer(IMG_UINT32 ui32DispatchTableEntry,
 					psRGXTDMSubmitTransferIN->ui32SyncPMRCount,
 					ui32SyncPMRFlagsInt,
 					psSyncPMRsInt);
+	psRGXTDMSubmitTransferOUT->i32UpdateFenceFD = aligned_out_psRGXTDMSubmitTransferOUT_i32UpdateFenceFD;
 
 
 
