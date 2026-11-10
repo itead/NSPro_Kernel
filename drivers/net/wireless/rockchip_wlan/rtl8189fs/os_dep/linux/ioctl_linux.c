@@ -2969,7 +2969,13 @@ static int rtw_wx_get_scan(struct net_device *dev, struct iw_request_info *a,
 		//report network only if the current channel set contains the channel to which this network belongs
 		if(rtw_ch_set_search_ch(padapter->mlmeextpriv.channel_set, pnetwork->network.Configuration.DSConfig) >= 0
 			&& rtw_mlme_band_check(padapter, pnetwork->network.Configuration.DSConfig) == _TRUE
-			&& _TRUE == rtw_validate_ssid(&(pnetwork->network.Ssid))
+			NDIS_802_11_SSID ssid;
+
+			memcpy(&ssid, (const u8 *)&pnetwork->network +
+			       offsetof(WLAN_BSSID_EX, Ssid), sizeof(ssid));
+			if (rtw_ch_set_search_ch(padapter->mlmeextpriv.channel_set, pnetwork->network.Configuration.DSConfig) >= 0
+				&& rtw_mlme_band_check(padapter, pnetwork->network.Configuration.DSConfig) == _TRUE
+				&& _TRUE == rtw_validate_ssid(&ssid))
 		)
 		{
 			ev=translate_scan(padapter, a, pnetwork, ev, stop);
