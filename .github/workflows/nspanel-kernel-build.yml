@@ -19,8 +19,20 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  validate:
+    name: Validate source changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
   build:
-    name: Validate, build and package on dell5300
+    name: Build and package on dell5300
+    # Never execute untrusted fork code on the persistent self-hosted runner.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    needs: validate
     runs-on: [self-hosted, linux, x64, nspanel-build]
     timeout-minutes: 240
     steps:
