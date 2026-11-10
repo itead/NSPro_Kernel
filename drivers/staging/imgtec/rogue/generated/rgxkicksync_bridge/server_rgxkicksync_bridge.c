@@ -76,6 +76,8 @@ PVRSRVBridgeRGXCreateKickSyncContext(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_RGXCREATEKICKSYNCCONTEXT *psRGXCreateKickSyncContextOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psRGXCreateKickSyncContextOUT->hKickSyncContext) aligned_out_psRGXCreateKickSyncContextOUT_hKickSyncContext;
+
 	IMG_HANDLE hPrivData = psRGXCreateKickSyncContextIN->hPrivData;
 	IMG_HANDLE hPrivDataInt = NULL;
 	RGX_SERVER_KICKSYNC_CONTEXT * psKickSyncContextInt = NULL;
@@ -127,13 +129,15 @@ PVRSRVBridgeRGXCreateKickSyncContext(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psRGXCreateKickSyncContextOUT_hKickSyncContext = psRGXCreateKickSyncContextOUT->hKickSyncContext;
 	psRGXCreateKickSyncContextOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psRGXCreateKickSyncContextOUT->hKickSyncContext,
+							&aligned_out_psRGXCreateKickSyncContextOUT_hKickSyncContext,
 							(void *) psKickSyncContextInt,
 							PVRSRV_HANDLE_TYPE_RGX_SERVER_KICKSYNC_CONTEXT,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&PVRSRVRGXDestroyKickSyncContextKM);
+	psRGXCreateKickSyncContextOUT->hKickSyncContext = aligned_out_psRGXCreateKickSyncContextOUT_hKickSyncContext;
 	if (psRGXCreateKickSyncContextOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -237,6 +241,8 @@ PVRSRVBridgeRGXKickSync(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_RGXKICKSYNC *psRGXKickSyncOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psRGXKickSyncOUT->i32UpdateFenceFD) aligned_out_psRGXKickSyncOUT_i32UpdateFenceFD;
+
 	IMG_HANDLE hKickSyncContext = psRGXKickSyncIN->hKickSyncContext;
 	RGX_SERVER_KICKSYNC_CONTEXT * psKickSyncContextInt = NULL;
 	SYNC_PRIMITIVE_BLOCK * *psFenceUFOSyncPrimBlockInt = NULL;
@@ -557,6 +563,7 @@ PVRSRVBridgeRGXKickSync(IMG_UINT32 ui32DispatchTableEntry,
 	/* Release now we have looked up handles. */
 	UnlockHandle();
 
+	aligned_out_psRGXKickSyncOUT_i32UpdateFenceFD = psRGXKickSyncOUT->i32UpdateFenceFD;
 	psRGXKickSyncOUT->eError =
 		PVRSRVRGXKickSyncKM(
 					psKickSyncContextInt,
@@ -574,9 +581,10 @@ PVRSRVBridgeRGXKickSync(IMG_UINT32 ui32DispatchTableEntry,
 					psServerSyncInt,
 					psRGXKickSyncIN->i32CheckFenceFD,
 					psRGXKickSyncIN->i32TimelineFenceFD,
-					&psRGXKickSyncOUT->i32UpdateFenceFD,
+					&aligned_out_psRGXKickSyncOUT_i32UpdateFenceFD,
 					uiUpdateFenceNameInt,
 					psRGXKickSyncIN->ui32ExtJobRef);
+	psRGXKickSyncOUT->i32UpdateFenceFD = aligned_out_psRGXKickSyncOUT_i32UpdateFenceFD;
 
 
 
