@@ -78,8 +78,8 @@ PVRSRVBridgeRGXCreateRPMFreeList(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_RGXCREATERPMFREELIST *psRGXCreateRPMFreeListOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psRGXCreateRPMFreeListOUT->ui32HWFreeList) aligned_out_psRGXCreateRPMFreeListOUT_ui32HWFreeList;
-	typeof(psRGXCreateRPMFreeListOUT->hCleanupCookie) aligned_out_psRGXCreateRPMFreeListOUT_hCleanupCookie;
+	typeof(psRGXCreateRPMFreeListOUT->ui32HWFreeList) aligned_out_psRGXCreateRPMFreeListOUT_ui32HWFreeList __attribute__((unused));
+	typeof(psRGXCreateRPMFreeListOUT->hCleanupCookie) aligned_out_psRGXCreateRPMFreeListOUT_hCleanupCookie __attribute__((unused));
 
 	IMG_HANDLE hRPMContext = psRGXCreateRPMFreeListIN->hRPMContext;
 	RGX_SERVER_RPM_CONTEXT * psRPMContextInt = NULL;
@@ -275,9 +275,9 @@ PVRSRVBridgeRGXCreateRPMContext(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_RGXCREATERPMCONTEXT *psRGXCreateRPMContextOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psRGXCreateRPMContextOUT->ui32HWFrameData) aligned_out_psRGXCreateRPMContextOUT_ui32HWFrameData;
-	typeof(psRGXCreateRPMContextOUT->hCleanupCookie) aligned_out_psRGXCreateRPMContextOUT_hCleanupCookie;
-	typeof(psRGXCreateRPMContextOUT->hHWMemDesc) aligned_out_psRGXCreateRPMContextOUT_hHWMemDesc;
+	typeof(psRGXCreateRPMContextOUT->ui32HWFrameData) aligned_out_psRGXCreateRPMContextOUT_ui32HWFrameData __attribute__((unused));
+	typeof(psRGXCreateRPMContextOUT->hCleanupCookie) aligned_out_psRGXCreateRPMContextOUT_hCleanupCookie __attribute__((unused));
+	typeof(psRGXCreateRPMContextOUT->hHWMemDesc) aligned_out_psRGXCreateRPMContextOUT_hHWMemDesc __attribute__((unused));
 
 	RGX_SERVER_RPM_CONTEXT * psCleanupCookieInt = NULL;
 	IMG_HANDLE hSceneHeap = psRGXCreateRPMContextIN->hSceneHeap;
@@ -1502,7 +1502,7 @@ PVRSRVBridgeRGXCreateRayContext(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_RGXCREATERAYCONTEXT *psRGXCreateRayContextOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psRGXCreateRayContextOUT->hRayContext) aligned_out_psRGXCreateRayContextOUT_hRayContext;
+	typeof(psRGXCreateRayContextOUT->hRayContext) aligned_out_psRGXCreateRayContextOUT_hRayContext __attribute__((unused));
 
 	IMG_BYTE *psFrameworkCmdInt = NULL;
 	IMG_HANDLE hPrivData = psRGXCreateRayContextIN->hPrivData;
