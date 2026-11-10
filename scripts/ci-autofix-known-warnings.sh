@@ -73,13 +73,16 @@ for path in root.glob("*/core/rtw_mlme_ext.c"):
         raise SystemExit(f"Cannot locate pmlmeinfo declaration: {path}")
     decl_end = source.find("\n", decl)
     declaration = "\tNDIS_802_11_SSID aligned_network_ssid;\n"
-    if declaration not in source[fn:]:
-        source = source[:decl_end + 1] + declaration + source[decl_end + 1:]
     assoc = source.find("if (is_client_associated_to_ap(padapter))", fn)
     if assoc < 0:
         raise SystemExit(f"Cannot locate associated-client guard: {path}")
-    if copy not in source[fn:assoc]:
-        source = source[:assoc] + copy + source[assoc:]
+    assoc_line_start = source.rfind("\n", 0, assoc) + 1
+    if declaration not in source[decl:assoc_line_start]:
+        source = source[:decl_end + 1] + declaration + source[decl_end + 1:]
+        assoc = source.find("if (is_client_associated_to_ap(padapter))", fn)
+        assoc_line_start = source.rfind("\n", 0, assoc) + 1
+    if copy not in source[fn:assoc_line_start]:
+        source = source[:assoc_line_start] + copy + source[assoc_line_start:]
     count = source.count(old)
     source = source.replace(old, "&aligned_network_ssid")
     path.write_text(source, encoding="utf-8")

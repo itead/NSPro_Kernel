@@ -10880,11 +10880,11 @@ void linked_status_chk(_adapter *padapter)
 	rtw_hal_sreset_linked_status_check(padapter);
 	#endif
 
-		/* WLAN_BSSID_EX is packed; copy SSID into aligned storage before use. */
+	/* WLAN_BSSID_EX is packed; copy SSID into aligned storage before use. */
 	memcpy(&aligned_network_ssid, (const u8 *)&pmlmeinfo->network +
 	       offsetof(WLAN_BSSID_EX, Ssid), sizeof(aligned_network_ssid));
 
-if (is_client_associated_to_ap(padapter))
+	if (is_client_associated_to_ap(padapter))
 	{
 		//linked infrastructure client mode
 
