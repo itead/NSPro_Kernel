@@ -1135,7 +1135,14 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 							ea->pa_dst_net,
 							ea->pa_dst_node);
 
-						__nat25_generate_apple_network_addr(networkAddr, &ea->pa_src_net, &ea->pa_src_node);
+						{
+						unsigned short apple_net;
+						unsigned char apple_node;
+
+						memcpy(&apple_net, (u8 *)ea + offsetof(struct elapaarp, pa_src_net), sizeof(apple_net));
+						memcpy(&apple_node, (u8 *)ea + offsetof(struct elapaarp, pa_src_node), sizeof(apple_node));
+						__nat25_generate_apple_network_addr(networkAddr, &apple_net, &apple_node);
+					}
 
 						__nat25_db_network_insert(priv, skb->data+ETH_ALEN, networkAddr);
 
@@ -1151,7 +1158,14 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 							ea->pa_dst_net,
 							ea->pa_dst_node);
 
-						__nat25_generate_apple_network_addr(networkAddr, &ea->pa_dst_net, &ea->pa_dst_node);
+						{
+						unsigned short apple_net;
+						unsigned char apple_node;
+
+						memcpy(&apple_net, (u8 *)ea + offsetof(struct elapaarp, pa_dst_net), sizeof(apple_net));
+						memcpy(&apple_node, (u8 *)ea + offsetof(struct elapaarp, pa_dst_node), sizeof(apple_node));
+						__nat25_generate_apple_network_addr(networkAddr, &apple_net, &apple_node);
+					}
 
 						__nat25_db_network_lookup_and_replace(priv, skb, networkAddr);
 
