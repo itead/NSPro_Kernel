@@ -50,11 +50,16 @@ jobs:
           fi
 
           # Keep every Rockchip Realtek packed 802.11 header consistent.
-          # frame_ctl is at offset zero; explicit 2-byte alignment makes
-          # taking its address safe and avoids GCC -Waddress-of-packed-member.
+          # frame_ctl is the first field and must be explicitly 2-byte aligned.
           for driver in rtl8188eu rtl8188fu rtl8189es rtl8189fs rtl8723bs rtl8723bu rtl8723cs rtl8723ds rtl8822be; do
             header="drivers/net/wireless/rockchip_wlan/$driver/include/ieee80211.h"
-            if ! grep -Eq 'struct rtw_ieee80211_hdr[[:space:]]*\{[[:space:]]*
+            if ! grep -Fq 'frame_ctl __attribute__((aligned(2)))' "$header"; then
+              echo "::error::Missing 2-byte frame_ctl alignment in $header"
+              exit 1
+            fi
+          done
+          echo "All Rockchip Realtek frame_ctl declarations have explicit 2-byte alignment."
+
   build:
     name: Build and package on dell5300
     # Never execute untrusted fork code on the persistent self-hosted runner.
