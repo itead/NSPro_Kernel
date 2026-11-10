@@ -215,7 +215,7 @@ PVRSRVBridgeRIWriteMEMDESCEntry(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_RIWRITEMEMDESCENTRY *psRIWriteMEMDESCEntryOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psRIWriteMEMDESCEntryOUT->hRIHandle) aligned_out_psRIWriteMEMDESCEntryOUT_hRIHandle;
+	typeof(psRIWriteMEMDESCEntryOUT->hRIHandle) aligned_out_psRIWriteMEMDESCEntryOUT_hRIHandle __attribute__((unused));
 
 	IMG_HANDLE hPMRHandle = psRIWriteMEMDESCEntryIN->hPMRHandle;
 	PMR * psPMRHandleInt = NULL;
@@ -399,7 +399,7 @@ PVRSRVBridgeRIWriteProcListEntry(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_RIWRITEPROCLISTENTRY *psRIWriteProcListEntryOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psRIWriteProcListEntryOUT->hRIHandle) aligned_out_psRIWriteProcListEntryOUT_hRIHandle;
+	typeof(psRIWriteProcListEntryOUT->hRIHandle) aligned_out_psRIWriteProcListEntryOUT_hRIHandle __attribute__((unused));
 
 	IMG_CHAR *uiTextBInt = NULL;
 	RI_HANDLE psRIHandleInt = NULL;
