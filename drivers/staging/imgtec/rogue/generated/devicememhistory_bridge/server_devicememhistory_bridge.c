@@ -270,7 +270,7 @@ PVRSRVBridgeDevicememHistoryMapNew(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_DEVICEMEMHISTORYMAPNEW *psDevicememHistoryMapNewOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psDevicememHistoryMapNewOUT->ui32AllocationIndexOut) aligned_out_psDevicememHistoryMapNewOUT_ui32AllocationIndexOut;
+	typeof(psDevicememHistoryMapNewOUT->ui32AllocationIndexOut) aligned_out_psDevicememHistoryMapNewOUT_ui32AllocationIndexOut __attribute__((unused));
 
 	IMG_HANDLE hPMR = psDevicememHistoryMapNewIN->hPMR;
 	PMR * psPMRInt = NULL;
@@ -417,7 +417,7 @@ PVRSRVBridgeDevicememHistoryUnmapNew(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_DEVICEMEMHISTORYUNMAPNEW *psDevicememHistoryUnmapNewOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psDevicememHistoryUnmapNewOUT->ui32AllocationIndexOut) aligned_out_psDevicememHistoryUnmapNewOUT_ui32AllocationIndexOut;
+	typeof(psDevicememHistoryUnmapNewOUT->ui32AllocationIndexOut) aligned_out_psDevicememHistoryUnmapNewOUT_ui32AllocationIndexOut __attribute__((unused));
 
 	IMG_HANDLE hPMR = psDevicememHistoryUnmapNewIN->hPMR;
 	PMR * psPMRInt = NULL;
@@ -564,7 +564,7 @@ PVRSRVBridgeDevicememHistoryMapVRange(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_DEVICEMEMHISTORYMAPVRANGE *psDevicememHistoryMapVRangeOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psDevicememHistoryMapVRangeOUT->ui32AllocationIndexOut) aligned_out_psDevicememHistoryMapVRangeOUT_ui32AllocationIndexOut;
+	typeof(psDevicememHistoryMapVRangeOUT->ui32AllocationIndexOut) aligned_out_psDevicememHistoryMapVRangeOUT_ui32AllocationIndexOut __attribute__((unused));
 
 	IMG_CHAR *uiTextInt = NULL;
 
@@ -669,7 +669,7 @@ PVRSRVBridgeDevicememHistoryUnmapVRange(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_DEVICEMEMHISTORYUNMAPVRANGE *psDevicememHistoryUnmapVRangeOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psDevicememHistoryUnmapVRangeOUT->ui32AllocationIndexOut) aligned_out_psDevicememHistoryUnmapVRangeOUT_ui32AllocationIndexOut;
+	typeof(psDevicememHistoryUnmapVRangeOUT->ui32AllocationIndexOut) aligned_out_psDevicememHistoryUnmapVRangeOUT_ui32AllocationIndexOut __attribute__((unused));
 
 	IMG_CHAR *uiTextInt = NULL;
 
@@ -774,7 +774,7 @@ PVRSRVBridgeDevicememHistorySparseChange(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_DEVICEMEMHISTORYSPARSECHANGE *psDevicememHistorySparseChangeOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psDevicememHistorySparseChangeOUT->ui32AllocationIndexOut) aligned_out_psDevicememHistorySparseChangeOUT_ui32AllocationIndexOut;
+	typeof(psDevicememHistorySparseChangeOUT->ui32AllocationIndexOut) aligned_out_psDevicememHistorySparseChangeOUT_ui32AllocationIndexOut __attribute__((unused));
 
 	IMG_HANDLE hPMR = psDevicememHistorySparseChangeIN->hPMR;
 	PMR * psPMRInt = NULL;
