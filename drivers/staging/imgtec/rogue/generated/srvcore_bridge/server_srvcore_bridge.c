@@ -76,10 +76,10 @@ PVRSRVBridgeConnect(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_CONNECT *psConnectOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psConnectOUT->ui8KernelArch) aligned_out_psConnectOUT_ui8KernelArch;
-	typeof(psConnectOUT->ui32CapabilityFlags) aligned_out_psConnectOUT_ui32CapabilityFlags;
-	typeof(psConnectOUT->ui32PVRBridges) aligned_out_psConnectOUT_ui32PVRBridges;
-	typeof(psConnectOUT->ui32RGXBridges) aligned_out_psConnectOUT_ui32RGXBridges;
+	typeof(psConnectOUT->ui8KernelArch) aligned_out_psConnectOUT_ui8KernelArch __attribute__((unused));
+	typeof(psConnectOUT->ui32CapabilityFlags) aligned_out_psConnectOUT_ui32CapabilityFlags __attribute__((unused));
+	typeof(psConnectOUT->ui32PVRBridges) aligned_out_psConnectOUT_ui32PVRBridges __attribute__((unused));
+	typeof(psConnectOUT->ui32RGXBridges) aligned_out_psConnectOUT_ui32RGXBridges __attribute__((unused));
 
 
 
@@ -186,7 +186,7 @@ PVRSRVBridgeAcquireGlobalEventObject(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_ACQUIREGLOBALEVENTOBJECT *psAcquireGlobalEventObjectOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psAcquireGlobalEventObjectOUT->hGlobalEventObject) aligned_out_psAcquireGlobalEventObjectOUT_hGlobalEventObject;
+	typeof(psAcquireGlobalEventObjectOUT->hGlobalEventObject) aligned_out_psAcquireGlobalEventObjectOUT_hGlobalEventObject __attribute__((unused));
 
 	IMG_HANDLE hGlobalEventObjectInt = NULL;
 
@@ -308,7 +308,7 @@ PVRSRVBridgeEventObjectOpen(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_EVENTOBJECTOPEN *psEventObjectOpenOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psEventObjectOpenOUT->hOSEvent) aligned_out_psEventObjectOpenOUT_hOSEvent;
+	typeof(psEventObjectOpenOUT->hOSEvent) aligned_out_psEventObjectOpenOUT_hOSEvent __attribute__((unused));
 
 	IMG_HANDLE hEventObject = psEventObjectOpenIN->hEventObject;
 	IMG_HANDLE hEventObjectInt = NULL;
@@ -575,7 +575,7 @@ PVRSRVBridgeGetDevClockSpeed(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_GETDEVCLOCKSPEED *psGetDevClockSpeedOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psGetDevClockSpeedOUT->ui32ui32ClockSpeed) aligned_out_psGetDevClockSpeedOUT_ui32ui32ClockSpeed;
+	typeof(psGetDevClockSpeedOUT->ui32ui32ClockSpeed) aligned_out_psGetDevClockSpeedOUT_ui32ui32ClockSpeed __attribute__((unused));
 
 
 
@@ -737,7 +737,7 @@ PVRSRVBridgeGetDeviceStatus(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_GETDEVICESTATUS *psGetDeviceStatusOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psGetDeviceStatusOUT->ui32DeviceSatus) aligned_out_psGetDeviceStatusOUT_ui32DeviceSatus;
+	typeof(psGetDeviceStatusOUT->ui32DeviceSatus) aligned_out_psGetDeviceStatusOUT_ui32DeviceSatus __attribute__((unused));
 
 
 
