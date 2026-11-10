@@ -77,9 +77,9 @@ PVRSRVBridgePhysmemImportDmaBuf(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_PHYSMEMIMPORTDMABUF *psPhysmemImportDmaBufOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psPhysmemImportDmaBufOUT->uiSize) aligned_out_psPhysmemImportDmaBufOUT_uiSize;
-	typeof(psPhysmemImportDmaBufOUT->sAlign) aligned_out_psPhysmemImportDmaBufOUT_sAlign;
-	typeof(psPhysmemImportDmaBufOUT->hPMRPtr) aligned_out_psPhysmemImportDmaBufOUT_hPMRPtr;
+	typeof(psPhysmemImportDmaBufOUT->uiSize) aligned_out_psPhysmemImportDmaBufOUT_uiSize __attribute__((unused));
+	typeof(psPhysmemImportDmaBufOUT->sAlign) aligned_out_psPhysmemImportDmaBufOUT_sAlign __attribute__((unused));
+	typeof(psPhysmemImportDmaBufOUT->hPMRPtr) aligned_out_psPhysmemImportDmaBufOUT_hPMRPtr __attribute__((unused));
 
 	PMR * psPMRPtrInt = NULL;
 
@@ -157,7 +157,7 @@ PVRSRVBridgePhysmemExportDmaBuf(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_PHYSMEMEXPORTDMABUF *psPhysmemExportDmaBufOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psPhysmemExportDmaBufOUT->iFd) aligned_out_psPhysmemExportDmaBufOUT_iFd;
+	typeof(psPhysmemExportDmaBufOUT->iFd) aligned_out_psPhysmemExportDmaBufOUT_iFd __attribute__((unused));
 
 	IMG_HANDLE hPMR = psPhysmemExportDmaBufIN->hPMR;
 	PMR * psPMRInt = NULL;
@@ -235,9 +235,9 @@ PVRSRVBridgePhysmemImportSparseDmaBuf(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_PHYSMEMIMPORTSPARSEDMABUF *psPhysmemImportSparseDmaBufOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	typeof(psPhysmemImportSparseDmaBufOUT->uiSize) aligned_out_psPhysmemImportSparseDmaBufOUT_uiSize;
-	typeof(psPhysmemImportSparseDmaBufOUT->sAlign) aligned_out_psPhysmemImportSparseDmaBufOUT_sAlign;
-	typeof(psPhysmemImportSparseDmaBufOUT->hPMRPtr) aligned_out_psPhysmemImportSparseDmaBufOUT_hPMRPtr;
+	typeof(psPhysmemImportSparseDmaBufOUT->uiSize) aligned_out_psPhysmemImportSparseDmaBufOUT_uiSize __attribute__((unused));
+	typeof(psPhysmemImportSparseDmaBufOUT->sAlign) aligned_out_psPhysmemImportSparseDmaBufOUT_sAlign __attribute__((unused));
+	typeof(psPhysmemImportSparseDmaBufOUT->hPMRPtr) aligned_out_psPhysmemImportSparseDmaBufOUT_hPMRPtr __attribute__((unused));
 
 	IMG_UINT32 *ui32MappingTableInt = NULL;
 	PMR * psPMRPtrInt = NULL;
