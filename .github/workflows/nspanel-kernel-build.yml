@@ -15,8 +15,9 @@ permissions:
   contents: read
 
 concurrency:
+  # Coalesce rapid pushes: only the newest branch head should reach the build runner.
   group: nspanel-kernel-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   validate:
