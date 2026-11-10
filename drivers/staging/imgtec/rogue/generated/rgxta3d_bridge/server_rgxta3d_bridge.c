@@ -1520,6 +1520,8 @@ PVRSRVBridgeRGXKickTA3D(IMG_UINT32 ui32DispatchTableEntry,
 	SYNC_PRIMITIVE_BLOCK * psPRFenceUFOSyncPrimBlockInt = NULL;
 	IMG_CHAR *uiUpdateFenceNameInt = NULL;
 	IMG_INT32 i32UpdateFenceFD = -1;
+	typeof(psRGXKickTA3DOUT->bbCommittedRefCountsTA) bbCommittedRefCountsTA = IMG_FALSE;
+	typeof(psRGXKickTA3DOUT->bbCommittedRefCounts3D) bbCommittedRefCounts3D = IMG_FALSE;
 	IMG_BYTE *psTACmdInt = NULL;
 	IMG_BYTE *ps3DPRCmdInt = NULL;
 	IMG_BYTE *ps3DCmdInt = NULL;
@@ -2305,8 +2307,8 @@ PVRSRVBridgeRGXKickTA3D(IMG_UINT32 ui32DispatchTableEntry,
 					psSBufferInt,
 					psRGXKickTA3DIN->bbCommitRefCountsTA,
 					psRGXKickTA3DIN->bbCommitRefCounts3D,
-					&psRGXKickTA3DOUT->bbCommittedRefCountsTA,
-					&psRGXKickTA3DOUT->bbCommittedRefCounts3D,
+					&bbCommittedRefCountsTA,
+					&bbCommittedRefCounts3D,
 					psRGXKickTA3DIN->ui32SyncPMRCount,
 					ui32SyncPMRFlagsInt,
 					psSyncPMRsInt,
@@ -2316,6 +2318,8 @@ PVRSRVBridgeRGXKickTA3D(IMG_UINT32 ui32DispatchTableEntry,
 					psRGXKickTA3DIN->ui32NumberOfMRTs,
 					psRGXKickTA3DIN->ui64Deadline);
 	psRGXKickTA3DOUT->i32UpdateFenceFD = i32UpdateFenceFD;
+	psRGXKickTA3DOUT->bbCommittedRefCountsTA = bbCommittedRefCountsTA;
+	psRGXKickTA3DOUT->bbCommittedRefCounts3D = bbCommittedRefCounts3D;
 
 
 
@@ -2724,6 +2728,7 @@ PVRSRVBridgeRGXGetPartialRenderCount(IMG_UINT32 ui32DispatchTableEntry,
 {
 	IMG_HANDLE hHWRTDataMemDesc = psRGXGetPartialRenderCountIN->hHWRTDataMemDesc;
 	DEVMEM_MEMDESC * psHWRTDataMemDescInt = NULL;
+	typeof(psRGXGetPartialRenderCountOUT->ui32NumPartialRenders) ui32NumPartialRenders = 0;
 
 
 
@@ -2758,7 +2763,8 @@ PVRSRVBridgeRGXGetPartialRenderCount(IMG_UINT32 ui32DispatchTableEntry,
 	psRGXGetPartialRenderCountOUT->eError =
 		PVRSRVRGXGetPartialRenderCountKM(
 					psHWRTDataMemDescInt,
-					&psRGXGetPartialRenderCountOUT->ui32NumPartialRenders);
+					&ui32NumPartialRenders);
+	psRGXGetPartialRenderCountOUT->ui32NumPartialRenders = ui32NumPartialRenders;
 
 
 
