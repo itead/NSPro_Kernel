@@ -830,6 +830,11 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 
 			case NAT25_LOOKUP:
 				{
+						typeof(ipx->ipx_dest) ipx_dest;
+
+						memcpy(&ipx_dest, (const u8 *)ipx +
+						       offsetof(struct ipxhdr, ipx_dest),
+						       sizeof(ipx_dest));
 					DBG_871X("NAT25: Lookup IP, SA=%08x, DA=%08x\n", iph->saddr, iph->daddr);
 #ifdef SUPPORT_TX_MCAST2UNI
 					if (priv->pshare->rf_ft_var.mc2u_disable ||
@@ -1078,11 +1083,11 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 
 				case NAT25_LOOKUP:
 					{
-                                                if(!memcmp(GET_MY_HWADDR(priv), ipx->ipx_dest.node, ETH_ALEN))
+                                                if(!memcmp(GET_MY_HWADDR(priv), ipx_dest.node, ETH_ALEN))
 						{
 							DBG_871X("NAT25: Lookup IPX, Modify Destination IPX Node addr\n");
 
-							__nat25_generate_ipx_network_addr_with_socket(networkAddr, &ipx->ipx_dest.net, &ipx->ipx_dest.sock);
+							__nat25_generate_ipx_network_addr_with_socket(networkAddr, &ipx_dest.net, &ipx_dest.sock);
 
 							__nat25_db_network_lookup_and_replace(priv, skb, networkAddr);
 
@@ -1091,7 +1096,7 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 						}
 						else
 						{
-							__nat25_generate_ipx_network_addr_with_node(networkAddr, &ipx->ipx_dest.net, ipx->ipx_dest.node);
+							__nat25_generate_ipx_network_addr_with_node(networkAddr, &ipx_dest.net, ipx_dest.node);
 
 							__nat25_db_network_lookup_and_replace(priv, skb, networkAddr);
 						}
