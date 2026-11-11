@@ -44,41 +44,22 @@ if [ "$CI_MODE" = 1 ]; then
         exit 1
     }
     {
-        printf '===== NSPanel build entry point: %s =====\n' "$(date '+%Y-%m-%d %H:%M:%S %z')"
-        printf '===== Working directory: %s =====\n' "$BUILD_DIR"
-        printf '===== Commit initial: %s =====\n' "$ACTUAL_SHA"
-        printf '===== Compiler: %s =====\n' "$(aarch64-unknown-linux-gnu-gcc -dumpfullversion)"
+        echo "===== NSPanel build entry point: $(date '+%Y-%m-%d %H:%M:%S %z') ====="
+        echo "===== Working directory: $BUILD_DIR ====="
+        echo "===== Commit exact: $ACTUAL_SHA ====="
+        echo "===== Compiler: $(aarch64-unknown-linux-gnu-gcc -dumpfullversion) ====="
+        echo "===== Build policy: one compile pass, no in-build source mutation or retry ====="
     } | tee -a "$LOG_FILE"
-    BUILD_STATUS=1
-    ATTEMPT=1
-    while [ "$ATTEMPT" -le 3 ]; do
-        echo "===== Kernel build attempt $ATTEMPT/3 =====" | tee -a "$LOG_FILE"
-        set +e
-        ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make -j3 \
-            HOSTCFLAGS="-Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -fcommon" \
-            Image dtbs modules >> "$LOG_FILE" 2>&1
+    if ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make -j3 HOSTCFLAGS="-Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -fcommon" Image dtbs modules >> "$LOG_FILE" 2>&1; then
+        BUILD_STATUS=0
+    else
         BUILD_STATUS=$?
-        set -e
-        tail -n 80 "$LOG_FILE"
-        if [ "$BUILD_STATUS" -eq 0 ]; then break; fi
-        if [ "$ATTEMPT" -eq 3 ] || [ "${GITHUB_REF:-}" != "refs/heads/fix/rockchip-gem-zero-size" ]; then break; fi
-        if ! bash scripts/ci-autofix-known-warnings.sh "$LOG_FILE"; then break; fi
-        git -c core.whitespace=cr-at-eol diff --check || break
-        if git diff --quiet; then break; fi
-        git config user.name "github-actions[bot]"
-        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git add -- drivers/net/wireless/rockchip_wlan
-        git commit -m "ci: apply verified Rockchip compiler warning fixes" || break
-        git push origin "HEAD:$GITHUB_REF_NAME" || break
-        echo "===== Repair committed: $(git rev-parse HEAD); retrying =====" | tee -a "$LOG_FILE"
-        ATTEMPT=$((ATTEMPT + 1))
-    done
-    printf '\n===== BUILD EXIT STATUS: %s =====\n' "$BUILD_STATUS" | tee -a "$LOG_FILE"
-    # The workflow runs the canonical analyzer once, writing to a separate report.
-    # Never pipe analysis output back into the build log being scanned.
+    fi
+    tail -n 80 "$LOG_FILE"
+    echo >> "$LOG_FILE"
+    printf '===== BUILD EXIT STATUS: %s =====\n' "$BUILD_STATUS" | tee -a "$LOG_FILE"
     exit "$BUILD_STATUS"
 fi
-
 LOG_FILE="$BUILD_DIR/nspanel-kernel-build-$(date '+%Y%m%d-%H%M%S')-$$.log"
 {
     printf '===== NSPanel kernel build started: %s =====\n' "$(date '+%Y-%m-%d %H:%M:%S %z')"
@@ -96,7 +77,9 @@ LOG_FILE="$BUILD_DIR/nspanel-kernel-build-$(date '+%Y%m%d-%H%M%S')-$$.log"
         Image dtbs modules >> "$LOG_FILE" 2>&1
     BUILD_STATUS=$?
     printf '\n===== BUILD EXIT STATUS: %s =====\n' "$BUILD_STATUS" >> "$LOG_FILE"
-    "$BUILD_DIR/NSPanel-check-compile-errors.sh" "$LOG_FILE" >> "$LOG_FILE" 2>&1 || true
+    DIAGNOSTICS_FILE="$BUILD_DIR/nspanel-kernel-diagnostics-$(date '+%Y%m%d-%H%M%S')-$.txt"
+    "$BUILD_DIR/NSPanel-check-compile-errors.sh" "$LOG_FILE" > "$DIAGNOSTICS_FILE" 2>&1 || true
+    echo "Diagnostics : $DIAGNOSTICS_FILE" >> "$LOG_FILE"
     "$BUILD_DIR/NSPanel-commit-and-push.sh" "$LOG_FILE" >> "$LOG_FILE" 2>&1 || exit $?
     exit "$BUILD_STATUS"
 ) </dev/null >/dev/null 2>&1 &

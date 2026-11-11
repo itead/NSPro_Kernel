@@ -38,6 +38,15 @@ jobs:
               echo "::error::Missing 2-byte frame_ctl alignment in $header"; exit 1;
             }
           done
+          for driver in rtl8188eu rtl8188fu rtl8189es rtl8189fs rtl8192cu rtl8192du rtl8723au rtl8723bs-vq0 rtl8723bs rtl8723bu rtl8723cs rtl8723ds rtl8812au rtl8822be; do
+            header="drivers/net/wireless/rockchip_wlan/$driver/include/osdep_service.h"
+            source="drivers/net/wireless/rockchip_wlan/$driver/os_dep/osdep_service.c"
+            for file in "$header" "$source"; do
+              grep -Eq '_rtw_memcmp\(const void \*dst, const void \*src, u32 sz\)' "$file" || {
+                echo "::error::Non-const _rtw_memcmp interface in $file"; exit 1;
+              }
+            done
+          done
           if git grep -n -F 'rtw_sprintf(thread_name, 20, "%s-"ADPT_FMT, thread_name, ADPT_ARG(padapter));' -- drivers/net/wireless/rockchip_wlan; then
             echo "::error::Overlapping thread_name snprintf pattern remains"; exit 1
           fi
@@ -68,6 +77,8 @@ jobs:
         shell: bash
         run: |
           set -Eeo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain)"
           LOG_FILE="$PWD/nspanel-kernel-build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.log"
           echo "NSPANEL_BUILD_LOG=$LOG_FILE" >> "$GITHUB_ENV"
           {
@@ -147,9 +158,10 @@ jobs:
         run: |
           {
             echo '## NSPanel kernel CI/CD'
-            echo "- **Requested SHA:** `$GITHUB_SHA`"
-            echo "- **Built SHA:** `$(git rev-parse HEAD)`"
-            echo "- **Job:** `$JOB_STATUS`"
+            echo "- **Requested SHA:** $GITHUB_SHA"
+            BUILT_SHA=$(git rev-parse HEAD)
+            echo "- **Built SHA:** $BUILT_SHA"
+            echo "- **Job:** $JOB_STATUS"
             if [ -f "$NSPANEL_BUILD_LOG" ]; then
               echo "- **Warnings:** $(grep -Ec 'warning:' "$NSPANEL_BUILD_LOG" || true)"
               echo "- **Errors:** $(grep -Ec 'error:|fatal error:|undefined reference|Error [0-9]+' "$NSPANEL_BUILD_LOG" || true)"
