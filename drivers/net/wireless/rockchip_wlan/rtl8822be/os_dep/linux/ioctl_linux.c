@@ -2628,6 +2628,7 @@ static int rtw_wx_get_scan(struct net_device *dev, struct iw_request_info *a,
 	struct	mlme_priv	*pmlmepriv = &(padapter->mlmepriv);
 	_queue				*queue	= &(pmlmepriv->scanned_queue);
 	struct	wlan_network	*pnetwork = NULL;
+	NDIS_802_11_SSID aligned_ssid;
 	char *ev = extra;
 	char *stop = ev + wrqu->data.length;
 	u32 ret = 0;
@@ -2703,11 +2704,14 @@ static int rtw_wx_get_scan(struct net_device *dev, struct iw_request_info *a,
 		}
 
 		pnetwork = LIST_CONTAINOR(plist, struct wlan_network, list);
+		memcpy(&aligned_ssid,
+		       (const u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, Ssid),
+		       sizeof(aligned_ssid));
 
 		/* report network only if the current channel set contains the channel to which this network belongs */
 		if (rtw_ch_set_search_ch(padapter->mlmeextpriv.channel_set, pnetwork->network.Configuration.DSConfig) >= 0
 		    && rtw_mlme_band_check(padapter, pnetwork->network.Configuration.DSConfig) == _TRUE
-		    && _TRUE == rtw_validate_ssid(&(pnetwork->network.Ssid))
+		    && _TRUE == rtw_validate_ssid(&aligned_ssid)
 		   )
 			ev = translate_scan(padapter, a, pnetwork, ev, stop);
 
