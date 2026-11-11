@@ -784,8 +784,8 @@ static int checkIPMcAndReplace(_adapter *priv, struct sk_buff *skb, unsigned int
 
 int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 {
-	unsigned short protocol;
-	unsigned char networkAddr[MAX_NETWORK_ADDR_LEN];
+	unsigned short protocol, apple_net;
+	unsigned char networkAddr[MAX_NETWORK_ADDR_LEN], apple_node;
 
 	if(skb == NULL)
 		return -1;
@@ -1116,7 +1116,9 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 							ea->pa_dst_net,
 							ea->pa_dst_node);
 
-						__nat25_generate_apple_network_addr(networkAddr, &ea->pa_src_net, &ea->pa_src_node);
+						apple_net = ea->pa_src_net;
+						apple_node = ea->pa_src_node;
+						__nat25_generate_apple_network_addr(networkAddr, &apple_net, &apple_node);
 
 						__nat25_db_network_insert(priv, skb->data+ETH_ALEN, networkAddr);
 
@@ -1132,7 +1134,9 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 							ea->pa_dst_net,
 							ea->pa_dst_node);
 
-						__nat25_generate_apple_network_addr(networkAddr, &ea->pa_dst_net, &ea->pa_dst_node);
+						apple_net = ea->pa_dst_net;
+						apple_node = ea->pa_dst_node;
+						__nat25_generate_apple_network_addr(networkAddr, &apple_net, &apple_node);
 
 						__nat25_db_network_lookup_and_replace(priv, skb, networkAddr);
 
@@ -1162,7 +1166,9 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 							ddp->deh_dnet,
 							ddp->deh_dnode);
 
-						__nat25_generate_apple_network_addr(networkAddr, &ddp->deh_snet, &ddp->deh_snode);
+						apple_net = ddp->deh_snet;
+						apple_node = ddp->deh_snode;
+						__nat25_generate_apple_network_addr(networkAddr, &apple_net, &apple_node);
 
 						__nat25_db_network_insert(priv, skb->data+ETH_ALEN, networkAddr);
 
@@ -1178,7 +1184,9 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 							ddp->deh_dnet,
 							ddp->deh_dnode);
 
-						__nat25_generate_apple_network_addr(networkAddr, &ddp->deh_dnet, &ddp->deh_dnode);
+						apple_net = ddp->deh_dnet;
+						apple_node = ddp->deh_dnode;
+						__nat25_generate_apple_network_addr(networkAddr, &apple_net, &apple_node);
 
 						__nat25_db_network_lookup_and_replace(priv, skb, networkAddr);
 					}
