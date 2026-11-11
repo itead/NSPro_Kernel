@@ -1043,6 +1043,9 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 				return 0;
 
 			case NAT25_INSERT: {
+				unsigned short pa_src_net = ea->pa_src_net;
+				unsigned char pa_src_node = ea->pa_src_node;
+
 				/* change to AARP source mac address to wlan STA address */
 				memcpy(ea->hw_src, GET_MY_HWADDR(priv), ETH_ALEN);
 
@@ -1052,7 +1055,7 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 					 ea->pa_dst_net,
 					 ea->pa_dst_node);
 
-				__nat25_generate_apple_network_addr(networkAddr, &ea->pa_src_net, &ea->pa_src_node);
+				__nat25_generate_apple_network_addr(networkAddr, &pa_src_net, &pa_src_node);
 
 				__nat25_db_network_insert(priv, skb->data + ETH_ALEN, networkAddr);
 
@@ -1061,13 +1064,16 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 			return 0;
 
 			case NAT25_LOOKUP: {
+				unsigned short pa_dst_net = ea->pa_dst_net;
+				unsigned char pa_dst_node = ea->pa_dst_node;
+
 				RTW_INFO("NAT25: Lookup AARP, Source=%d,%d Destination=%d,%d\n",
 					 ea->pa_src_net,
 					 ea->pa_src_node,
 					 ea->pa_dst_net,
 					 ea->pa_dst_node);
 
-				__nat25_generate_apple_network_addr(networkAddr, &ea->pa_dst_net, &ea->pa_dst_node);
+				__nat25_generate_apple_network_addr(networkAddr, &pa_dst_net, &pa_dst_node);
 
 				__nat25_db_network_lookup_and_replace(priv, skb, networkAddr);
 
