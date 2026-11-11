@@ -654,7 +654,7 @@ void rtw_cfg80211_ibss_indicate_connect(_adapter *padapter)
 			if (scanned == NULL)
 				rtw_warn_on(1);
 
-			if (_rtw_memcmp(&(scanned->network.Ssid), &(pnetwork->Ssid), sizeof(NDIS_802_11_SSID)) == _TRUE
+			if (_rtw_memcmp((const u8 *)&scanned->network + offsetof(WLAN_BSSID_EX, Ssid), (const u8 *)pnetwork + offsetof(WLAN_BSSID_EX, Ssid), sizeof(NDIS_802_11_SSID)) == _TRUE
 			    && _rtw_memcmp(scanned->network.MacAddress, pnetwork->MacAddress, sizeof(NDIS_802_11_MAC_ADDRESS)) == _TRUE
 			   ) {
 				if (!rtw_cfg80211_inform_bss(padapter, scanned))
@@ -724,7 +724,7 @@ void rtw_cfg80211_indicate_connect(_adapter *padapter)
 		}
 
 		if (_rtw_memcmp(scanned->network.MacAddress, pnetwork->MacAddress, sizeof(NDIS_802_11_MAC_ADDRESS)) == _TRUE
-		    && _rtw_memcmp(&(scanned->network.Ssid), &(pnetwork->Ssid), sizeof(NDIS_802_11_SSID)) == _TRUE
+		    && _rtw_memcmp((const u8 *)&scanned->network + offsetof(WLAN_BSSID_EX, Ssid), (const u8 *)pnetwork + offsetof(WLAN_BSSID_EX, Ssid), sizeof(NDIS_802_11_SSID)) == _TRUE
 		   ) {
 			if (!rtw_cfg80211_inform_bss(padapter, scanned))
 				RTW_INFO(FUNC_ADPT_FMT" inform fail !!\n", FUNC_ADPT_ARG(padapter));

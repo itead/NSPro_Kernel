@@ -86,15 +86,17 @@ jobs:
           test -s .config
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           free -h
-          df -h .
+          df -h . "${RUNNER_TEMP:-/tmp}" /tmp
           aarch64-unknown-linux-gnu-gcc --version | head -n 1
       - name: Compile through repository's canonical script
         id: compile
         shell: bash
         env:
           NSPANEL_CI: "1"
+          TMPDIR: ${{ runner.temp }}
         run: |
           set -Eeo pipefail
+          mkdir -p "$TMPDIR"
           ./NSPanel-compile.sh 2>&1 | tee -a "$NSPANEL_BUILD_LOG"
       - name: Analyze diagnostics through repository's canonical script
         if: always()

@@ -52,7 +52,6 @@ fi
 if [ "$HAS_PACKED_SSID" -eq 1 ]; then
 python3 - <<'PY'
 from pathlib import Path
-import re
 
 root = Path("drivers/net/wireless/rockchip_wlan")
 old_pmlme = "&pmlmeinfo->network.Ssid"
@@ -63,20 +62,9 @@ copy = (
     "\tmemcpy(&aligned_network_ssid, (const u8 *)&pmlmeinfo->network +\n"
     "\t       offsetof(WLAN_BSSID_EX, Ssid), sizeof(aligned_network_ssid));\n\n"
 )
-compare_pattern = re.compile(
-    r'(?m)^(?P<indent>[ \t]*)if \(_rtw_memcmp\(&\(scanned->network\.Ssid\),[ \t]*&\(pnetwork->Ssid\),[ \t]*sizeof\(NDIS_802_11_SSID\)\) == _TRUE'
-)
-
-def replace_compare(match):
-    indent = match.group("indent")
-    return (
-        f"{indent}if (_rtw_memcmp((const u8 *)&scanned->network + offsetof(WLAN_BSSID_EX, Ssid),\n"
-        f"{indent}                (const u8 *)pnetwork + offsetof(WLAN_BSSID_EX, Ssid),\n"
-        f"{indent}                sizeof(NDIS_802_11_SSID)) == _TRUE"
-    )
 
 changed = []
-for path in root.glob("*/core/rtw_mlme_ext.c"):
+for path in root.rglob("*.c"):
     source = path.read_text(encoding="utf-8")
     count_pmlme = source.count(old_pmlme)
     if count_pmlme:
@@ -100,10 +88,13 @@ for path in root.glob("*/core/rtw_mlme_ext.c"):
             source = source[:assoc_line_start] + copy + source[assoc_line_start:]
         source = source.replace(old_pmlme, "&aligned_network_ssid")
 
-    source, count_compare = compare_pattern.subn(replace_compare, source)
-    if count_pmlme or count_compare:
+    count_scanned = source.count(old_scanned)
+    count_pnetwork = source.count(old_pnetwork)
+    source = source.replace(old_scanned, "(const u8 *)&scanned->network + offsetof(WLAN_BSSID_EX, Ssid)")
+    source = source.replace(old_pnetwork, "(const u8 *)pnetwork + offsetof(WLAN_BSSID_EX, Ssid)")
+    if count_pmlme or count_scanned or count_pnetwork:
         path.write_text(source, encoding="utf-8")
-        changed.append((str(path), count_pmlme, count_compare))
+        changed.append((str(path), count_pmlme, count_scanned + count_pnetwork))
 
 remaining = []
 for path in root.rglob("*.c"):
