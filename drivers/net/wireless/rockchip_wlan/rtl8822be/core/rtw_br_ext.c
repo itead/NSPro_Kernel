@@ -955,9 +955,18 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 
 		/*   IPX  */
 		if (ipx != NULL) {
+			typeof(ipx->ipx_source) ipx_source;
+			typeof(ipx->ipx_dest) ipx_dest;
+
+			memcpy(&ipx_source, (const u8 *)ipx +
+			       offsetof(struct ipxhdr, ipx_source),
+			       sizeof(ipx_source));
+			memcpy(&ipx_dest, (const u8 *)ipx +
+			       offsetof(struct ipxhdr, ipx_dest),
+			       sizeof(ipx_dest));
 			switch (method) {
 			case NAT25_CHECK:
-				if (!memcmp(skb->data + ETH_ALEN, ipx->ipx_source.node, ETH_ALEN)) {
+				if (!memcmp(skb->data + ETH_ALEN, ipx_source.node, ETH_ALEN)) {
 					RTW_INFO("NAT25: Check IPX skb_copy\n");
 					return 0;
 				}
@@ -965,32 +974,32 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 
 			case NAT25_INSERT: {
 				RTW_INFO("NAT25: Insert IPX, Dest=%08x,%02x%02x%02x%02x%02x%02x,%04x Source=%08x,%02x%02x%02x%02x%02x%02x,%04x\n",
-					 ipx->ipx_dest.net,
-					 ipx->ipx_dest.node[0],
-					 ipx->ipx_dest.node[1],
-					 ipx->ipx_dest.node[2],
-					 ipx->ipx_dest.node[3],
-					 ipx->ipx_dest.node[4],
-					 ipx->ipx_dest.node[5],
-					 ipx->ipx_dest.sock,
-					 ipx->ipx_source.net,
-					 ipx->ipx_source.node[0],
-					 ipx->ipx_source.node[1],
-					 ipx->ipx_source.node[2],
-					 ipx->ipx_source.node[3],
-					 ipx->ipx_source.node[4],
-					 ipx->ipx_source.node[5],
-					 ipx->ipx_source.sock);
+					 ipx_dest.net,
+					 ipx_dest.node[0],
+					 ipx_dest.node[1],
+					 ipx_dest.node[2],
+					 ipx_dest.node[3],
+					 ipx_dest.node[4],
+					 ipx_dest.node[5],
+					 ipx_dest.sock,
+					 ipx_source.net,
+					 ipx_source.node[0],
+					 ipx_source.node[1],
+					 ipx_source.node[2],
+					 ipx_source.node[3],
+					 ipx_source.node[4],
+					 ipx_source.node[5],
+					 ipx_source.sock);
 
-				if (!memcmp(skb->data + ETH_ALEN, ipx->ipx_source.node, ETH_ALEN)) {
+				if (!memcmp(skb->data + ETH_ALEN, ipx_source.node, ETH_ALEN)) {
 					RTW_INFO("NAT25: Use IPX Net, and Socket as network addr\n");
 
-					__nat25_generate_ipx_network_addr_with_socket(networkAddr, &ipx->ipx_source.net, &ipx->ipx_source.sock);
+					__nat25_generate_ipx_network_addr_with_socket(networkAddr, &ipx_source.net, &ipx_source.sock);
 
 					/* change IPX source node addr to wlan STA address */
 					memcpy(ipx->ipx_source.node, GET_MY_HWADDR(priv), ETH_ALEN);
 				} else
-					__nat25_generate_ipx_network_addr_with_node(networkAddr, &ipx->ipx_source.net, ipx->ipx_source.node);
+					__nat25_generate_ipx_network_addr_with_node(networkAddr, &ipx_source.net, ipx_source.node);
 
 				__nat25_db_network_insert(priv, skb->data + ETH_ALEN, networkAddr);
 
@@ -999,17 +1008,17 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 			return 0;
 
 			case NAT25_LOOKUP: {
-				if (!memcmp(GET_MY_HWADDR(priv), ipx->ipx_dest.node, ETH_ALEN)) {
+				if (!memcmp(GET_MY_HWADDR(priv), ipx_dest.node, ETH_ALEN)) {
 					RTW_INFO("NAT25: Lookup IPX, Modify Destination IPX Node addr\n");
 
-					__nat25_generate_ipx_network_addr_with_socket(networkAddr, &ipx->ipx_dest.net, &ipx->ipx_dest.sock);
+					__nat25_generate_ipx_network_addr_with_socket(networkAddr, &ipx_dest.net, &ipx_dest.sock);
 
 					__nat25_db_network_lookup_and_replace(priv, skb, networkAddr);
 
 					/* replace IPX destination node addr with Lookup destination MAC addr */
 					memcpy(ipx->ipx_dest.node, skb->data, ETH_ALEN);
 				} else {
-					__nat25_generate_ipx_network_addr_with_node(networkAddr, &ipx->ipx_dest.net, ipx->ipx_dest.node);
+					__nat25_generate_ipx_network_addr_with_node(networkAddr, &ipx_dest.net, ipx_dest.node);
 
 					__nat25_db_network_lookup_and_replace(priv, skb, networkAddr);
 				}

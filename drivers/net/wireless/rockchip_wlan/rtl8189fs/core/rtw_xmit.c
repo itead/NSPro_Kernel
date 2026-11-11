@@ -1728,7 +1728,8 @@ s32 rtw_make_wlanhdr (_adapter *padapter , u8 *hdr, struct pkt_attrib *pattrib)
 	struct qos_priv *pqospriv = &pmlmepriv->qospriv;
 	u8 qos_option = _FALSE;
 	sint res = _SUCCESS;
-	u16 *fctrl = &pwlanhdr->frame_ctl;
+	u16 frame_ctl = 0;
+	u16 *fctrl = &frame_ctl;
 
 	//struct sta_info *psta;
 
@@ -1841,19 +1842,22 @@ _func_enter_;
 			if(pattrib->psta != psta)
 			{
 				DBG_871X("%s, pattrib->psta(%p) != psta(%p)\n", __func__, pattrib->psta, psta);
-				return _FAIL;
+				res = _FAIL;
+				goto exit;
 			}
 
 			if(psta==NULL)
 			{
 				DBG_871X("%s, psta==NUL\n", __func__);
-				return _FAIL;
+				res = _FAIL;
+				goto exit;
 			}
 
 			if(!(psta->state &_FW_LINKED))
 			{
 				DBG_871X("%s, psta->state(0x%x) != _FW_LINKED\n", __func__, psta->state);
-				return _FAIL;
+				res = _FAIL;
+				goto exit;
 			}
 
 		
@@ -1911,6 +1915,8 @@ _func_enter_;
 	}
 
 exit:
+	memcpy(hdr + offsetof(struct rtw_ieee80211_hdr, frame_ctl),
+	       &frame_ctl, sizeof(frame_ctl));
 
 _func_exit_;
 

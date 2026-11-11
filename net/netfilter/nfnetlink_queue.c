@@ -298,7 +298,7 @@ static u32 nfqnl_get_sk_secctx(struct sk_buff *skb, char **secdata)
 static struct sk_buff *
 nfqnl_build_packet_message(struct net *net, struct nfqnl_instance *queue,
 			   struct nf_queue_entry *entry,
-			   __be32 **packet_id_ptr)
+			   u8 **packet_id_ptr)
 {
 	size_t size;
 	size_t data_len = 0, cap_len = 0, rem_len = 0;
@@ -410,7 +410,7 @@ nfqnl_build_packet_message(struct net *net, struct nfqnl_instance *queue,
 	pmsg = nla_data(nla);
 	pmsg->hw_protocol	= entskb->protocol;
 	pmsg->hook		= entry->state.hook;
-	*packet_id_ptr		= &pmsg->packet_id;
+	*packet_id_ptr		= (u8 *)pmsg + offsetof(struct nfqnl_msg_packet_hdr, packet_id);
 
 	indev = entry->state.in;
 	if (indev) {
@@ -562,7 +562,7 @@ __nfqnl_enqueue_packet(struct net *net, struct nfqnl_instance *queue,
 {
 	struct sk_buff *nskb;
 	int err = -ENOBUFS;
-	__be32 *packet_id_ptr;
+	u8 *packet_id_ptr;
 	int failopen = 0;
 
 	nskb = nfqnl_build_packet_message(net, queue, entry, &packet_id_ptr);
@@ -584,7 +584,11 @@ __nfqnl_enqueue_packet(struct net *net, struct nfqnl_instance *queue,
 		goto err_out_free_nskb;
 	}
 	entry->id = ++queue->id_sequence;
-	*packet_id_ptr = htonl(entry->id);
+	{
+		__be32 packet_id = htonl(entry->id);
+
+		memcpy(packet_id_ptr, &packet_id, sizeof(packet_id));
+	}
 
 	/* nfnetlink_unicast will either free the nskb or add it to a socket */
 	err = nfnetlink_unicast(nskb, net, queue->peer_portid, MSG_DONTWAIT);

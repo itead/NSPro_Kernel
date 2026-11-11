@@ -1,0 +1,2 @@
+on fs
+    insmod /rk30xxnand_ko.ko

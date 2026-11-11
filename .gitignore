@@ -1,0 +1,53 @@
+
+# Artefacts de compilation : ne jamais suivre
+*.o
+*.tmp
+
+# Fichiers temporaires de compilation du noyau
+/.tmp_vmlinux*
+/.version
+
+# Répertoires et fichiers générés par Kbuild
+/include/config/
+/include/generated/
+/arch/arm64/include/generated/
+/arch/arm64/kernel/asm-offsets.s
+/arch/arm64/kernel/vmlinux.lds
+/arch/arm64/kernel/vdso/vdso.lds
+/kernel/bounds.s
+/kernel/config_data.*
+/scripts/__pycache__/
+/scripts/basic/fixdep
+/scripts/basic/bin2c
+/scripts/dtc/dtc
+/scripts/kconfig/conf
+/scripts/mod/
+/scripts/genksyms/
+/scripts/kallsyms
+/scripts/pnmtologo
+/scripts/sortextable
+/scripts/dtc/dtc-lexer.lex.c
+/scripts/dtc/dtc-parser.tab.*
+/lib/crc32table.h
+/lib/gen_crc32table
+/security/selinux/av_permissions.h
+/security/selinux/flask.h
+/usr/gen_init_cpio
+/drivers/video/logo/logo_*.c
+/firmware/kaweth/*.gen.S
+
+# Autres artefacts générés par Kbuild
+/arch/arm64/kernel/vdso/vdso.so.dbg
+/drivers/video/logo/clut_vga16.c
+/report_type
+/type
+/scripts/kconfig/conf.hash.c
+/scripts/kconfig/conf.lex.c
+/scripts/kconfig/conf.tab.c
+/scripts/selinux/genheaders/genheaders
+/scripts/selinux/mdp/mdp
+/scripts/kconfig/zconf.hash.c
+/scripts/kconfig/zconf.lex.c
+/scripts/kconfig/zconf.tab.c
+# Build diagnostics are retained as GitHub Actions artifacts, not source files.
+/nspanel-kernel-build-*.log

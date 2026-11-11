@@ -349,9 +349,10 @@ static inline void rt8547_fled_power_on(struct rt8547_platform_data *pdata)
 
 static inline void rt8547_fled_power_off(struct rt8547_platform_data *pdata)
 {
-    if (gpio_is_valid(pdata->flset_gpio))
+    if (gpio_is_valid(pdata->flset_gpio)) {
     	gpio_set_value(pdata->flset_gpio, (~(pdata->flset_active) & 0x1));
-	udelay(RT8547_STOP_DELAY);
+    }
+    udelay(RT8547_STOP_DELAY);
 }
 
 static inline void rt8547_fled_ctrl_en(struct rt8547_platform_data *pdata,

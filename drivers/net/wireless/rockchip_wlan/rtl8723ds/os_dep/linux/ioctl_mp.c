@@ -15,9 +15,21 @@
 #if defined(CONFIG_MP_INCLUDED)
 
 #include <drv_types.h>
+#include <linux/kernel.h>
+#include <linux/string.h>
+#include <linux/wireless.h>
 #include <rtw_mp.h>
 #include <rtw_mp_ioctl.h>
 #include "../../hal/phydm/phydm_precomp.h"
+
+#define RTW_MP_APPEND_EXTRA(_extra, _fmt, ...) \
+	do { \
+		size_t rtw_mp_extra_len = strnlen((_extra), IW_PRIV_SIZE_MASK); \
+		if (rtw_mp_extra_len < IW_PRIV_SIZE_MASK) \
+			scnprintf((_extra) + rtw_mp_extra_len, \
+				  IW_PRIV_SIZE_MASK - rtw_mp_extra_len, \
+				  (_fmt), ##__VA_ARGS__); \
+	} while (0)
 
 
 #if defined(CONFIG_RTL8723B)
@@ -2100,11 +2112,11 @@ int rtw_efuse_mask_file(struct net_device *dev,
 		 } while (count < 64);
 
 		for (i = 0; i < count; i++)
-			sprintf(extra, "%s:%02x", extra, maskfileBuffer[i]);
+			RTW_MP_APPEND_EXTRA(extra, ":%02x", maskfileBuffer[i]);
 
 		padapter->registrypriv.bFileMaskEfuse = _TRUE;
 
-		sprintf(extra, "%s\nLoad Efuse Mask data %d hex ok\n", extra, count);
+		RTW_MP_APPEND_EXTRA(extra, "\nLoad Efuse Mask data %d hex ok\n", count);
 		wrqu->data.length = strlen(extra);
 		return 0;
 	}
@@ -2527,11 +2539,11 @@ todo:
 			if ((pMptCtx->mptOutBuf[i] == 0x00) && (pMptCtx->mptOutBuf[i + 1] == 0x00))
 				goto exit;
 
-			sprintf(extra, "%s %d ", extra, (pMptCtx->mptOutBuf[i] & 0x1f));
+			RTW_MP_APPEND_EXTRA(extra, " %d ", (pMptCtx->mptOutBuf[i] & 0x1f));
 		}
 	} else {
 		for (i = 4; i < pMptCtx->mptOutLen; i++)
-			sprintf(extra, "%s 0x%x ", extra, pMptCtx->mptOutBuf[i]);
+			RTW_MP_APPEND_EXTRA(extra, " 0x%x ", pMptCtx->mptOutBuf[i]);
 	}
 
 exit:

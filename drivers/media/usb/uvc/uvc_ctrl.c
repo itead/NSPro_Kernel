@@ -1463,12 +1463,18 @@ int uvc_ctrl_get(struct uvc_video_chain *chain,
 {
 	struct uvc_control *ctrl;
 	struct uvc_control_mapping *mapping;
+	s32 value;
+	int ret;
 
 	ctrl = uvc_find_control(chain, xctrl->id, &mapping);
 	if (ctrl == NULL)
 		return -EINVAL;
 
-	return __uvc_ctrl_get(chain, ctrl, mapping, &xctrl->value);
+	ret = __uvc_ctrl_get(chain, ctrl, mapping, &value);
+	if (!ret)
+		memcpy((char *)xctrl + offsetof(struct v4l2_ext_control, value),
+		       &value, sizeof(value));
+	return ret;
 }
 
 int uvc_ctrl_set(struct uvc_video_chain *chain,

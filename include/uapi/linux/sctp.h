@@ -299,7 +299,7 @@ struct sctp_paddr_change {
 	__u16 spc_type;
 	__u16 spc_flags;
 	__u32 spc_length;
-	struct sockaddr_storage spc_aaddr;
+	struct sockaddr_storage spc_aaddr __attribute__((packed));
 	int spc_state;
 	int spc_error;
 	sctp_assoc_t spc_assoc_id;
@@ -576,7 +576,7 @@ struct sctp_assocparams {
  */
 struct sctp_setpeerprim {
 	sctp_assoc_t            sspp_assoc_id;
-	struct sockaddr_storage sspp_addr;
+	struct sockaddr_storage sspp_addr __attribute__((packed));
 } __attribute__((packed, aligned(4)));
 
 /*
@@ -589,7 +589,7 @@ struct sctp_setpeerprim {
  */
 struct sctp_prim {
 	sctp_assoc_t            ssp_assoc_id;
-	struct sockaddr_storage ssp_addr;
+	struct sockaddr_storage ssp_addr __attribute__((packed));
 } __attribute__((packed, aligned(4)));
 
 /* For backward compatibility use, define the old name too */
@@ -631,7 +631,7 @@ enum  sctp_spp_flags {
 
 struct sctp_paddrparams {
 	sctp_assoc_t		spp_assoc_id;
-	struct sockaddr_storage	spp_address;
+	struct sockaddr_storage	spp_address __attribute__((packed));
 	__u32			spp_hbinterval;
 	__u16			spp_pathmaxrxt;
 	__u32			spp_pathmtu;
@@ -738,7 +738,7 @@ struct sctp_assoc_value {
  */
 struct sctp_paddrinfo {
 	sctp_assoc_t		spinfo_assoc_id;
-	struct sockaddr_storage	spinfo_address;
+	struct sockaddr_storage	spinfo_address __attribute__((packed));
 	__s32			spinfo_state;
 	__u32			spinfo_cwnd;
 	__u32			spinfo_srtt;

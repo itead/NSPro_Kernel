@@ -34,6 +34,7 @@
 
 /*****************************************************************************/
 
+#include <asm/unaligned.h>
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <linux/slab.h>
@@ -1338,15 +1339,15 @@ static int proc_do_submiturb(struct usb_dev_state *ps, struct usbdevfs_urb *uurb
 			ret = -EFAULT;
 			goto error;
 		}
-		if (uurb->buffer_length < (le16_to_cpup(&dr->wLength) + 8)) {
+		if (uurb->buffer_length < (get_unaligned_le16((u8 *)dr + offsetof(struct usb_ctrlrequest, wLength)) + 8)) {
 			ret = -EINVAL;
 			goto error;
 		}
 		ret = check_ctrlrecip(ps, dr->bRequestType, dr->bRequest,
-				      le16_to_cpup(&dr->wIndex));
+				      get_unaligned_le16((u8 *)dr + offsetof(struct usb_ctrlrequest, wIndex)));
 		if (ret)
 			goto error;
-		uurb->buffer_length = le16_to_cpup(&dr->wLength);
+		uurb->buffer_length = get_unaligned_le16((u8 *)dr + offsetof(struct usb_ctrlrequest, wLength));
 		uurb->buffer += 8;
 		if ((dr->bRequestType & USB_DIR_IN) && uurb->buffer_length) {
 			is_in = 1;
@@ -1359,9 +1360,9 @@ static int proc_do_submiturb(struct usb_dev_state *ps, struct usbdevfs_urb *uurb
 			"bRequest=%02x wValue=%04x "
 			"wIndex=%04x wLength=%04x\n",
 			dr->bRequestType, dr->bRequest,
-			__le16_to_cpup(&dr->wValue),
-			__le16_to_cpup(&dr->wIndex),
-			__le16_to_cpup(&dr->wLength));
+			get_unaligned_le16((u8 *)dr + offsetof(struct usb_ctrlrequest, wValue)),
+			get_unaligned_le16((u8 *)dr + offsetof(struct usb_ctrlrequest, wIndex)),
+			get_unaligned_le16((u8 *)dr + offsetof(struct usb_ctrlrequest, wLength)));
 		u = sizeof(struct usb_ctrlrequest);
 		break;
 

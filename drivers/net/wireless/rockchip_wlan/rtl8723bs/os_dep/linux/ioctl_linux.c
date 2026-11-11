@@ -2317,11 +2317,16 @@ static int rtw_wx_get_scan(struct net_device *dev, struct iw_request_info *a,
 		pnetwork = LIST_CONTAINOR(plist, struct wlan_network, list);
 
 		/* report network only if the current channel set contains the channel to which this network belongs */
-		if (rtw_chset_search_ch(adapter_to_chset(padapter), pnetwork->network.Configuration.DSConfig) >= 0
-		    && rtw_mlme_band_check(padapter, pnetwork->network.Configuration.DSConfig) == _TRUE
-		    && _TRUE == rtw_validate_ssid(&(pnetwork->network.Ssid))
-		   )
-			ev = translate_scan(padapter, a, pnetwork, ev, stop);
+		{
+			NDIS_802_11_SSID ssid;
+
+			memcpy(&ssid, (const u8 *)&pnetwork->network +
+			       offsetof(WLAN_BSSID_EX, Ssid), sizeof(ssid));
+			if (rtw_chset_search_ch(adapter_to_chset(padapter), pnetwork->network.Configuration.DSConfig) >= 0
+			    && rtw_mlme_band_check(padapter, pnetwork->network.Configuration.DSConfig) == _TRUE
+			    && _TRUE == rtw_validate_ssid(&ssid))
+				ev = translate_scan(padapter, a, pnetwork, ev, stop);
+		}
 
 		plist = get_next(plist);
 
@@ -5723,7 +5728,7 @@ static int rtw_p2p_prov_disc(struct net_device *dev,
 		rtw_p2p_set_state(pwdinfo, P2P_STATE_TX_PROVISION_DIS_REQ);
 
 		if (rtw_p2p_chk_role(pwdinfo, P2P_ROLE_CLIENT))
-			_rtw_memcpy(&pwdinfo->tx_prov_disc_info.ssid, &pnetwork->network.Ssid, sizeof(NDIS_802_11_SSID));
+			_rtw_memcpy(&pwdinfo->tx_prov_disc_info.ssid, (const u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, Ssid), sizeof(NDIS_802_11_SSID));
 		else if (rtw_p2p_chk_role(pwdinfo, P2P_ROLE_DEVICE) || rtw_p2p_chk_role(pwdinfo, P2P_ROLE_GO)) {
 			_rtw_memcpy(pwdinfo->tx_prov_disc_info.ssid.Ssid, pwdinfo->p2p_wildcard_ssid, P2P_WILDCARD_SSID_LEN);
 			pwdinfo->tx_prov_disc_info.ssid.SsidLength = P2P_WILDCARD_SSID_LEN;

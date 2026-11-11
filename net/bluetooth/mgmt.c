@@ -318,7 +318,9 @@ static int read_commands(struct sock *sk, struct hci_dev *hdev, void *data,
 	rp->num_events = cpu_to_le16(num_events);
 
 	if (hci_sock_test_flag(sk, HCI_SOCK_TRUSTED)) {
-		__le16 *opcode = rp->opcodes;
+		__le16 *opcode = (__le16 *)((u8 *)rp +
+                                             offsetof(struct mgmt_rp_read_commands,
+                                                      opcodes));
 
 		for (i = 0; i < num_commands; i++, opcode++)
 			put_unaligned_le16(mgmt_commands[i], opcode);
@@ -326,7 +328,9 @@ static int read_commands(struct sock *sk, struct hci_dev *hdev, void *data,
 		for (i = 0; i < num_events; i++, opcode++)
 			put_unaligned_le16(mgmt_events[i], opcode);
 	} else {
-		__le16 *opcode = rp->opcodes;
+		__le16 *opcode = (__le16 *)((u8 *)rp +
+                                             offsetof(struct mgmt_rp_read_commands,
+                                                      opcodes));
 
 		for (i = 0; i < num_commands; i++, opcode++)
 			put_unaligned_le16(mgmt_untrusted_commands[i], opcode);

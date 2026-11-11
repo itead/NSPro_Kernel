@@ -1333,6 +1333,7 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network *pnetwork)
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
 	struct rf_ctl_t *rfctl = adapter_to_rfctl(padapter);
 	u32 tmp_len;
+	uint tmp_ie_length;
 	u8 *ptmp = NULL;
 #ifdef CONFIG_RTW_80211R
 	struct _ft_priv			*pftpriv = &pmlmepriv->ftpriv;
@@ -1445,9 +1446,11 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network *pnetwork)
 			rtw_ht_use_default_setting(padapter);
 
 			/* rtw_restructure_ht_ie */
+			tmp_ie_length = psecnetwork->IELength;
 			rtw_restructure_ht_ie(padapter, &pnetwork->network.IEs[12], &psecnetwork->IEs[0],
-				pnetwork->network.IELength - 12, &psecnetwork->IELength,
+				pnetwork->network.IELength - 12, &tmp_ie_length,
 				pnetwork->network.Configuration.DSConfig);
+			psecnetwork->IELength = tmp_ie_length;
 		}
 	}
 
@@ -1458,17 +1461,21 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network *pnetwork)
 	    && hal_chk_proto_cap(padapter, PROTO_CAP_11AC)
 	    && (!rfctl->country_ent || COUNTRY_CHPLAN_EN_11AC(rfctl->country_ent))
 	   ) {
+		tmp_ie_length = psecnetwork->IELength;
 		rtw_restructure_vht_ie(padapter, &pnetwork->network.IEs[0], &psecnetwork->IEs[0],
-			pnetwork->network.IELength, &psecnetwork->IELength);
+			pnetwork->network.IELength, &tmp_ie_length);
+		psecnetwork->IELength = tmp_ie_length;
 	}
 #endif
 
-	rtw_append_exented_cap(padapter, &psecnetwork->IEs[0], &psecnetwork->IELength);
+	tmp_ie_length = psecnetwork->IELength;
+	rtw_append_exented_cap(padapter, &psecnetwork->IEs[0], &tmp_ie_length);
+	psecnetwork->IELength = tmp_ie_length;
 
 #endif /* CONFIG_80211N_HT */
 
 #ifdef CONFIG_RTW_80211R
-	/*IEEE802.11-2012 Std. Table 8-101¡XAKM suite selectors*/
+	/*IEEE802.11-2012 Std. Table 8-101Â¡XAKM suite selectors*/
 	if ((rtw_chk_ft_flags(padapter, RTW_FT_STA_SUPPORTED)) &&
 		((psecuritypriv->rsn_akm_suite_type == 3) || (psecuritypriv->rsn_akm_suite_type == 4))
 		) {

@@ -1931,7 +1931,16 @@ int udf_add_aext(struct inode *inode, struct extent_position *epos,
 
 			if (epos->bh) {
 				aed = (struct allocExtDesc *)epos->bh->b_data;
-				le32_add_cpu(&aed->lengthAllocDescs, adsize);
+				{
+					__le32 length;
+					memcpy(&length, (char *)aed +
+					       offsetof(struct allocExtDesc, lengthAllocDescs),
+					       sizeof(length));
+					le32_add_cpu(&length, adsize);
+					memcpy((char *)aed +
+					       offsetof(struct allocExtDesc, lengthAllocDescs),
+					       &length, sizeof(length));
+				}
 			} else {
 				iinfo->i_lenAlloc += adsize;
 				mark_inode_dirty(inode);
@@ -1981,7 +1990,16 @@ int udf_add_aext(struct inode *inode, struct extent_position *epos,
 		mark_inode_dirty(inode);
 	} else {
 		aed = (struct allocExtDesc *)epos->bh->b_data;
-		le32_add_cpu(&aed->lengthAllocDescs, adsize);
+		{
+			__le32 length;
+			memcpy(&length, (char *)aed +
+			       offsetof(struct allocExtDesc, lengthAllocDescs),
+			       sizeof(length));
+			le32_add_cpu(&length, adsize);
+			memcpy((char *)aed +
+			       offsetof(struct allocExtDesc, lengthAllocDescs),
+			       &length, sizeof(length));
+		}
 		if (!UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_STRICT) ||
 				UDF_SB(inode->i_sb)->s_udfrev >= 0x0201)
 			udf_update_tag(epos->bh->b_data,
@@ -2207,7 +2225,16 @@ int8_t udf_delete_aext(struct inode *inode, struct extent_position epos,
 			mark_inode_dirty(inode);
 		} else {
 			aed = (struct allocExtDesc *)oepos.bh->b_data;
-			le32_add_cpu(&aed->lengthAllocDescs, -(2 * adsize));
+			{
+				__le32 length;
+				memcpy(&length, (char *)aed +
+				       offsetof(struct allocExtDesc, lengthAllocDescs),
+				       sizeof(length));
+				le32_add_cpu(&length, -(2 * adsize));
+				memcpy((char *)aed +
+				       offsetof(struct allocExtDesc, lengthAllocDescs),
+				       &length, sizeof(length));
+			}
 			if (!UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_STRICT) ||
 			    UDF_SB(inode->i_sb)->s_udfrev >= 0x0201)
 				udf_update_tag(oepos.bh->b_data,
@@ -2224,7 +2251,16 @@ int8_t udf_delete_aext(struct inode *inode, struct extent_position epos,
 			mark_inode_dirty(inode);
 		} else {
 			aed = (struct allocExtDesc *)oepos.bh->b_data;
-			le32_add_cpu(&aed->lengthAllocDescs, -adsize);
+			{
+				__le32 length;
+				memcpy(&length, (char *)aed +
+				       offsetof(struct allocExtDesc, lengthAllocDescs),
+				       sizeof(length));
+				le32_add_cpu(&length, -adsize);
+				memcpy((char *)aed +
+				       offsetof(struct allocExtDesc, lengthAllocDescs),
+				       &length, sizeof(length));
+			}
 			if (!UDF_QUERY_FLAG(inode->i_sb, UDF_FLAG_STRICT) ||
 			    UDF_SB(inode->i_sb)->s_udfrev >= 0x0201)
 				udf_update_tag(oepos.bh->b_data,

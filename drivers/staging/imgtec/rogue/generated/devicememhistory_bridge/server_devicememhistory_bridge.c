@@ -270,6 +270,8 @@ PVRSRVBridgeDevicememHistoryMapNew(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_DEVICEMEMHISTORYMAPNEW *psDevicememHistoryMapNewOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psDevicememHistoryMapNewOUT->ui32AllocationIndexOut) aligned_out_psDevicememHistoryMapNewOUT_ui32AllocationIndexOut __attribute__((unused));
+
 	IMG_HANDLE hPMR = psDevicememHistoryMapNewIN->hPMR;
 	PMR * psPMRInt = NULL;
 	IMG_CHAR *uiTextInt = NULL;
@@ -356,6 +358,7 @@ PVRSRVBridgeDevicememHistoryMapNew(IMG_UINT32 ui32DispatchTableEntry,
 	/* Release now we have looked up handles. */
 	UnlockHandle();
 
+	aligned_out_psDevicememHistoryMapNewOUT_ui32AllocationIndexOut = psDevicememHistoryMapNewOUT->ui32AllocationIndexOut;
 	psDevicememHistoryMapNewOUT->eError =
 		DevicememHistoryMapNewKM(
 					psPMRInt,
@@ -365,7 +368,8 @@ PVRSRVBridgeDevicememHistoryMapNew(IMG_UINT32 ui32DispatchTableEntry,
 					uiTextInt,
 					psDevicememHistoryMapNewIN->ui32Log2PageSize,
 					psDevicememHistoryMapNewIN->ui32AllocationIndex,
-					&psDevicememHistoryMapNewOUT->ui32AllocationIndexOut);
+					&aligned_out_psDevicememHistoryMapNewOUT_ui32AllocationIndexOut);
+	psDevicememHistoryMapNewOUT->ui32AllocationIndexOut = aligned_out_psDevicememHistoryMapNewOUT_ui32AllocationIndexOut;
 
 
 
@@ -413,6 +417,8 @@ PVRSRVBridgeDevicememHistoryUnmapNew(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_DEVICEMEMHISTORYUNMAPNEW *psDevicememHistoryUnmapNewOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psDevicememHistoryUnmapNewOUT->ui32AllocationIndexOut) aligned_out_psDevicememHistoryUnmapNewOUT_ui32AllocationIndexOut __attribute__((unused));
+
 	IMG_HANDLE hPMR = psDevicememHistoryUnmapNewIN->hPMR;
 	PMR * psPMRInt = NULL;
 	IMG_CHAR *uiTextInt = NULL;
@@ -499,6 +505,7 @@ PVRSRVBridgeDevicememHistoryUnmapNew(IMG_UINT32 ui32DispatchTableEntry,
 	/* Release now we have looked up handles. */
 	UnlockHandle();
 
+	aligned_out_psDevicememHistoryUnmapNewOUT_ui32AllocationIndexOut = psDevicememHistoryUnmapNewOUT->ui32AllocationIndexOut;
 	psDevicememHistoryUnmapNewOUT->eError =
 		DevicememHistoryUnmapNewKM(
 					psPMRInt,
@@ -508,7 +515,8 @@ PVRSRVBridgeDevicememHistoryUnmapNew(IMG_UINT32 ui32DispatchTableEntry,
 					uiTextInt,
 					psDevicememHistoryUnmapNewIN->ui32Log2PageSize,
 					psDevicememHistoryUnmapNewIN->ui32AllocationIndex,
-					&psDevicememHistoryUnmapNewOUT->ui32AllocationIndexOut);
+					&aligned_out_psDevicememHistoryUnmapNewOUT_ui32AllocationIndexOut);
+	psDevicememHistoryUnmapNewOUT->ui32AllocationIndexOut = aligned_out_psDevicememHistoryUnmapNewOUT_ui32AllocationIndexOut;
 
 
 
@@ -556,6 +564,8 @@ PVRSRVBridgeDevicememHistoryMapVRange(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_DEVICEMEMHISTORYMAPVRANGE *psDevicememHistoryMapVRangeOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psDevicememHistoryMapVRangeOUT->ui32AllocationIndexOut) aligned_out_psDevicememHistoryMapVRangeOUT_ui32AllocationIndexOut __attribute__((unused));
+
 	IMG_CHAR *uiTextInt = NULL;
 
 	IMG_UINT32 ui32NextOffset = 0;
@@ -618,6 +628,7 @@ PVRSRVBridgeDevicememHistoryMapVRange(IMG_UINT32 ui32DispatchTableEntry,
 			}
 
 
+	aligned_out_psDevicememHistoryMapVRangeOUT_ui32AllocationIndexOut = psDevicememHistoryMapVRangeOUT->ui32AllocationIndexOut;
 	psDevicememHistoryMapVRangeOUT->eError =
 		DevicememHistoryMapVRangeKM(
 					psDevicememHistoryMapVRangeIN->sBaseDevVAddr,
@@ -627,7 +638,8 @@ PVRSRVBridgeDevicememHistoryMapVRange(IMG_UINT32 ui32DispatchTableEntry,
 					uiTextInt,
 					psDevicememHistoryMapVRangeIN->ui32Log2PageSize,
 					psDevicememHistoryMapVRangeIN->ui32AllocationIndex,
-					&psDevicememHistoryMapVRangeOUT->ui32AllocationIndexOut);
+					&aligned_out_psDevicememHistoryMapVRangeOUT_ui32AllocationIndexOut);
+	psDevicememHistoryMapVRangeOUT->ui32AllocationIndexOut = aligned_out_psDevicememHistoryMapVRangeOUT_ui32AllocationIndexOut;
 
 
 
@@ -657,6 +669,8 @@ PVRSRVBridgeDevicememHistoryUnmapVRange(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_DEVICEMEMHISTORYUNMAPVRANGE *psDevicememHistoryUnmapVRangeOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psDevicememHistoryUnmapVRangeOUT->ui32AllocationIndexOut) aligned_out_psDevicememHistoryUnmapVRangeOUT_ui32AllocationIndexOut __attribute__((unused));
+
 	IMG_CHAR *uiTextInt = NULL;
 
 	IMG_UINT32 ui32NextOffset = 0;
@@ -719,6 +733,7 @@ PVRSRVBridgeDevicememHistoryUnmapVRange(IMG_UINT32 ui32DispatchTableEntry,
 			}
 
 
+	aligned_out_psDevicememHistoryUnmapVRangeOUT_ui32AllocationIndexOut = psDevicememHistoryUnmapVRangeOUT->ui32AllocationIndexOut;
 	psDevicememHistoryUnmapVRangeOUT->eError =
 		DevicememHistoryUnmapVRangeKM(
 					psDevicememHistoryUnmapVRangeIN->sBaseDevVAddr,
@@ -728,7 +743,8 @@ PVRSRVBridgeDevicememHistoryUnmapVRange(IMG_UINT32 ui32DispatchTableEntry,
 					uiTextInt,
 					psDevicememHistoryUnmapVRangeIN->ui32Log2PageSize,
 					psDevicememHistoryUnmapVRangeIN->ui32AllocationIndex,
-					&psDevicememHistoryUnmapVRangeOUT->ui32AllocationIndexOut);
+					&aligned_out_psDevicememHistoryUnmapVRangeOUT_ui32AllocationIndexOut);
+	psDevicememHistoryUnmapVRangeOUT->ui32AllocationIndexOut = aligned_out_psDevicememHistoryUnmapVRangeOUT_ui32AllocationIndexOut;
 
 
 
@@ -758,6 +774,8 @@ PVRSRVBridgeDevicememHistorySparseChange(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_DEVICEMEMHISTORYSPARSECHANGE *psDevicememHistorySparseChangeOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psDevicememHistorySparseChangeOUT->ui32AllocationIndexOut) aligned_out_psDevicememHistorySparseChangeOUT_ui32AllocationIndexOut __attribute__((unused));
+
 	IMG_HANDLE hPMR = psDevicememHistorySparseChangeIN->hPMR;
 	PMR * psPMRInt = NULL;
 	IMG_CHAR *uiTextInt = NULL;
@@ -880,6 +898,7 @@ PVRSRVBridgeDevicememHistorySparseChange(IMG_UINT32 ui32DispatchTableEntry,
 	/* Release now we have looked up handles. */
 	UnlockHandle();
 
+	aligned_out_psDevicememHistorySparseChangeOUT_ui32AllocationIndexOut = psDevicememHistorySparseChangeOUT->ui32AllocationIndexOut;
 	psDevicememHistorySparseChangeOUT->eError =
 		DevicememHistorySparseChangeKM(
 					psPMRInt,
@@ -893,7 +912,8 @@ PVRSRVBridgeDevicememHistorySparseChange(IMG_UINT32 ui32DispatchTableEntry,
 					psDevicememHistorySparseChangeIN->ui32FreePageCount,
 					ui32FreePageIndicesInt,
 					psDevicememHistorySparseChangeIN->ui32AllocationIndex,
-					&psDevicememHistorySparseChangeOUT->ui32AllocationIndexOut);
+					&aligned_out_psDevicememHistorySparseChangeOUT_ui32AllocationIndexOut);
+	psDevicememHistorySparseChangeOUT->ui32AllocationIndexOut = aligned_out_psDevicememHistorySparseChangeOUT_ui32AllocationIndexOut;
 
 
 

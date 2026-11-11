@@ -175,45 +175,45 @@ static __inline__ void __nat25_generate_ipv4_network_addr(unsigned char *network
 
 
 static __inline__ void __nat25_generate_ipx_network_addr_with_node(unsigned char *networkAddr,
-				unsigned int *ipxNetAddr, unsigned char *ipxNodeAddr)
+				const void *ipxNetAddr, unsigned char *ipxNodeAddr)
 {
 	memset(networkAddr, 0, MAX_NETWORK_ADDR_LEN);
 
 	networkAddr[0] = NAT25_IPX;
-	memcpy(networkAddr+1, (unsigned char *)ipxNetAddr, 4);
+	memcpy(networkAddr+1, ipxNetAddr, 4);
 	memcpy(networkAddr+5, ipxNodeAddr, 6);
 }
 
 
 static __inline__ void __nat25_generate_ipx_network_addr_with_socket(unsigned char *networkAddr,
-				unsigned int *ipxNetAddr, unsigned short *ipxSocketAddr)
+				const void *ipxNetAddr, const void *ipxSocketAddr)
 {
 	memset(networkAddr, 0, MAX_NETWORK_ADDR_LEN);
 
 	networkAddr[0] = NAT25_IPX;
-	memcpy(networkAddr+1, (unsigned char *)ipxNetAddr, 4);
-	memcpy(networkAddr+5, (unsigned char *)ipxSocketAddr, 2);
+	memcpy(networkAddr+1, ipxNetAddr, 4);
+	memcpy(networkAddr+5, ipxSocketAddr, 2);
 }
 
 
 static __inline__ void __nat25_generate_apple_network_addr(unsigned char *networkAddr,
-				unsigned short *network, unsigned char *node)
+				const void *network, const void *node)
 {
 	memset(networkAddr, 0, MAX_NETWORK_ADDR_LEN);
 
 	networkAddr[0] = NAT25_APPLE;
-	memcpy(networkAddr+1, (unsigned char *)network, 2);
-	networkAddr[3] = *node;
+	memcpy(networkAddr+1, network, 2);
+	networkAddr[3] = *(const u8 *)node;
 }
 
 
 static __inline__ void __nat25_generate_pppoe_network_addr(unsigned char *networkAddr,
-				unsigned char *ac_mac, unsigned short *sid)
+				unsigned char *ac_mac, const void *sid)
 {
 	memset(networkAddr, 0, MAX_NETWORK_ADDR_LEN);
 
 	networkAddr[0] = NAT25_PPPOE;
-	memcpy(networkAddr+1, (unsigned char *)sid, 2);
+	memcpy(networkAddr+1, sid, 2);
 	memcpy(networkAddr+3, (unsigned char *)ac_mac, 6);
 }
 
@@ -1047,14 +1047,27 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 						{
 							DBG_871X("NAT25: Use IPX Net, and Socket as network addr\n");
 
-							__nat25_generate_ipx_network_addr_with_socket(networkAddr, &ipx->ipx_source.net, &ipx->ipx_source.sock);
+							{
+								typeof(ipx->ipx_source) ipx_source;
+
+								memcpy(&ipx_source, (const u8 *)ipx +
+								       offsetof(struct ipxhdr, ipx_source),
+								       sizeof(ipx_source));
+								__nat25_generate_ipx_network_addr_with_socket(
+									networkAddr, &ipx_source.net, &ipx_source.sock);
+							}
 
 							// change IPX source node addr to wlan STA address
                                                         memcpy(ipx->ipx_source.node, GET_MY_HWADDR(priv), ETH_ALEN);
 						}
 						else
 						{
-							__nat25_generate_ipx_network_addr_with_node(networkAddr, &ipx->ipx_source.net, ipx->ipx_source.node);
+							typeof(ipx->ipx_source) ipx_source;
+
+							memcpy(&ipx_source, (const u8 *)ipx +
+							       offsetof(struct ipxhdr, ipx_source),
+							       sizeof(ipx_source));
+							__nat25_generate_ipx_network_addr_with_node(networkAddr, &ipx_source.net, ipx_source.node);
 						}
 
 						__nat25_db_network_insert(priv, skb->data+ETH_ALEN, networkAddr);
@@ -1065,11 +1078,17 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 
 				case NAT25_LOOKUP:
 					{
-                                                if(!memcmp(GET_MY_HWADDR(priv), ipx->ipx_dest.node, ETH_ALEN))
+						typeof(ipx->ipx_dest) ipx_dest;
+
+						memcpy(&ipx_dest, (const u8 *)ipx +
+						       offsetof(struct ipxhdr, ipx_dest),
+						       sizeof(ipx_dest));
+
+                                                if(!memcmp(GET_MY_HWADDR(priv), ipx_dest.node, ETH_ALEN))
 						{
 							DBG_871X("NAT25: Lookup IPX, Modify Destination IPX Node addr\n");
 
-							__nat25_generate_ipx_network_addr_with_socket(networkAddr, &ipx->ipx_dest.net, &ipx->ipx_dest.sock);
+							__nat25_generate_ipx_network_addr_with_socket(networkAddr, &ipx_dest.net, &ipx_dest.sock);
 
 							__nat25_db_network_lookup_and_replace(priv, skb, networkAddr);
 
@@ -1078,7 +1097,7 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 						}
 						else
 						{
-							__nat25_generate_ipx_network_addr_with_node(networkAddr, &ipx->ipx_dest.net, ipx->ipx_dest.node);
+							__nat25_generate_ipx_network_addr_with_node(networkAddr, &ipx_dest.net, ipx_dest.node);
 
 							__nat25_db_network_lookup_and_replace(priv, skb, networkAddr);
 						}
@@ -1108,7 +1127,7 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 				case NAT25_INSERT:
 					{
 						// change to AARP source mac address to wlan STA address
-                                                memcpy(ea->hw_src, GET_MY_HWADDR(priv), ETH_ALEN);
+                                                memcpy((u8 *)ea + offsetof(struct elapaarp, hw_src), GET_MY_HWADDR(priv), ETH_ALEN);
 
 						DBG_871X("NAT25: Insert AARP, Source=%d,%d Destination=%d,%d\n",
 							ea->pa_src_net,
@@ -1116,7 +1135,14 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 							ea->pa_dst_net,
 							ea->pa_dst_node);
 
-						__nat25_generate_apple_network_addr(networkAddr, &ea->pa_src_net, &ea->pa_src_node);
+						{
+						unsigned short apple_net;
+						unsigned char apple_node;
+
+						memcpy(&apple_net, (u8 *)ea + offsetof(struct elapaarp, pa_src_net), sizeof(apple_net));
+						memcpy(&apple_node, (u8 *)ea + offsetof(struct elapaarp, pa_src_node), sizeof(apple_node));
+						__nat25_generate_apple_network_addr(networkAddr, &apple_net, &apple_node);
+					}
 
 						__nat25_db_network_insert(priv, skb->data+ETH_ALEN, networkAddr);
 
@@ -1132,7 +1158,14 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 							ea->pa_dst_net,
 							ea->pa_dst_node);
 
-						__nat25_generate_apple_network_addr(networkAddr, &ea->pa_dst_net, &ea->pa_dst_node);
+						{
+						unsigned short apple_net;
+						unsigned char apple_node;
+
+						memcpy(&apple_net, (u8 *)ea + offsetof(struct elapaarp, pa_dst_net), sizeof(apple_net));
+						memcpy(&apple_node, (u8 *)ea + offsetof(struct elapaarp, pa_dst_node), sizeof(apple_node));
+						__nat25_generate_apple_network_addr(networkAddr, &apple_net, &apple_node);
+					}
 
 						__nat25_db_network_lookup_and_replace(priv, skb, networkAddr);
 
@@ -1162,7 +1195,7 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 							ddp->deh_dnet,
 							ddp->deh_dnode);
 
-						__nat25_generate_apple_network_addr(networkAddr, &ddp->deh_snet, &ddp->deh_snode);
+						__nat25_generate_apple_network_addr(networkAddr, (const u8 *)ddp + offsetof(struct ddpehdr, deh_snet), (const u8 *)ddp + offsetof(struct ddpehdr, deh_snode));
 
 						__nat25_db_network_insert(priv, skb->data+ETH_ALEN, networkAddr);
 
@@ -1178,7 +1211,7 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 							ddp->deh_dnet,
 							ddp->deh_dnode);
 
-						__nat25_generate_apple_network_addr(networkAddr, &ddp->deh_dnet, &ddp->deh_dnode);
+						__nat25_generate_apple_network_addr(networkAddr, (const u8 *)ddp + offsetof(struct ddpehdr, deh_dnet), (const u8 *)ddp + offsetof(struct ddpehdr, deh_dnode));
 
 						__nat25_db_network_lookup_and_replace(priv, skb, networkAddr);
 					}
@@ -1272,7 +1305,7 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 				{
 						DBG_871X("NAT25: Insert PPPoE, insert session packet to %s\n", skb->dev->name);
 
-						__nat25_generate_pppoe_network_addr(networkAddr, skb->data, &(ph->sid));
+						__nat25_generate_pppoe_network_addr(networkAddr, skb->data, (const u8 *)ph + offsetof(struct pppoe_hdr, sid));
 
 						__nat25_db_network_insert(priv, skb->data+ETH_ALEN, networkAddr);
 
@@ -1344,7 +1377,7 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 					if(ph->sid != 0)
 					{
 						DBG_871X("NAT25: Lookup PPPoE, lookup session packet from %s\n", skb->dev->name);
-						__nat25_generate_pppoe_network_addr(networkAddr, skb->data+ETH_ALEN, &(ph->sid));
+						__nat25_generate_pppoe_network_addr(networkAddr, skb->data+ETH_ALEN, (const u8 *)ph + offsetof(struct pppoe_hdr, sid));
 
 						__nat25_db_network_lookup_and_replace(priv, skb, networkAddr);
 

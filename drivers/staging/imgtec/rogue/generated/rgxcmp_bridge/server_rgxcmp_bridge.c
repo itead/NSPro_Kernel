@@ -80,6 +80,7 @@ PVRSRVBridgeRGXCreateComputeContext(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_BYTE *psFrameworkCmdInt = NULL;
 	IMG_HANDLE hPrivData = psRGXCreateComputeContextIN->hPrivData;
 	IMG_HANDLE hPrivDataInt = NULL;
+	__typeof__(psRGXCreateComputeContextOUT->hComputeContext) local_hComputeContext;
 	RGX_SERVER_COMPUTE_CONTEXT * psComputeContextInt = NULL;
 
 	IMG_UINT32 ui32NextOffset = 0;
@@ -200,7 +201,7 @@ PVRSRVBridgeRGXCreateComputeContext(IMG_UINT32 ui32DispatchTableEntry,
 
 	psRGXCreateComputeContextOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psRGXCreateComputeContextOUT->hComputeContext,
+							&local_hComputeContext,
 							(void *) psComputeContextInt,
 							PVRSRV_HANDLE_TYPE_RGX_SERVER_COMPUTE_CONTEXT,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
@@ -210,6 +211,7 @@ PVRSRVBridgeRGXCreateComputeContext(IMG_UINT32 ui32DispatchTableEntry,
 		UnlockHandle();
 		goto RGXCreateComputeContext_exit;
 	}
+	psRGXCreateComputeContextOUT->hComputeContext = local_hComputeContext;
 
 	/* Release now we have created handles. */
 	UnlockHandle();
@@ -345,6 +347,7 @@ PVRSRVBridgeRGXKickCDM(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_HANDLE *hServerSyncsInt2 = NULL;
 	IMG_CHAR *uiUpdateFenceNameInt = NULL;
 	IMG_BYTE *psDMCmdInt = NULL;
+	__typeof__(psRGXKickCDMOUT->i32UpdateFenceFd) i32UpdateFenceFd = 0;
 
 	IMG_UINT32 ui32NextOffset = 0;
 	IMG_BYTE   *pArrayArgsBuffer = NULL;
@@ -697,12 +700,13 @@ PVRSRVBridgeRGXKickCDM(IMG_UINT32 ui32DispatchTableEntry,
 					psServerSyncsInt,
 					psRGXKickCDMIN->i32CheckFenceFd,
 					psRGXKickCDMIN->i32UpdateTimelineFd,
-					&psRGXKickCDMOUT->i32UpdateFenceFd,
+					&i32UpdateFenceFd,
 					uiUpdateFenceNameInt,
 					psRGXKickCDMIN->ui32CmdSize,
 					psDMCmdInt,
 					psRGXKickCDMIN->ui32PDumpFlags,
 					psRGXKickCDMIN->ui32ExtJobRef);
+	psRGXKickCDMOUT->i32UpdateFenceFd = i32UpdateFenceFd;
 
 
 
@@ -986,6 +990,8 @@ PVRSRVBridgeRGXGetLastComputeContextResetReason(IMG_UINT32 ui32DispatchTableEntr
 {
 	IMG_HANDLE hComputeContext = psRGXGetLastComputeContextResetReasonIN->hComputeContext;
 	RGX_SERVER_COMPUTE_CONTEXT * psComputeContextInt = NULL;
+	IMG_UINT32 ui32LastResetReason = 0;
+	IMG_UINT32 ui32LastResetJobRef = 0;
 
 
 	{
@@ -1032,8 +1038,10 @@ PVRSRVBridgeRGXGetLastComputeContextResetReason(IMG_UINT32 ui32DispatchTableEntr
 	psRGXGetLastComputeContextResetReasonOUT->eError =
 		PVRSRVRGXGetLastComputeContextResetReasonKM(
 					psComputeContextInt,
-					&psRGXGetLastComputeContextResetReasonOUT->ui32LastResetReason,
-					&psRGXGetLastComputeContextResetReasonOUT->ui32LastResetJobRef);
+					&ui32LastResetReason,
+					&ui32LastResetJobRef);
+	psRGXGetLastComputeContextResetReasonOUT->ui32LastResetReason = ui32LastResetReason;
+	psRGXGetLastComputeContextResetReasonOUT->ui32LastResetJobRef = ui32LastResetJobRef;
 
 
 

@@ -1191,14 +1191,19 @@ dhd_doiovar(dhd_pub_t *dhd_pub, const bcm_iovar_t *vi, uint32 actionid, const ch
 
 	switch (actionid) {
 	case IOV_GVAL(IOV_VERSION):
-		/* Need to have checked buffer length */
-		dhd_ver_len = strlen(dhd_version);
-		bus_api_rev_len = strlen(bus_api_revision);
-		if (dhd_ver_len)
-			bcm_strncpy_s((char*)arg, dhd_ver_len, dhd_version, dhd_ver_len);
-		if (bus_api_rev_len)
-			bcm_strncat_s((char*)arg + dhd_ver_len, bus_api_rev_len, bus_api_revision,
-				bus_api_rev_len);
+                dhd_ver_len = strlen(dhd_version);
+                bus_api_rev_len = strlen(bus_api_revision);
+
+                /* Check room for both strings and the final NUL byte. */
+                if (len < (int)(dhd_ver_len + bus_api_rev_len + 1)) {
+                        bcmerror = BCME_BUFTOOSHORT;
+                        break;
+                }
+
+                memcpy((char *)arg, dhd_version, dhd_ver_len);
+                memcpy((char *)arg + dhd_ver_len, bus_api_revision,
+                        bus_api_rev_len);
+                ((char *)arg)[dhd_ver_len + bus_api_rev_len] = '\0';
 #ifdef PKT_STATICS
 		memset((uint8*) &tx_statics, 0, sizeof(pkt_statics_t));
 #endif
@@ -3439,7 +3444,7 @@ dhd_pktfilter_offload_set(dhd_pub_t * dhd, char *arg)
 
 	str = "pkt_filter_add";
 	str_len = strlen(str);
-	bcm_strncpy_s(buf, BUF_SIZE, str, str_len);
+	memcpy(buf, str, str_len);
 	buf[ str_len ] = '\0';
 	buf_len = str_len + 1;
 

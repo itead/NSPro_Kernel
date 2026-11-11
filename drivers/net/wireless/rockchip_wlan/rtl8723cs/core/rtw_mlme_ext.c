@@ -10991,7 +10991,9 @@ void start_clnt_join(_adapter *padapter)
 
 				scanned = LIST_CONTAINOR(pos, struct wlan_network, list);
 
-				if (_rtw_memcmp(&(scanned->network.Ssid), &(pnetwork->Ssid), sizeof(NDIS_802_11_SSID)) == _TRUE
+				if (_rtw_memcmp((const u8 *)&scanned->network + offsetof(WLAN_BSSID_EX, Ssid),
+				                (const u8 *)pnetwork + offsetof(WLAN_BSSID_EX, Ssid),
+				                sizeof(NDIS_802_11_SSID)) == _TRUE
 				    && _rtw_memcmp(scanned->network.MacAddress, pnetwork->MacAddress, sizeof(NDIS_802_11_MAC_ADDRESS)) == _TRUE
 				   ) {
 					ie_offset = (scanned->network.Reserved[0] == 2 ? 0 : 12);
@@ -12428,6 +12430,7 @@ void linked_status_chk(_adapter *padapter, u8 from_timer)
 	struct xmit_priv		*pxmitpriv = &(padapter->xmitpriv);
 	struct mlme_ext_priv	*pmlmeext = &padapter->mlmeextpriv;
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
+	NDIS_802_11_SSID aligned_network_ssid;
 	struct sta_priv		*pstapriv = &padapter->stapriv;
 #if defined(CONFIG_ARP_KEEP_ALIVE) || defined(CONFIG_LAYER2_ROAMING)
 	struct mlme_priv	*pmlmepriv = &padapter->mlmepriv;
@@ -12438,6 +12441,10 @@ void linked_status_chk(_adapter *padapter, u8 from_timer)
 
 	if (padapter->registrypriv.mp_mode == _TRUE)
 		return;
+
+	/* WLAN_BSSID_EX is packed; copy SSID into aligned storage before use. */
+	memcpy(&aligned_network_ssid, (const u8 *)&pmlmeinfo->network +
+	       offsetof(WLAN_BSSID_EX, Ssid), sizeof(aligned_network_ssid));
 
 	if (is_client_associated_to_ap(padapter)) {
 		/* linked infrastructure client mode */
@@ -12553,7 +12560,7 @@ void linked_status_chk(_adapter *padapter, u8 from_timer)
 				}
 
 				if (rx_chk != _SUCCESS)
-					issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, psta->hwaddr, 0, 0, 3, 1);
+					issue_probereq_ex(padapter, &aligned_network_ssid, psta->hwaddr, 0, 0, 3, 1);
 
 				if ((tx_chk != _SUCCESS && pmlmeinfo->link_count++ == link_count_limit) || rx_chk != _SUCCESS) {
 					tx_chk = issue_nulldata(padapter, psta->hwaddr, 0, 3, 1);
@@ -12573,12 +12580,18 @@ bypass_active_keep_alive:
 			{
 				if (rx_chk != _SUCCESS) {
 					if (pmlmeext->retry == 0) {
+						u8 ap_mac_addr[ETH_ALEN];
+						int mac_idx;
+
+						/* Copy packed BSSID bytes into aligned storage before passing a pointer. */
+						for (mac_idx = 0; mac_idx < ETH_ALEN; mac_idx++)
+							ap_mac_addr[mac_idx] = pmlmeinfo->network.MacAddress[mac_idx];
 #ifdef DBG_EXPIRATION_CHK
 						RTW_INFO("issue_probereq to trigger probersp, retry=%d\n", pmlmeext->retry);
 #endif
-						issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
-						issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
-						issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
+						issue_probereq_ex(padapter, &aligned_network_ssid, ap_mac_addr, 0, 0, 0, 0);
+						issue_probereq_ex(padapter, &aligned_network_ssid, ap_mac_addr, 0, 0, 0, 0);
+						issue_probereq_ex(padapter, &aligned_network_ssid, ap_mac_addr, 0, 0, 0, 0);
 					}
 				}
 

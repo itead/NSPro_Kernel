@@ -9280,8 +9280,11 @@ dhd_attach(osl_t *osh, struct dhd_bus *bus, uint bus_hdrlen)
 		if_name[IFNAMSIZ - 1] = 0;
 		len = strlen(if_name);
 		ch = if_name[len - 1];
-		if ((ch > '9' || ch < '0') && (len < IFNAMSIZ - 2))
-			strncat(if_name, "%d", 2);
+		if ((ch > '9' || ch < '0') && (len < IFNAMSIZ - 2)) {
+			if_name[len] = '%';
+			if_name[len + 1] = 'd';
+			if_name[len + 2] = '\0';
+		}
 	}
 
 	/* Passing NULL to dngl_name to ensure host gets if_name in dngl_name member */
@@ -15078,7 +15081,7 @@ dhd_dev_start_mkeep_alive(dhd_pub_t *dhd_pub, uint8 mkeep_alive_id, uint8 *ip_pk
 	memset(pbuf, 0, KA_TEMP_BUF_SIZE);
 	str = "mkeep_alive";
 	str_len = strlen(str);
-	strncpy(pbuf, str, str_len);
+	memcpy(pbuf, str, str_len);
 	pbuf[str_len] = '\0';
 
 	mkeep_alive_pktp = (wl_mkeep_alive_pkt_t *) (pbuf + str_len + 1);

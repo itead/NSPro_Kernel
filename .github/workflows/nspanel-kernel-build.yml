@@ -1,0 +1,206 @@
+name: NSPanel kernel CI/CD
+
+on:
+  push:
+    branches: [fix/rockchip-gem-zero-size]
+    tags: ["v*"]
+    paths-ignore: ["**/*.log"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nspanel-kernel-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate source changes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate patch and source invariants
+        shell: bash
+        run: |
+          set -Eeo pipefail
+          if [ -n "${{ github.event.pull_request.base.sha || '' }}" ]; then
+            git diff --check "${{ github.event.pull_request.base.sha }}" "$GITHUB_SHA"
+          elif git rev-parse HEAD^ >/dev/null 2>&1; then
+            git -c core.whitespace=cr-at-eol diff --check HEAD^ HEAD
+          fi
+          for driver in rtl8188eu rtl8188fu rtl8189es rtl8189fs rtl8723bs rtl8723bu rtl8723cs rtl8723ds rtl8822be; do
+            header="drivers/net/wireless/rockchip_wlan/$driver/include/ieee80211.h"
+            grep -Fq 'frame_ctl __attribute__((aligned(2)))' "$header" || {
+              echo "::error::Missing 2-byte frame_ctl alignment in $header"; exit 1;
+            }
+          done
+          for driver in rtl8188eu rtl8188fu rtl8189es rtl8189fs rtl8192cu rtl8192du rtl8723au rtl8723bs-vq0 rtl8723bs rtl8723bu rtl8723cs rtl8723ds rtl8812au rtl8822be; do
+            header="drivers/net/wireless/rockchip_wlan/$driver/include/osdep_service.h"
+            source="drivers/net/wireless/rockchip_wlan/$driver/os_dep/osdep_service.c"
+            for file in "$header" "$source"; do
+              grep -Eq '_rtw_memcmp\(const void \*dst, const void \*src, u32 sz\)' "$file" || {
+                echo "::error::Non-const _rtw_memcmp interface in $file"; exit 1;
+              }
+            done
+          done
+          if git grep -n -F 'rtw_sprintf(thread_name, 20, "%s-"ADPT_FMT, thread_name, ADPT_ARG(padapter));' -- drivers/net/wireless/rockchip_wlan; then
+            echo "::error::Overlapping thread_name snprintf pattern remains"; exit 1
+          fi
+          if git grep -n -F '&pmlmeinfo->network.Ssid' -- drivers/net/wireless/rockchip_wlan; then
+            echo "::error::Packed WLAN_BSSID_EX SSID pointers must use aligned local copies"; exit 1
+          fi
+          for packed_ssid_ref in '&(pmlmeinfo->network.Ssid)' '&(scanned->network.Ssid)' '&(pnetwork->Ssid)'; do
+            if git grep -n -F "$packed_ssid_ref" -- drivers/net/wireless/rockchip_wlan; then
+              echo "::error::Direct address of packed WLAN_BSSID_EX SSID remains: $packed_ssid_ref"; exit 1
+            fi
+          done
+          if git grep -n -E 'rtw_validate_ssid[[:space:]]*\([[:space:]]*&[[:space:]]*\([^)]*network\.Ssid' -- drivers/net/wireless/rockchip_wlan; then
+            echo "::error::rtw_validate_ssid must receive an aligned local SSID copy, never a packed WLAN_BSSID_EX member"; exit 1
+          fi
+
+  build:
+    name: Build and package on dell5300
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    needs: validate
+    permissions:
+      contents: write
+    runs-on: [self-hosted, linux, x64]
+    timeout-minutes: 240
+    steps:
+      - name: Checkout exact source revision
+        uses: actions/checkout@v4
+        with:
+          clean: true
+          fetch-depth: 0
+      - name: Initialize diagnostics
+        shell: bash
+        run: |
+          set -Eeo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git status --porcelain)"
+          LOG_FILE="$PWD/nspanel-kernel-build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.log"
+          echo "NSPANEL_BUILD_LOG=$LOG_FILE" >> "$GITHUB_ENV"
+          {
+            echo "===== Repository: $GITHUB_REPOSITORY ====="
+            echo "===== Ref: $GITHUB_REF ====="
+            echo "===== Requested SHA: $GITHUB_SHA ====="
+            echo "===== Runner: $(hostname -f 2>/dev/null || hostname) ====="
+          } | tee "$LOG_FILE"
+      - name: Validate build environment
+        shell: bash
+        run: |
+          set -Eeo pipefail
+          for tool in make flock aarch64-unknown-linux-gnu-gcc depmod tar sha256sum; do
+            command -v "$tool" >/dev/null || { echo "::error::Missing tool: $tool"; exit 1; }
+          done
+          test -s .config
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          free -h
+          df -h . "${RUNNER_TEMP:-/tmp}" /tmp
+          aarch64-unknown-linux-gnu-gcc --version | head -n 1
+      - name: Compile through repository's canonical script
+        id: compile
+        shell: bash
+        env:
+          NSPANEL_CI: "1"
+          TMPDIR: ${{ runner.temp }}
+        run: |
+          set -Eeo pipefail
+          mkdir -p "$TMPDIR"
+          ./NSPanel-compile.sh 2>&1 | tee -a "$NSPANEL_BUILD_LOG"
+      - name: Analyze diagnostics through repository's canonical script
+        if: always()
+        shell: bash
+        run: |
+          if [ -f "$NSPANEL_BUILD_LOG" ]; then
+            DIAGNOSTICS_FILE="$PWD/nspanel-kernel-diagnostics-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.txt"
+            ./NSPanel-check-compile-errors.sh "$NSPANEL_BUILD_LOG" | tee "$DIAGNOSTICS_FILE"
+            echo "NSPANEL_DIAGNOSTICS=$DIAGNOSTICS_FILE" >> "$GITHUB_ENV"
+          fi
+      - name: Package kernel, DTBs and modules
+        if: success()
+        shell: bash
+        run: |
+          set -Eeo pipefail
+          PACKAGE_ROOT="$PWD/dist/package"
+          mkdir -p "$PACKAGE_ROOT/boot/dtb" "$PACKAGE_ROOT/config"
+          test -s arch/arm64/boot/Image
+          cp arch/arm64/boot/Image "$PACKAGE_ROOT/boot/Image"
+          cp .config "$PACKAGE_ROOT/config/kernel.config"
+          if [ -s System.map ]; then cp System.map "$PACKAGE_ROOT/boot/System.map"; fi
+          DTB_COUNT=$(find arch/arm64/boot/dts -type f -name '*.dtb' | wc -l)
+          [ "$DTB_COUNT" -gt 0 ] || { echo "::error::No DTBs found"; exit 1; }
+          find arch/arm64/boot/dts -type f -name '*.dtb' -exec cp --parents {} "$PACKAGE_ROOT/" \;
+          ARCH=arm64 CROSS_COMPILE=aarch64-unknown-linux-gnu- make -j3 \
+            HOSTCFLAGS="-Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -fcommon" \
+            modules_install INSTALL_MOD_PATH="$PACKAGE_ROOT/rootfs"
+          KERNEL_RELEASE=$(make -s ARCH=arm64 kernelrelease)
+          test -d "$PACKAGE_ROOT/rootfs/lib/modules/$KERNEL_RELEASE"
+          BUILD_COMMIT=$(git rev-parse HEAD)
+          PACKAGE="$PWD/dist/nspanel-kernel-$KERNEL_RELEASE-${BUILD_COMMIT:0:12}.tar.gz"
+          tar -czf "$PACKAGE" -C "$PACKAGE_ROOT" .
+          sha256sum "$PACKAGE" > "$PACKAGE.sha256"
+          {
+            echo "repository=$GITHUB_REPOSITORY"
+            echo "commit=$BUILD_COMMIT"
+            echo "ref=$GITHUB_REF"
+            echo "kernel_release=$KERNEL_RELEASE"
+            echo "dtb_count=$DTB_COUNT"
+            echo "compiler=$(aarch64-unknown-linux-gnu-gcc -dumpfullversion)"
+            echo "built_at=$(date --iso-8601=seconds)"
+          } | tee dist/manifest.txt
+      - name: Publish build summary
+        if: always()
+        shell: bash
+        env:
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          {
+            echo '## NSPanel kernel CI/CD'
+            echo "- **Requested SHA:** $GITHUB_SHA"
+            BUILT_SHA=$(git rev-parse HEAD)
+            echo "- **Built SHA:** $BUILT_SHA"
+            echo "- **Job:** $JOB_STATUS"
+            if [ -f "$NSPANEL_BUILD_LOG" ]; then
+              echo "- **Warnings:** $(grep -Ec 'warning:' "$NSPANEL_BUILD_LOG" || true)"
+              echo "- **Errors:** $(grep -Ec 'error:|fatal error:|undefined reference|Error [0-9]+' "$NSPANEL_BUILD_LOG" || true)"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload logs and deliverables
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nspanel-ci-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            nspanel-kernel-build-*.log
+            nspanel-kernel-diagnostics-*.txt
+            dist/*.tar.gz
+            dist/*.sha256
+            dist/manifest.txt
+          if-no-files-found: warn
+          retention-days: 14
+
+  release:
+    name: Publish versioned GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: nspanel-ci-${{ github.run_id }}-${{ github.run_attempt }}
+          path: release-assets
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            release-assets/dist/*.tar.gz
+            release-assets/dist/*.sha256
+            release-assets/dist/manifest.txt

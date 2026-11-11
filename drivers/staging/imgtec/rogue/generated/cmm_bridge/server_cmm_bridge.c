@@ -83,6 +83,7 @@ PVRSRVBridgeDevmemIntExportCtx(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_HANDLE hPMR = psDevmemIntExportCtxIN->hPMR;
 	PMR * psPMRInt = NULL;
 	DEVMEMINT_CTX_EXPORT * psContextExportInt = NULL;
+	__typeof__(psDevmemIntExportCtxOUT->hContextExport) local_hContextExport;
 
 
 
@@ -153,7 +154,7 @@ PVRSRVBridgeDevmemIntExportCtx(IMG_UINT32 ui32DispatchTableEntry,
 
 	psDevmemIntExportCtxOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psDevmemIntExportCtxOUT->hContextExport,
+							&local_hContextExport,
 							(void *) psContextExportInt,
 							PVRSRV_HANDLE_TYPE_DEVMEMINT_CTX_EXPORT,
 							PVRSRV_HANDLE_ALLOC_FLAG_NONE
@@ -163,6 +164,7 @@ PVRSRVBridgeDevmemIntExportCtx(IMG_UINT32 ui32DispatchTableEntry,
 		UnlockHandle();
 		goto DevmemIntExportCtx_exit;
 	}
+	psDevmemIntExportCtxOUT->hContextExport = local_hContextExport;
 
 	/* Release now we have created handles. */
 	UnlockHandle();
@@ -279,6 +281,8 @@ PVRSRVBridgeDevmemIntAcquireRemoteCtx(IMG_UINT32 ui32DispatchTableEntry,
 	PMR * psPMRInt = NULL;
 	DEVMEMINT_CTX * psContextInt = NULL;
 	IMG_HANDLE hPrivDataInt = NULL;
+	IMG_HANDLE hContextOut = NULL;
+	IMG_HANDLE hPrivDataOut = NULL;
 
 
 
@@ -331,7 +335,7 @@ PVRSRVBridgeDevmemIntAcquireRemoteCtx(IMG_UINT32 ui32DispatchTableEntry,
 
 	psDevmemIntAcquireRemoteCtxOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psDevmemIntAcquireRemoteCtxOUT->hContext,
+							&hContextOut,
 							(void *) psContextInt,
 							PVRSRV_HANDLE_TYPE_DEVMEMINT_CTX,
 							PVRSRV_HANDLE_ALLOC_FLAG_NONE
@@ -347,9 +351,10 @@ PVRSRVBridgeDevmemIntAcquireRemoteCtx(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	psDevmemIntAcquireRemoteCtxOUT->hContext = hContextOut;
 	psDevmemIntAcquireRemoteCtxOUT->eError = PVRSRVAllocSubHandleUnlocked(psConnection->psHandleBase,
 
-							&psDevmemIntAcquireRemoteCtxOUT->hPrivData,
+							&hPrivDataOut,
 							(void *) hPrivDataInt,
 							PVRSRV_HANDLE_TYPE_DEV_PRIV_DATA,
 							PVRSRV_HANDLE_ALLOC_FLAG_NONE
@@ -359,6 +364,7 @@ PVRSRVBridgeDevmemIntAcquireRemoteCtx(IMG_UINT32 ui32DispatchTableEntry,
 		UnlockHandle();
 		goto DevmemIntAcquireRemoteCtx_exit;
 	}
+	psDevmemIntAcquireRemoteCtxOUT->hPrivData = hPrivDataOut;
 
 	/* Release now we have created handles. */
 	UnlockHandle();

@@ -552,7 +552,7 @@ static int nvme_trans_standard_inquiry_page(struct nvme_ns *ns,
 	inq_response[4] = ADDITIONAL_STD_INQ_LENGTH;
 	inq_response[5] = protect;	/* sccs=0 | acc=0 | tpgs=0 | pc3=0 */
 	inq_response[7] = cmdque;	/* wbus16=0 | sync=0 | vs=0 */
-	strncpy(&inq_response[8], "NVMe    ", 8);
+	memcpy(&inq_response[8], "NVMe    ", 8);
 	strncpy(&inq_response[16], dev->model, 16);
 
 	while (dev->firmware_rev[fw_offset - 1] == ' ' && fw_offset > 4)

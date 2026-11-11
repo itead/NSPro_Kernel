@@ -1183,6 +1183,7 @@ _func_exit_;
 
 u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network* pnetwork)
 {
+	uint tmp_ie_length;
 	u8	*auth, res = _SUCCESS;
 	uint	t_len = 0;
 	WLAN_BSSID_EX		*psecnetwork;
@@ -1319,8 +1320,10 @@ _func_enter_;
 			( padapter->securitypriv.dot11PrivacyAlgrthm != _TKIP_ ))
 		{
 			//rtw_restructure_ht_ie
+			tmp_ie_length = psecnetwork->IELength;
 			rtw_restructure_ht_ie(padapter, &pnetwork->network.IEs[0], &psecnetwork->IEs[0], 
-									pnetwork->network.IELength, &psecnetwork->IELength);			
+									pnetwork->network.IELength, &tmp_ie_length);
+			psecnetwork->IELength = tmp_ie_length;			
 		}
 	}
 

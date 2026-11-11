@@ -343,7 +343,7 @@ struct ieee_ibss_seq {
 #if defined(PLATFORM_LINUX) || defined(CONFIG_RTL8711FW)||defined(PLATFORM_FREEBSD) 
 
 struct rtw_ieee80211_hdr {
-	u16 frame_ctl;
+	u16 frame_ctl __attribute__((aligned(2)));
 	u16 duration_id;
 	u8 addr1[ETH_ALEN];
 	u8 addr2[ETH_ALEN];
@@ -399,7 +399,7 @@ struct eapol {
 
 #pragma pack(1)
 struct rtw_ieee80211_hdr {
-	u16 frame_ctl;
+	u16 frame_ctl __attribute__((aligned(2)));
 	u16 duration_id;
 	u8 addr1[ETH_ALEN];
 	u8 addr2[ETH_ALEN];

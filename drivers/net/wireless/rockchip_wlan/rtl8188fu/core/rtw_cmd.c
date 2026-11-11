@@ -1532,6 +1532,8 @@ _func_enter_;
 	}	
 
 #ifdef CONFIG_80211N_HT
+{
+	uint ie_len = psecnetwork->IELength;
 	phtpriv->ht_option = _FALSE;
 	ptmp = rtw_get_ie(&pnetwork->network.IEs[12], _HT_CAPABILITY_IE_, &tmp_len, pnetwork->network.IELength-12);
 	if(pregistrypriv->ht_enable && ptmp && tmp_len>0)
@@ -1545,12 +1547,13 @@ _func_enter_;
 		{
 			rtw_ht_use_default_setting(padapter);
 
-			rtw_build_wmm_ie_ht(padapter, &psecnetwork->IEs[0], &psecnetwork->IELength);
+			rtw_build_wmm_ie_ht(padapter, &psecnetwork->IEs[0], &ie_len);
 
 			//rtw_restructure_ht_ie
 			rtw_restructure_ht_ie(padapter, &pnetwork->network.IEs[12], &psecnetwork->IEs[0], 
-									pnetwork->network.IELength-12, &psecnetwork->IELength,
+									pnetwork->network.IELength-12, &ie_len,
 									pnetwork->network.Configuration.DSConfig);
+			psecnetwork->IELength = ie_len;
 		}
 	}
 
@@ -1562,12 +1565,14 @@ _func_enter_;
 		&& (!pmlmepriv->country_ent || COUNTRY_CHPLAN_EN_11AC(pmlmepriv->country_ent))
 	) {
 		rtw_restructure_vht_ie(padapter, &pnetwork->network.IEs[0], &psecnetwork->IEs[0], 
-								pnetwork->network.IELength, &psecnetwork->IELength);
+								pnetwork->network.IELength, &ie_len);
 	}
 #endif
 
-	rtw_append_exented_cap(padapter, &psecnetwork->IEs[0], &psecnetwork->IELength);
+	rtw_append_exented_cap(padapter, &psecnetwork->IEs[0], &ie_len);
 
+	psecnetwork->IELength = ie_len;
+}
 #endif //CONFIG_80211N_HT
 
 	#if 0

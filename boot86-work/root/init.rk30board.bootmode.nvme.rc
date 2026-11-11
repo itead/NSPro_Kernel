@@ -1,0 +1,2 @@
+on fs
+    write /sys/block/mmcblk0/bdi/read_ahead_kb 2048

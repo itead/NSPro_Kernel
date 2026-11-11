@@ -448,6 +448,9 @@ PVRSRVBridgePMRPDumpSymbolicAddr(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_PMRPDUMPSYMBOLICADDR *psPMRPDumpSymbolicAddrOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psPMRPDumpSymbolicAddrOUT->uiNewOffset) aligned_out_psPMRPDumpSymbolicAddrOUT_uiNewOffset __attribute__((unused));
+	typeof(psPMRPDumpSymbolicAddrOUT->uiNextSymName) aligned_out_psPMRPDumpSymbolicAddrOUT_uiNextSymName __attribute__((unused));
+
 	IMG_HANDLE hPMR = psPMRPDumpSymbolicAddrIN->hPMR;
 	PMR * psPMRInt = NULL;
 	IMG_CHAR *puiMemspaceNameInt = NULL;
@@ -534,6 +537,8 @@ PVRSRVBridgePMRPDumpSymbolicAddr(IMG_UINT32 ui32DispatchTableEntry,
 	/* Release now we have looked up handles. */
 	UnlockHandle();
 
+	aligned_out_psPMRPDumpSymbolicAddrOUT_uiNewOffset = psPMRPDumpSymbolicAddrOUT->uiNewOffset;
+	aligned_out_psPMRPDumpSymbolicAddrOUT_uiNextSymName = psPMRPDumpSymbolicAddrOUT->uiNextSymName;
 	psPMRPDumpSymbolicAddrOUT->eError =
 		PMR_PDumpSymbolicAddr(
 					psPMRInt,
@@ -542,8 +547,10 @@ PVRSRVBridgePMRPDumpSymbolicAddr(IMG_UINT32 ui32DispatchTableEntry,
 					puiMemspaceNameInt,
 					psPMRPDumpSymbolicAddrIN->ui32SymbolicAddrLen,
 					puiSymbolicAddrInt,
-					&psPMRPDumpSymbolicAddrOUT->uiNewOffset,
-					&psPMRPDumpSymbolicAddrOUT->uiNextSymName);
+					&aligned_out_psPMRPDumpSymbolicAddrOUT_uiNewOffset,
+					&aligned_out_psPMRPDumpSymbolicAddrOUT_uiNextSymName);
+	psPMRPDumpSymbolicAddrOUT->uiNewOffset = aligned_out_psPMRPDumpSymbolicAddrOUT_uiNewOffset;
+	psPMRPDumpSymbolicAddrOUT->uiNextSymName = aligned_out_psPMRPDumpSymbolicAddrOUT_uiNextSymName;
 
 
 

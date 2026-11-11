@@ -9776,7 +9776,9 @@ void start_clnt_join(_adapter* padapter)
 				if(scanned==NULL)
 					rtw_warn_on(1);
 
-				if (_rtw_memcmp(&(scanned->network.Ssid), &(pnetwork->Ssid), sizeof(NDIS_802_11_SSID)) == _TRUE
+				if (_rtw_memcmp((const u8 *)&scanned->network + offsetof(WLAN_BSSID_EX, Ssid),
+				                (const u8 *)pnetwork + offsetof(WLAN_BSSID_EX, Ssid),
+				                sizeof(NDIS_802_11_SSID)) == _TRUE
 					&& _rtw_memcmp(scanned->network.MacAddress, pnetwork->MacAddress, sizeof(NDIS_802_11_MAC_ADDRESS)) == _TRUE
 				) {
 					ie_offset = (scanned->network.Reserved[0] == 2? 0:12);
@@ -10870,6 +10872,7 @@ void linked_status_chk(_adapter *padapter)
 	struct xmit_priv		*pxmitpriv = &(padapter->xmitpriv);
 	struct mlme_ext_priv	*pmlmeext = &padapter->mlmeextpriv;
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
+	NDIS_802_11_SSID aligned_network_ssid;
 	struct sta_priv		*pstapriv = &padapter->stapriv;
 
 	if(padapter->bRxRSSIDisplay)
@@ -10878,6 +10881,10 @@ void linked_status_chk(_adapter *padapter)
 	#ifdef DBG_CONFIG_ERROR_DETECT	
 	rtw_hal_sreset_linked_status_check(padapter);
 	#endif
+
+	/* WLAN_BSSID_EX is packed; copy SSID into aligned storage before use. */
+	memcpy(&aligned_network_ssid, (const u8 *)&pmlmeinfo->network +
+	       offsetof(WLAN_BSSID_EX, Ssid), sizeof(aligned_network_ssid));
 
 	if (is_client_associated_to_ap(padapter))
 	{
@@ -10926,7 +10933,7 @@ void linked_status_chk(_adapter *padapter)
 				}
 
 				if (rx_chk != _SUCCESS)
-					issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, psta->hwaddr, 3, 1);
+					issue_probereq_ex(padapter, &aligned_network_ssid, psta->hwaddr, 3, 1);
 
 				if ((tx_chk != _SUCCESS && pmlmeinfo->link_count++ == 0xf) || rx_chk != _SUCCESS) {
 					tx_chk = issue_nulldata(padapter, psta->hwaddr, 0, 3, 1);
@@ -10948,9 +10955,9 @@ void linked_status_chk(_adapter *padapter)
 						#ifdef DBG_EXPIRATION_CHK
 						DBG_871X("issue_probereq to trigger probersp, retry=%d\n", pmlmeext->retry);
 						#endif
-						issue_probereq(padapter, &pmlmeinfo->network.Ssid, pmlmeinfo->network.MacAddress);
-						issue_probereq(padapter, &pmlmeinfo->network.Ssid, pmlmeinfo->network.MacAddress);
-						issue_probereq(padapter, &pmlmeinfo->network.Ssid, pmlmeinfo->network.MacAddress);
+						issue_probereq(padapter, &aligned_network_ssid, pmlmeinfo->network.MacAddress);
+						issue_probereq(padapter, &aligned_network_ssid, pmlmeinfo->network.MacAddress);
+						issue_probereq(padapter, &aligned_network_ssid, pmlmeinfo->network.MacAddress);
 					}
 				}
 

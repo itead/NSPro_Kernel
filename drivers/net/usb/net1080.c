@@ -363,6 +363,7 @@ static int net1080_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 	struct nc_header	*header;
 	struct nc_trailer	*trailer;
 	u16			hdr_len, packet_len;
+	__le16 raw_hdr_len, raw_packet_len;
 
 	/* This check is no longer done by usbnet */
 	if (skb->len < dev->net->hard_header_len)
@@ -378,8 +379,12 @@ static int net1080_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 	}
 
 	header = (struct nc_header *) skb->data;
-	hdr_len = le16_to_cpup(&header->hdr_len);
-	packet_len = le16_to_cpup(&header->packet_len);
+	memcpy(&raw_hdr_len, (char *)skb->data +
+	       offsetof(struct nc_header, hdr_len), sizeof(raw_hdr_len));
+	hdr_len = le16_to_cpu(raw_hdr_len);
+	memcpy(&raw_packet_len, (char *)skb->data +
+	       offsetof(struct nc_header, packet_len), sizeof(raw_packet_len));
+	packet_len = le16_to_cpu(raw_packet_len);
 	if (FRAMED_SIZE(packet_len) > NC_MAX_PACKET) {
 		dev->net->stats.rx_frame_errors++;
 		netdev_dbg(dev->net, "packet too big, %d\n", packet_len);

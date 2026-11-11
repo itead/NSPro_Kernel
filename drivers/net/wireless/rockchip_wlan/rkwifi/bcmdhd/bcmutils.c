@@ -810,7 +810,7 @@ pktsetprio(void *pkt, bool update_vtag)
 		uint16 vlan_tag;
 		int vlan_prio, dscp_prio = 0;
 
-		evh = (struct ethervlan_header *)eh;
+		evh = (struct ethervlan_header *)pktdata;
 
 		vlan_tag = ntoh16(evh->vlan_tag);
 		vlan_prio = (int) (vlan_tag >> VLAN_PRI_SHIFT) & VLAN_PRI_MASK;
@@ -934,7 +934,7 @@ bool BCMFASTPATH
 pktgetdscp(uint8 *pktdata, uint pktlen, uint8 *dscp)
 {
 	struct ether_header *eh;
-	struct ethervlan_header *evh;
+	struct ethervlan_header evh;
 	uint8 *ip_body;
 	bool rc = FALSE;
 
@@ -942,22 +942,21 @@ pktgetdscp(uint8 *pktdata, uint pktlen, uint8 *dscp)
 	if (pktlen < sizeof(struct ether_header) + IPV4_MIN_HEADER_LEN)
 		return FALSE;
 
-	eh = (struct ether_header *) pktdata;
+	eh = (struct ether_header *)pktdata;
 
 	if (eh->ether_type == HTON16(ETHER_TYPE_IP)) {
 		ip_body = pktdata + sizeof(struct ether_header);
 		*dscp = IP_DSCP46(ip_body);
 		rc = TRUE;
-	}
-	else if (eh->ether_type == HTON16(ETHER_TYPE_8021Q)) {
-		evh = (struct ethervlan_header *)eh;
-
+	} else if (eh->ether_type == HTON16(ETHER_TYPE_8021Q)) {
 		/* minimum length is ethervlan header and IP header */
-		if (pktlen >= sizeof(struct ethervlan_header) + IPV4_MIN_HEADER_LEN &&
-			evh->ether_type == HTON16(ETHER_TYPE_IP)) {
-			ip_body = pktdata + sizeof(struct ethervlan_header);
-			*dscp = IP_DSCP46(ip_body);
-			rc = TRUE;
+		if (pktlen >= sizeof(struct ethervlan_header) + IPV4_MIN_HEADER_LEN) {
+			memcpy(&evh, pktdata, sizeof(evh));
+			if (evh.ether_type == HTON16(ETHER_TYPE_IP)) {
+				ip_body = pktdata + sizeof(struct ethervlan_header);
+				*dscp = IP_DSCP46(ip_body);
+				rc = TRUE;
+			}
 		}
 	}
 

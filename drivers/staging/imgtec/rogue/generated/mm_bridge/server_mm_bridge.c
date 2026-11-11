@@ -90,6 +90,10 @@ PVRSRVBridgePMRExportPMR(IMG_UINT32 ui32DispatchTableEntry,
 	PMR * psPMRInt = NULL;
 	PMR_EXPORT * psPMRExportInt = NULL;
 	IMG_HANDLE hPMRExportInt = NULL;
+	IMG_HANDLE hPMRExportOut = NULL;
+	__typeof__(psPMRExportPMROUT->ui64Size) ui64Size;
+	__typeof__(psPMRExportPMROUT->ui32Log2Contig) ui32Log2Contig;
+	__typeof__(psPMRExportPMROUT->ui64Password) ui64Password;
 
 
 
@@ -125,14 +129,17 @@ PVRSRVBridgePMRExportPMR(IMG_UINT32 ui32DispatchTableEntry,
 		PMRExportPMR(
 					psPMRInt,
 					&psPMRExportInt,
-					&psPMRExportPMROUT->ui64Size,
-					&psPMRExportPMROUT->ui32Log2Contig,
-					&psPMRExportPMROUT->ui64Password);
+					&ui64Size,
+					&ui32Log2Contig,
+					&ui64Password);
 	/* Exit early if bridged call fails */
 	if(psPMRExportPMROUT->eError != PVRSRV_OK)
 	{
 		goto PMRExportPMR_exit;
 	}
+	psPMRExportPMROUT->ui64Size = ui64Size;
+	psPMRExportPMROUT->ui32Log2Contig = ui32Log2Contig;
+	psPMRExportPMROUT->ui64Password = ui64Password;
 
 	/* Lock over handle creation. */
 	LockHandle();
@@ -169,7 +176,7 @@ PVRSRVBridgePMRExportPMR(IMG_UINT32 ui32DispatchTableEntry,
 	}
 
 	psPMRExportPMROUT->eError = PVRSRVAllocHandleUnlocked(KERNEL_HANDLE_BASE,
-							&psPMRExportPMROUT->hPMRExport,
+							&hPMRExportOut,
 							(void *) psPMRExportInt,
 							PVRSRV_HANDLE_TYPE_PHYSMEM_PMR_EXPORT,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI,
@@ -179,6 +186,7 @@ PVRSRVBridgePMRExportPMR(IMG_UINT32 ui32DispatchTableEntry,
 		UnlockHandle();
 		goto PMRExportPMR_exit;
 	}
+	psPMRExportPMROUT->hPMRExport = hPMRExportOut;
 	/* Release now we have created handles. */
 	UnlockHandle();
 
@@ -371,6 +379,7 @@ PVRSRVBridgePMRGetUID(IMG_UINT32 ui32DispatchTableEntry,
 {
 	IMG_HANDLE hPMR = psPMRGetUIDIN->hPMR;
 	PMR * psPMRInt = NULL;
+	IMG_UINT64 ui64UID = 0;
 
 
 
@@ -405,7 +414,8 @@ PVRSRVBridgePMRGetUID(IMG_UINT32 ui32DispatchTableEntry,
 	psPMRGetUIDOUT->eError =
 		PMRGetUID(
 					psPMRInt,
-					&psPMRGetUIDOUT->ui64UID);
+					&ui64UID);
+	psPMRGetUIDOUT->ui64UID = ui64UID;
 
 
 
@@ -446,6 +456,7 @@ PVRSRVBridgePMRMakeLocalImportHandle(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_HANDLE hBuffer = psPMRMakeLocalImportHandleIN->hBuffer;
 	PMR * psBufferInt = NULL;
 	PMR * psExtMemInt = NULL;
+	IMG_HANDLE hExtMemOut;
 
 
 
@@ -496,7 +507,7 @@ PVRSRVBridgePMRMakeLocalImportHandle(IMG_UINT32 ui32DispatchTableEntry,
 
 	psPMRMakeLocalImportHandleOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psPMRMakeLocalImportHandleOUT->hExtMem,
+							&hExtMemOut,
 							(void *) psExtMemInt,
 							PVRSRV_HANDLE_TYPE_DEVMEM_MEM_IMPORT,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
@@ -506,6 +517,7 @@ PVRSRVBridgePMRMakeLocalImportHandle(IMG_UINT32 ui32DispatchTableEntry,
 		UnlockHandle();
 		goto PMRMakeLocalImportHandle_exit;
 	}
+	psPMRMakeLocalImportHandleOUT->hExtMem = hExtMemOut;
 
 	/* Release now we have created handles. */
 	UnlockHandle();
@@ -607,6 +619,7 @@ PVRSRVBridgePMRImportPMR(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_HANDLE hPMRExport = psPMRImportPMRIN->hPMRExport;
 	PMR_EXPORT * psPMRExportInt = NULL;
 	PMR * psPMRInt = NULL;
+	IMG_HANDLE hPMR = NULL;
 
 
 
@@ -660,7 +673,7 @@ PVRSRVBridgePMRImportPMR(IMG_UINT32 ui32DispatchTableEntry,
 
 	psPMRImportPMROUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psPMRImportPMROUT->hPMR,
+							&hPMR,
 							(void *) psPMRInt,
 							PVRSRV_HANDLE_TYPE_PHYSMEM_PMR,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
@@ -670,6 +683,7 @@ PVRSRVBridgePMRImportPMR(IMG_UINT32 ui32DispatchTableEntry,
 		UnlockHandle();
 		goto PMRImportPMR_exit;
 	}
+	psPMRImportPMROUT->hPMR = hPMR;
 
 	/* Release now we have created handles. */
 	UnlockHandle();
@@ -720,6 +734,9 @@ PVRSRVBridgePMRLocalImportPMR(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_HANDLE hExtHandle = psPMRLocalImportPMRIN->hExtHandle;
 	PMR * psExtHandleInt = NULL;
 	PMR * psPMRInt = NULL;
+	IMG_HANDLE hPMR = NULL;
+	__typeof__(psPMRLocalImportPMROUT->uiSize) uiSize;
+	__typeof__(psPMRLocalImportPMROUT->sAlign) sAlign;
 
 
 
@@ -755,13 +772,15 @@ PVRSRVBridgePMRLocalImportPMR(IMG_UINT32 ui32DispatchTableEntry,
 		PMRLocalImportPMR(
 					psExtHandleInt,
 					&psPMRInt,
-					&psPMRLocalImportPMROUT->uiSize,
-					&psPMRLocalImportPMROUT->sAlign);
+					&uiSize,
+					&sAlign);
 	/* Exit early if bridged call fails */
 	if(psPMRLocalImportPMROUT->eError != PVRSRV_OK)
 	{
 		goto PMRLocalImportPMR_exit;
 	}
+	psPMRLocalImportPMROUT->uiSize = uiSize;
+	psPMRLocalImportPMROUT->sAlign = sAlign;
 
 	/* Lock over handle creation. */
 	LockHandle();
@@ -772,11 +791,13 @@ PVRSRVBridgePMRLocalImportPMR(IMG_UINT32 ui32DispatchTableEntry,
 
 	psPMRLocalImportPMROUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psPMRLocalImportPMROUT->hPMR,
+							&hPMR,
 							(void *) psPMRInt,
 							PVRSRV_HANDLE_TYPE_PHYSMEM_PMR,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&PMRUnrefPMR);
+	if (psPMRLocalImportPMROUT->eError == PVRSRV_OK)
+		psPMRLocalImportPMROUT->hPMR = hPMR;
 	if (psPMRLocalImportPMROUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -934,6 +955,7 @@ PVRSRVBridgePhysmemNewRamBackedPMR(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_UINT32 *ui32MappingTableInt = NULL;
 	IMG_CHAR *uiAnnotationInt = NULL;
 	PMR * psPMRPtrInt = NULL;
+	IMG_HANDLE hPMRPtr = NULL;
 
 	IMG_UINT32 ui32NextOffset = 0;
 	IMG_BYTE   *pArrayArgsBuffer = NULL;
@@ -1038,7 +1060,7 @@ PVRSRVBridgePhysmemNewRamBackedPMR(IMG_UINT32 ui32DispatchTableEntry,
 
 	psPhysmemNewRamBackedPMROUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psPhysmemNewRamBackedPMROUT->hPMRPtr,
+							&hPMRPtr,
 							(void *) psPMRPtrInt,
 							PVRSRV_HANDLE_TYPE_PHYSMEM_PMR,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
@@ -1048,6 +1070,7 @@ PVRSRVBridgePhysmemNewRamBackedPMR(IMG_UINT32 ui32DispatchTableEntry,
 		UnlockHandle();
 		goto PhysmemNewRamBackedPMR_exit;
 	}
+	psPhysmemNewRamBackedPMROUT->hPMRPtr = hPMRPtr;
 
 	/* Release now we have created handles. */
 	UnlockHandle();
@@ -1090,6 +1113,7 @@ PVRSRVBridgePhysmemNewRamBackedLockedPMR(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_UINT32 *ui32MappingTableInt = NULL;
 	IMG_CHAR *uiAnnotationInt = NULL;
 	PMR * psPMRPtrInt = NULL;
+	IMG_HANDLE hPMRPtr = NULL;
 
 	IMG_UINT32 ui32NextOffset = 0;
 	IMG_BYTE   *pArrayArgsBuffer = NULL;
@@ -1194,11 +1218,13 @@ PVRSRVBridgePhysmemNewRamBackedLockedPMR(IMG_UINT32 ui32DispatchTableEntry,
 
 	psPhysmemNewRamBackedLockedPMROUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psPhysmemNewRamBackedLockedPMROUT->hPMRPtr,
+							&hPMRPtr,
 							(void *) psPMRPtrInt,
 							PVRSRV_HANDLE_TYPE_PHYSMEM_PMR,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&PMRUnrefUnlockPMR);
+	if (psPhysmemNewRamBackedLockedPMROUT->eError == PVRSRV_OK)
+		psPhysmemNewRamBackedLockedPMROUT->hPMRPtr = hPMRPtr;
 	if (psPhysmemNewRamBackedLockedPMROUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -1607,8 +1633,11 @@ PVRSRVBridgeDevmemIntCtxCreate(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_DEVMEMINTCTXCREATE *psDevmemIntCtxCreateOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	IMG_HANDLE hDevMemServerContext = NULL;
 	DEVMEMINT_CTX * psDevMemServerContextInt = NULL;
 	IMG_HANDLE hPrivDataInt = NULL;
+	IMG_HANDLE hPrivDataHandle = NULL;
+	IMG_UINT32 ui32CPUCacheLineSize = 0;
 
 
 
@@ -1623,7 +1652,8 @@ PVRSRVBridgeDevmemIntCtxCreate(IMG_UINT32 ui32DispatchTableEntry,
 					psDevmemIntCtxCreateIN->bbKernelMemoryCtx,
 					&psDevMemServerContextInt,
 					&hPrivDataInt,
-					&psDevmemIntCtxCreateOUT->ui32CPUCacheLineSize);
+					&ui32CPUCacheLineSize);
+	psDevmemIntCtxCreateOUT->ui32CPUCacheLineSize = ui32CPUCacheLineSize;
 	/* Exit early if bridged call fails */
 	if(psDevmemIntCtxCreateOUT->eError != PVRSRV_OK)
 	{
@@ -1639,11 +1669,13 @@ PVRSRVBridgeDevmemIntCtxCreate(IMG_UINT32 ui32DispatchTableEntry,
 
 	psDevmemIntCtxCreateOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psDevmemIntCtxCreateOUT->hDevMemServerContext,
+							&hDevMemServerContext,
 							(void *) psDevMemServerContextInt,
 							PVRSRV_HANDLE_TYPE_DEVMEMINT_CTX,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&DevmemIntCtxDestroy);
+	if (psDevmemIntCtxCreateOUT->eError == PVRSRV_OK)
+		psDevmemIntCtxCreateOUT->hDevMemServerContext = hDevMemServerContext;
 	if (psDevmemIntCtxCreateOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -1657,11 +1689,13 @@ PVRSRVBridgeDevmemIntCtxCreate(IMG_UINT32 ui32DispatchTableEntry,
 
 	psDevmemIntCtxCreateOUT->eError = PVRSRVAllocSubHandleUnlocked(psConnection->psHandleBase,
 
-							&psDevmemIntCtxCreateOUT->hPrivData,
+							&hPrivDataHandle,
 							(void *) hPrivDataInt,
 							PVRSRV_HANDLE_TYPE_DEV_PRIV_DATA,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,psDevmemIntCtxCreateOUT->hDevMemServerContext);
+	if (psDevmemIntCtxCreateOUT->eError == PVRSRV_OK)
+		psDevmemIntCtxCreateOUT->hPrivData = hPrivDataHandle;
 	if (psDevmemIntCtxCreateOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -1776,6 +1810,7 @@ PVRSRVBridgeDevmemIntHeapCreate(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_HANDLE hDevmemCtx = psDevmemIntHeapCreateIN->hDevmemCtx;
 	DEVMEMINT_CTX * psDevmemCtxInt = NULL;
 	DEVMEMINT_HEAP * psDevmemHeapPtrInt = NULL;
+	IMG_HANDLE hDevmemHeapPtrHandle = NULL;
 
 
 
@@ -1829,11 +1864,13 @@ PVRSRVBridgeDevmemIntHeapCreate(IMG_UINT32 ui32DispatchTableEntry,
 
 	psDevmemIntHeapCreateOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psDevmemIntHeapCreateOUT->hDevmemHeapPtr,
+							&hDevmemHeapPtrHandle,
 							(void *) psDevmemHeapPtrInt,
 							PVRSRV_HANDLE_TYPE_DEVMEMINT_HEAP,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&DevmemIntHeapDestroy);
+	if (psDevmemIntHeapCreateOUT->eError == PVRSRV_OK)
+		psDevmemIntHeapCreateOUT->hDevmemHeapPtr = hDevmemHeapPtrHandle;
 	if (psDevmemIntHeapCreateOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -1944,6 +1981,7 @@ PVRSRVBridgeDevmemIntMapPMR(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_HANDLE hPMR = psDevmemIntMapPMRIN->hPMR;
 	PMR * psPMRInt = NULL;
 	DEVMEMINT_MAPPING * psMappingInt = NULL;
+	IMG_HANDLE hMappingHandle = NULL;
 
 
 
@@ -2035,11 +2073,13 @@ PVRSRVBridgeDevmemIntMapPMR(IMG_UINT32 ui32DispatchTableEntry,
 
 	psDevmemIntMapPMROUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psDevmemIntMapPMROUT->hMapping,
+							&hMappingHandle,
 							(void *) psMappingInt,
 							PVRSRV_HANDLE_TYPE_DEVMEMINT_MAPPING,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&DevmemIntUnmapPMR);
+	if (psDevmemIntMapPMROUT->eError == PVRSRV_OK)
+		psDevmemIntMapPMROUT->hMapping = hMappingHandle;
 	if (psDevmemIntMapPMROUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -2174,6 +2214,7 @@ PVRSRVBridgeDevmemIntReserveRange(IMG_UINT32 ui32DispatchTableEntry,
 	IMG_HANDLE hDevmemServerHeap = psDevmemIntReserveRangeIN->hDevmemServerHeap;
 	DEVMEMINT_HEAP * psDevmemServerHeapInt = NULL;
 	DEVMEMINT_RESERVATION * psReservationInt = NULL;
+	IMG_HANDLE hReservationHandle = NULL;
 
 
 
@@ -2226,11 +2267,13 @@ PVRSRVBridgeDevmemIntReserveRange(IMG_UINT32 ui32DispatchTableEntry,
 
 	psDevmemIntReserveRangeOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psDevmemIntReserveRangeOUT->hReservation,
+							&hReservationHandle,
 							(void *) psReservationInt,
 							PVRSRV_HANDLE_TYPE_DEVMEMINT_RESERVATION,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&DevmemIntUnreserveRange);
+	if (psDevmemIntReserveRangeOUT->eError == PVRSRV_OK)
+		psDevmemIntReserveRangeOUT->hReservation = hReservationHandle;
 	if (psDevmemIntReserveRangeOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -2794,8 +2837,7 @@ PVRSRVBridgeHeapCfgHeapConfigCount(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_HEAPCFGHEAPCONFIGCOUNT *psHeapCfgHeapConfigCountOUT,
 					 CONNECTION_DATA *psConnection)
 {
-
-
+	typeof(psHeapCfgHeapConfigCountOUT->ui32NumHeapConfigs) ui32NumHeapConfigs = 0;
 
 	PVR_UNREFERENCED_PARAMETER(psHeapCfgHeapConfigCountIN);
 
@@ -2805,7 +2847,8 @@ PVRSRVBridgeHeapCfgHeapConfigCount(IMG_UINT32 ui32DispatchTableEntry,
 
 	psHeapCfgHeapConfigCountOUT->eError =
 		HeapCfgHeapConfigCount(psConnection, OSGetDevData(psConnection),
-					&psHeapCfgHeapConfigCountOUT->ui32NumHeapConfigs);
+					&ui32NumHeapConfigs);
+	psHeapCfgHeapConfigCountOUT->ui32NumHeapConfigs = ui32NumHeapConfigs;
 
 
 
@@ -2824,6 +2867,7 @@ PVRSRVBridgeHeapCfgHeapCount(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_HEAPCFGHEAPCOUNT *psHeapCfgHeapCountOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psHeapCfgHeapCountOUT->ui32NumHeaps) ui32NumHeaps = 0;
 
 
 
@@ -2835,7 +2879,8 @@ PVRSRVBridgeHeapCfgHeapCount(IMG_UINT32 ui32DispatchTableEntry,
 	psHeapCfgHeapCountOUT->eError =
 		HeapCfgHeapCount(psConnection, OSGetDevData(psConnection),
 					psHeapCfgHeapCountIN->ui32HeapConfigIndex,
-					&psHeapCfgHeapCountOUT->ui32NumHeaps);
+					&ui32NumHeaps);
+	psHeapCfgHeapCountOUT->ui32NumHeaps = ui32NumHeaps;
 
 
 
@@ -2952,6 +2997,10 @@ PVRSRVBridgeHeapCfgHeapDetails(IMG_UINT32 ui32DispatchTableEntry,
 					 CONNECTION_DATA *psConnection)
 {
 	IMG_CHAR *puiHeapNameOutInt = NULL;
+	typeof(psHeapCfgHeapDetailsOUT->sDevVAddrBase) sDevVAddrBase = { 0 };
+	typeof(psHeapCfgHeapDetailsOUT->uiHeapLength) uiHeapLength = 0;
+	typeof(psHeapCfgHeapDetailsOUT->ui32Log2DataPageSizeOut) ui32Log2DataPageSizeOut = 0;
+	typeof(psHeapCfgHeapDetailsOUT->ui32Log2ImportAlignmentOut) ui32Log2ImportAlignmentOut = 0;
 
 	IMG_UINT32 ui32NextOffset = 0;
 	IMG_BYTE   *pArrayArgsBuffer = NULL;
@@ -3009,10 +3058,14 @@ PVRSRVBridgeHeapCfgHeapDetails(IMG_UINT32 ui32DispatchTableEntry,
 					psHeapCfgHeapDetailsIN->ui32HeapIndex,
 					psHeapCfgHeapDetailsIN->ui32HeapNameBufSz,
 					puiHeapNameOutInt,
-					&psHeapCfgHeapDetailsOUT->sDevVAddrBase,
-					&psHeapCfgHeapDetailsOUT->uiHeapLength,
-					&psHeapCfgHeapDetailsOUT->ui32Log2DataPageSizeOut,
-					&psHeapCfgHeapDetailsOUT->ui32Log2ImportAlignmentOut);
+					&sDevVAddrBase,
+					&uiHeapLength,
+					&ui32Log2DataPageSizeOut,
+					&ui32Log2ImportAlignmentOut);
+	psHeapCfgHeapDetailsOUT->sDevVAddrBase = sDevVAddrBase;
+	psHeapCfgHeapDetailsOUT->uiHeapLength = uiHeapLength;
+	psHeapCfgHeapDetailsOUT->ui32Log2DataPageSizeOut = ui32Log2DataPageSizeOut;
+	psHeapCfgHeapDetailsOUT->ui32Log2ImportAlignmentOut = ui32Log2ImportAlignmentOut;
 
 
 

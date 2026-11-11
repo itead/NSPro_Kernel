@@ -836,16 +836,18 @@ static int get_v4l2_ext_controls32(struct file *file,
 		if (copy_in_user(kcontrols, ucontrols, sizeof(*ucontrols)))
 			return -EFAULT;
 
-		if (get_user(id, &kcontrols->id))
+		if (copy_from_user(&id, (void __user *)kcontrols, sizeof(id)))
 			return -EFAULT;
 
 		if (ctrl_is_pointer(file, id)) {
 			void __user *s;
 
-			if (get_user(p, &ucontrols->string))
+			if (get_user(p, (compat_caddr_t __user *)((char __user *)ucontrols +
+                                offsetof(struct v4l2_ext_control32, string))))
 				return -EFAULT;
 			s = compat_ptr(p);
-			if (put_user(s, &kcontrols->string))
+			if (put_user(s, (char __user **)((char __user *)kcontrols +
+                                  offsetof(struct v4l2_ext_control, string))))
 				return -EFAULT;
 		}
 		ucontrols++;
@@ -885,12 +887,24 @@ static int put_v4l2_ext_controls32(struct file *file,
 		unsigned int size = sizeof(*ucontrols);
 		u32 id;
 
-		if (get_user(id, &kcontrols->id) ||
-		    put_user(id, &ucontrols->id) ||
-		    assign_in_user(&ucontrols->size, &kcontrols->size) ||
-		    copy_in_user(&ucontrols->reserved2, &kcontrols->reserved2,
-				 sizeof(ucontrols->reserved2)))
-			return -EFAULT;
+		if (copy_from_user(&id,
+		                                   (u8 __user *)kcontrols +
+		                                   offsetof(struct v4l2_ext_control, id),
+		                                   sizeof(id)) ||
+		                    copy_to_user((u8 __user *)ucontrols +
+		                                 offsetof(struct v4l2_ext_control, id),
+		                                 &id, sizeof(id)) ||
+		                    copy_in_user((u8 __user *)ucontrols +
+		                                 offsetof(struct v4l2_ext_control, size),
+		                                 (u8 __user *)kcontrols +
+		                                 offsetof(struct v4l2_ext_control, size),
+		                                 sizeof(ucontrols->size)) ||
+		                    copy_in_user((u8 __user *)ucontrols +
+		                                 offsetof(struct v4l2_ext_control, reserved2),
+		                                 (u8 __user *)kcontrols +
+		                                 offsetof(struct v4l2_ext_control, reserved2),
+		                                 sizeof(ucontrols->reserved2)))
+		                        return -EFAULT;
 
 		/*
 		 * Do not modify the pointer when copying a pointer control.

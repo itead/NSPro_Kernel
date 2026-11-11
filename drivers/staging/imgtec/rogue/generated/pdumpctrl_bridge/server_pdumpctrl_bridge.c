@@ -77,6 +77,8 @@ PVRSRVBridgePVRSRVPDumpIsCapturing(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_PVRSRVPDUMPISCAPTURING *psPVRSRVPDumpIsCapturingOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psPVRSRVPDumpIsCapturingOUT->bIsCapturing) aligned_out_psPVRSRVPDumpIsCapturingOUT_bIsCapturing __attribute__((unused));
+
 
 
 
@@ -87,9 +89,11 @@ PVRSRVBridgePVRSRVPDumpIsCapturing(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psPVRSRVPDumpIsCapturingOUT_bIsCapturing = psPVRSRVPDumpIsCapturingOUT->bIsCapturing;
 	psPVRSRVPDumpIsCapturingOUT->eError =
 		PDumpIsCaptureFrameKM(
-					&psPVRSRVPDumpIsCapturingOUT->bIsCapturing);
+					&aligned_out_psPVRSRVPDumpIsCapturingOUT_bIsCapturing);
+	psPVRSRVPDumpIsCapturingOUT->bIsCapturing = aligned_out_psPVRSRVPDumpIsCapturingOUT_bIsCapturing;
 
 
 
@@ -108,6 +112,8 @@ PVRSRVBridgePVRSRVPDumpGetFrame(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_PVRSRVPDUMPGETFRAME *psPVRSRVPDumpGetFrameOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psPVRSRVPDumpGetFrameOUT->ui32Frame) aligned_out_psPVRSRVPDumpGetFrameOUT_ui32Frame __attribute__((unused));
+
 
 
 
@@ -117,9 +123,11 @@ PVRSRVBridgePVRSRVPDumpGetFrame(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psPVRSRVPDumpGetFrameOUT_ui32Frame = psPVRSRVPDumpGetFrameOUT->ui32Frame;
 	psPVRSRVPDumpGetFrameOUT->eError =
 		PDumpGetFrameKM(psConnection, OSGetDevData(psConnection),
-					&psPVRSRVPDumpGetFrameOUT->ui32Frame);
+					&aligned_out_psPVRSRVPDumpGetFrameOUT_ui32Frame);
+	psPVRSRVPDumpGetFrameOUT->ui32Frame = aligned_out_psPVRSRVPDumpGetFrameOUT_ui32Frame;
 
 
 
@@ -172,6 +180,8 @@ PVRSRVBridgePVRSRVPDumpIsLastCaptureFrame(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_PVRSRVPDUMPISLASTCAPTUREFRAME *psPVRSRVPDumpIsLastCaptureFrameOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psPVRSRVPDumpIsLastCaptureFrameOUT->bpbIsLastCaptureFrame) aligned_out_psPVRSRVPDumpIsLastCaptureFrameOUT_bpbIsLastCaptureFrame __attribute__((unused));
+
 
 
 
@@ -182,9 +192,11 @@ PVRSRVBridgePVRSRVPDumpIsLastCaptureFrame(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psPVRSRVPDumpIsLastCaptureFrameOUT_bpbIsLastCaptureFrame = psPVRSRVPDumpIsLastCaptureFrameOUT->bpbIsLastCaptureFrame;
 	psPVRSRVPDumpIsLastCaptureFrameOUT->eError =
 		PDumpIsLastCaptureFrameKM(
-					&psPVRSRVPDumpIsLastCaptureFrameOUT->bpbIsLastCaptureFrame);
+					&aligned_out_psPVRSRVPDumpIsLastCaptureFrameOUT_bpbIsLastCaptureFrame);
+	psPVRSRVPDumpIsLastCaptureFrameOUT->bpbIsLastCaptureFrame = aligned_out_psPVRSRVPDumpIsLastCaptureFrameOUT_bpbIsLastCaptureFrame;
 
 
 

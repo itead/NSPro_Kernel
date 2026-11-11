@@ -1233,6 +1233,7 @@ static void rtw_ap_check_scan(_adapter *padapter)
 	_list		*plist, *phead;
 	u32	delta_time, lifetime;
 	struct	wlan_network	*pnetwork = NULL;
+	NDIS_802_11_SSID aligned_ssid;
 	WLAN_BSSID_EX *pbss = NULL;
 	struct	mlme_priv	*pmlmepriv = &(padapter->mlmepriv);
 	_queue	*queue	= &(pmlmepriv->scanned_queue);
@@ -1279,10 +1280,13 @@ static void rtw_ap_check_scan(_adapter *padapter)
 			break;
 
 		pnetwork = LIST_CONTAINOR(plist, struct wlan_network, list);
+		memcpy(&aligned_ssid,
+		       (const u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, Ssid),
+		       sizeof(aligned_ssid));
 
 		if (rtw_ch_set_search_ch(padapter->mlmeextpriv.channel_set, pnetwork->network.Configuration.DSConfig) >= 0
 		    && rtw_mlme_band_check(padapter, pnetwork->network.Configuration.DSConfig) == _TRUE
-		    && _TRUE == rtw_validate_ssid(&(pnetwork->network.Ssid))) {
+		    && _TRUE == rtw_validate_ssid(&aligned_ssid)) {
 			delta_time = (u32) rtw_get_passing_time_ms(pnetwork->last_scanned);
 
 			if (delta_time < lifetime) {

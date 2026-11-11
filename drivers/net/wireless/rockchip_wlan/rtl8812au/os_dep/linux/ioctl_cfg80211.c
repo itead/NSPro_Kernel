@@ -388,9 +388,7 @@ struct cfg80211_bss *rtw_cfg80211_inform_bss(_adapter *padapter, struct wlan_net
 	u8 *pbuf;
 	size_t buf_size = MAX_BSSINFO_LEN;
 	size_t len,bssinf_len=0;
-	struct rtw_ieee80211_hdr *pwlanhdr;
-	unsigned short *fctrl;
-	u8	bc_addr[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+	struct rtw_ieee80211_hdr *pwlanhdr;	u8	bc_addr[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 		
 	struct wireless_dev *wdev = padapter->rtw_wdev;
 	struct wiphy *wiphy = wdev->wiphy;
@@ -539,9 +537,7 @@ struct cfg80211_bss *rtw_cfg80211_inform_bss(_adapter *padapter, struct wlan_net
 	//pbuf = buf;
 	
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pbuf;	
-	fctrl = &(pwlanhdr->frame_ctl);
-	*(fctrl) = 0;	
-
+	pwlanhdr->frame_ctl = 0;
 	SetSeqNum(pwlanhdr, 0/*pmlmeext->mgnt_seq*/);
 	//pmlmeext->mgnt_seq++;
 
@@ -710,7 +706,7 @@ void rtw_cfg80211_ibss_indicate_connect(_adapter *padapter)
 			if(scanned == NULL)
 				rtw_warn_on(1);
 
-			if (_rtw_memcmp(&(scanned->network.Ssid), &(pnetwork->Ssid), sizeof(NDIS_802_11_SSID)) == _TRUE
+			if (_rtw_memcmp((const u8 *)&scanned->network + offsetof(WLAN_BSSID_EX, Ssid), (const u8 *)pnetwork + offsetof(WLAN_BSSID_EX, Ssid), sizeof(NDIS_802_11_SSID)) == _TRUE
 				&& _rtw_memcmp(scanned->network.MacAddress, pnetwork->MacAddress, sizeof(NDIS_802_11_MAC_ADDRESS)) == _TRUE
 			) {
 				if (!rtw_cfg80211_inform_bss(padapter,scanned)) {
@@ -783,7 +779,7 @@ void rtw_cfg80211_indicate_connect(_adapter *padapter)
 		}
 
 		if (_rtw_memcmp(scanned->network.MacAddress, pnetwork->MacAddress, sizeof(NDIS_802_11_MAC_ADDRESS)) == _TRUE
-			&& _rtw_memcmp(&(scanned->network.Ssid), &(pnetwork->Ssid), sizeof(NDIS_802_11_SSID)) == _TRUE
+			&& _rtw_memcmp((const u8 *)&scanned->network + offsetof(WLAN_BSSID_EX, Ssid), (const u8 *)pnetwork + offsetof(WLAN_BSSID_EX, Ssid), sizeof(NDIS_802_11_SSID)) == _TRUE
 		) {
 			if (!rtw_cfg80211_inform_bss(padapter,scanned)) {
 				DBG_871X(FUNC_ADPT_FMT" inform fail !!\n", FUNC_ADPT_ARG(padapter));
@@ -1986,6 +1982,7 @@ void rtw_cfg80211_surveydone_event_callback(_adapter *padapter)
 	struct	mlme_priv	*pmlmepriv = &(padapter->mlmepriv);	
 	_queue				*queue	= &(pmlmepriv->scanned_queue);	
 	struct	wlan_network	*pnetwork = NULL;
+	NDIS_802_11_SSID validated_ssid_copy;
 	u32 cnt=0;
 	u32 wait_for_surveydone;
 	sint wait_status;
@@ -2009,11 +2006,13 @@ void rtw_cfg80211_surveydone_event_callback(_adapter *padapter)
 			break;
 
 		pnetwork = LIST_CONTAINOR(plist, struct wlan_network, list);
+		memcpy(&validated_ssid_copy, (const u8 *)&pnetwork->network +
+		       offsetof(WLAN_BSSID_EX, Ssid), sizeof(validated_ssid_copy));
 
 		//report network only if the current channel set contains the channel to which this network belongs
 		if(rtw_ch_set_search_ch(padapter->mlmeextpriv.channel_set, pnetwork->network.Configuration.DSConfig) >= 0
 			&& rtw_mlme_band_check(padapter, pnetwork->network.Configuration.DSConfig) == _TRUE
-			&& _TRUE == rtw_validate_ssid(&(pnetwork->network.Ssid))
+			&& _TRUE == rtw_validate_ssid(&validated_ssid_copy)
 		)
 		{		
 			//ev=translate_scan(padapter, a, pnetwork, ev, stop);
@@ -3522,9 +3521,7 @@ void rtw_cfg80211_indicate_sta_disassoc(_adapter *padapter, unsigned char *da, u
 	int channel;
 	u8 *pmgmt_frame;
 	uint frame_len;
-	struct rtw_ieee80211_hdr *pwlanhdr;
-	unsigned short *fctrl;	
-	u8 mgmt_buf[128] = {0};
+	struct rtw_ieee80211_hdr *pwlanhdr;	u8 mgmt_buf[128] = {0};
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
 	struct net_device *ndev = padapter->pnetdev;
@@ -3543,9 +3540,7 @@ void rtw_cfg80211_indicate_sta_disassoc(_adapter *padapter, unsigned char *da, u
 	pmgmt_frame = mgmt_buf;	
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pmgmt_frame;
 
-	fctrl = &(pwlanhdr->frame_ctl);
-	*(fctrl) = 0;
-
+	pwlanhdr->frame_ctl = 0;
 	//_rtw_memcpy(pwlanhdr->addr1, da, ETH_ALEN);
 	//_rtw_memcpy(pwlanhdr->addr2, myid(&(padapter->eeprompriv)), ETH_ALEN);
 	_rtw_memcpy(pwlanhdr->addr1, myid(&(padapter->eeprompriv)), ETH_ALEN);
@@ -4495,9 +4490,7 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 	struct xmit_frame			*pmgntframe;
 	struct pkt_attrib			*pattrib;
 	unsigned char					*pframe;
-	struct rtw_ieee80211_hdr	*pwlanhdr;
-	unsigned short				*fctrl;
-	struct xmit_priv			*pxmitpriv = &(padapter->xmitpriv);
+	struct rtw_ieee80211_hdr	*pwlanhdr;	struct xmit_priv			*pxmitpriv = &(padapter->xmitpriv);
 	struct mlme_ext_priv	*pmlmeext = &(padapter->mlmeextpriv);
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
 	
@@ -4570,9 +4563,7 @@ void rtw_cfg80211_issue_p2p_provision_request(_adapter *padapter, const u8 *buf,
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
-	*(fctrl) = 0;
-
+	pwlanhdr->frame_ctl = 0;
 	_rtw_memcpy(pwlanhdr->addr1, pwdinfo->tx_prov_disc_info.peerDevAddr, ETH_ALEN);
 	_rtw_memcpy(pwlanhdr->addr2, myid(&(padapter->eeprompriv)), ETH_ALEN);	
 	_rtw_memcpy(pwlanhdr->addr3, pwdinfo->tx_prov_disc_info.peerDevAddr, ETH_ALEN);

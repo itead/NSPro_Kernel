@@ -78,6 +78,9 @@ PVRSRVBridgeRGXCreateRPMFreeList(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_RGXCREATERPMFREELIST *psRGXCreateRPMFreeListOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psRGXCreateRPMFreeListOUT->ui32HWFreeList) aligned_out_psRGXCreateRPMFreeListOUT_ui32HWFreeList __attribute__((unused));
+	typeof(psRGXCreateRPMFreeListOUT->hCleanupCookie) aligned_out_psRGXCreateRPMFreeListOUT_hCleanupCookie __attribute__((unused));
+
 	IMG_HANDLE hRPMContext = psRGXCreateRPMFreeListIN->hRPMContext;
 	RGX_SERVER_RPM_CONTEXT * psRPMContextInt = NULL;
 	RGX_RPM_FREELIST * psCleanupCookieInt = NULL;
@@ -124,6 +127,7 @@ PVRSRVBridgeRGXCreateRPMFreeList(IMG_UINT32 ui32DispatchTableEntry,
 	/* Release now we have looked up handles. */
 	UnlockHandle();
 
+	aligned_out_psRGXCreateRPMFreeListOUT_ui32HWFreeList = psRGXCreateRPMFreeListOUT->ui32HWFreeList;
 	psRGXCreateRPMFreeListOUT->eError =
 		RGXCreateRPMFreeList(psConnection, OSGetDevData(psConnection),
 					psRPMContextInt,
@@ -131,8 +135,9 @@ PVRSRVBridgeRGXCreateRPMFreeList(IMG_UINT32 ui32DispatchTableEntry,
 					psRGXCreateRPMFreeListIN->ui32GrowFLPages,
 					psRGXCreateRPMFreeListIN->sFreeListDevVAddr,
 					&psCleanupCookieInt,
-					&psRGXCreateRPMFreeListOUT->ui32HWFreeList,
+					&aligned_out_psRGXCreateRPMFreeListOUT_ui32HWFreeList,
 					psRGXCreateRPMFreeListIN->bIsExternal);
+	psRGXCreateRPMFreeListOUT->ui32HWFreeList = aligned_out_psRGXCreateRPMFreeListOUT_ui32HWFreeList;
 	/* Exit early if bridged call fails */
 	if(psRGXCreateRPMFreeListOUT->eError != PVRSRV_OK)
 	{
@@ -146,13 +151,15 @@ PVRSRVBridgeRGXCreateRPMFreeList(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psRGXCreateRPMFreeListOUT_hCleanupCookie = psRGXCreateRPMFreeListOUT->hCleanupCookie;
 	psRGXCreateRPMFreeListOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psRGXCreateRPMFreeListOUT->hCleanupCookie,
+							&aligned_out_psRGXCreateRPMFreeListOUT_hCleanupCookie,
 							(void *) psCleanupCookieInt,
 							PVRSRV_HANDLE_TYPE_RGX_RPM_FREELIST,
 							PVRSRV_HANDLE_ALLOC_FLAG_NONE
 							,(PFN_HANDLE_RELEASE)&RGXDestroyRPMFreeList);
+	psRGXCreateRPMFreeListOUT->hCleanupCookie = aligned_out_psRGXCreateRPMFreeListOUT_hCleanupCookie;
 	if (psRGXCreateRPMFreeListOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -268,6 +275,10 @@ PVRSRVBridgeRGXCreateRPMContext(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_RGXCREATERPMCONTEXT *psRGXCreateRPMContextOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psRGXCreateRPMContextOUT->ui32HWFrameData) aligned_out_psRGXCreateRPMContextOUT_ui32HWFrameData __attribute__((unused));
+	typeof(psRGXCreateRPMContextOUT->hCleanupCookie) aligned_out_psRGXCreateRPMContextOUT_hCleanupCookie __attribute__((unused));
+	typeof(psRGXCreateRPMContextOUT->hHWMemDesc) aligned_out_psRGXCreateRPMContextOUT_hHWMemDesc __attribute__((unused));
+
 	RGX_SERVER_RPM_CONTEXT * psCleanupCookieInt = NULL;
 	IMG_HANDLE hSceneHeap = psRGXCreateRPMContextIN->hSceneHeap;
 	DEVMEMINT_HEAP * psSceneHeapInt = NULL;
@@ -337,6 +348,7 @@ PVRSRVBridgeRGXCreateRPMContext(IMG_UINT32 ui32DispatchTableEntry,
 	/* Release now we have looked up handles. */
 	UnlockHandle();
 
+	aligned_out_psRGXCreateRPMContextOUT_ui32HWFrameData = psRGXCreateRPMContextOUT->ui32HWFrameData;
 	psRGXCreateRPMContextOUT->eError =
 		RGXCreateRPMContext(psConnection, OSGetDevData(psConnection),
 					&psCleanupCookieInt,
@@ -348,7 +360,8 @@ PVRSRVBridgeRGXCreateRPMContext(IMG_UINT32 ui32DispatchTableEntry,
 					psRGXCreateRPMContextIN->sRPMPageTableBaseAddr,
 					psRPMPageTableHeapInt,
 					&psHWMemDescInt,
-					&psRGXCreateRPMContextOUT->ui32HWFrameData);
+					&aligned_out_psRGXCreateRPMContextOUT_ui32HWFrameData);
+	psRGXCreateRPMContextOUT->ui32HWFrameData = aligned_out_psRGXCreateRPMContextOUT_ui32HWFrameData;
 	/* Exit early if bridged call fails */
 	if(psRGXCreateRPMContextOUT->eError != PVRSRV_OK)
 	{
@@ -362,13 +375,15 @@ PVRSRVBridgeRGXCreateRPMContext(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psRGXCreateRPMContextOUT_hCleanupCookie = psRGXCreateRPMContextOUT->hCleanupCookie;
 	psRGXCreateRPMContextOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psRGXCreateRPMContextOUT->hCleanupCookie,
+							&aligned_out_psRGXCreateRPMContextOUT_hCleanupCookie,
 							(void *) psCleanupCookieInt,
 							PVRSRV_HANDLE_TYPE_RGX_SERVER_RPM_CONTEXT,
 							PVRSRV_HANDLE_ALLOC_FLAG_NONE
 							,(PFN_HANDLE_RELEASE)&RGXDestroyRPMContext);
+	psRGXCreateRPMContextOUT->hCleanupCookie = aligned_out_psRGXCreateRPMContextOUT_hCleanupCookie;
 	if (psRGXCreateRPMContextOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -380,13 +395,15 @@ PVRSRVBridgeRGXCreateRPMContext(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psRGXCreateRPMContextOUT_hHWMemDesc = psRGXCreateRPMContextOUT->hHWMemDesc;
 	psRGXCreateRPMContextOUT->eError = PVRSRVAllocSubHandleUnlocked(psConnection->psHandleBase,
 
-							&psRGXCreateRPMContextOUT->hHWMemDesc,
+							&aligned_out_psRGXCreateRPMContextOUT_hHWMemDesc,
 							(void *) psHWMemDescInt,
 							PVRSRV_HANDLE_TYPE_RGX_FW_MEMDESC,
 							PVRSRV_HANDLE_ALLOC_FLAG_NONE
 							,psRGXCreateRPMContextOUT->hCleanupCookie);
+	psRGXCreateRPMContextOUT->hHWMemDesc = aligned_out_psRGXCreateRPMContextOUT_hHWMemDesc;
 	if (psRGXCreateRPMContextOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -1485,6 +1502,8 @@ PVRSRVBridgeRGXCreateRayContext(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_RGXCREATERAYCONTEXT *psRGXCreateRayContextOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psRGXCreateRayContextOUT->hRayContext) aligned_out_psRGXCreateRayContextOUT_hRayContext __attribute__((unused));
+
 	IMG_BYTE *psFrameworkCmdInt = NULL;
 	IMG_HANDLE hPrivData = psRGXCreateRayContextIN->hPrivData;
 	IMG_HANDLE hPrivDataInt = NULL;
@@ -1606,13 +1625,15 @@ PVRSRVBridgeRGXCreateRayContext(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psRGXCreateRayContextOUT_hRayContext = psRGXCreateRayContextOUT->hRayContext;
 	psRGXCreateRayContextOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psRGXCreateRayContextOUT->hRayContext,
+							&aligned_out_psRGXCreateRayContextOUT_hRayContext,
 							(void *) psRayContextInt,
 							PVRSRV_HANDLE_TYPE_RGX_SERVER_RAY_CONTEXT,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&PVRSRVRGXDestroyRayContextKM);
+	psRGXCreateRayContextOUT->hRayContext = aligned_out_psRGXCreateRayContextOUT_hRayContext;
 	if (psRGXCreateRayContextOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();

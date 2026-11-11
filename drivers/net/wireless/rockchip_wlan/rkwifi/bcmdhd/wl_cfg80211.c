@@ -3519,7 +3519,7 @@ wl_cfg80211_ibss_vsie_delete(struct net_device *dev)
 			goto end;
 		}
 		/* change the command from "add" to "del" */
-		strncpy(cfg->ibss_vsie->cmd, "del", VNDR_IE_CMD_LEN - 1);
+		memcpy(cfg->ibss_vsie->cmd, "del", VNDR_IE_CMD_LEN - 1);
 		cfg->ibss_vsie->cmd[VNDR_IE_CMD_LEN - 1] = '\0';
 
 		ret = wldev_iovar_setbuf_bsscfg(dev, "vndr_ie",

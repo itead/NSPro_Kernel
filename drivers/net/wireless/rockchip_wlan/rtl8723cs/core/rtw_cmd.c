@@ -1372,6 +1372,7 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network *pnetwork)
 	struct mlme_ext_priv	*pmlmeext = &padapter->mlmeextpriv;
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
 	u32 tmp_len;
+	typeof(psecnetwork->IELength) ie_length;
 	u8 *ptmp = NULL;
 #ifdef CONFIG_RTW_80211R
 	struct _ft_priv			*pftpriv = &pmlmepriv->ftpriv;
@@ -1473,7 +1474,7 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network *pnetwork)
 
 #ifdef CONFIG_80211N_HT
 	phtpriv->ht_option = _FALSE;
-	ptmp = rtw_get_ie(&pnetwork->network.IEs[12], _HT_CAPABILITY_IE_, &tmp_len, pnetwork->network.IELength - 12);
+	ptmp = rtw_get_ie((u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, IEs) + 12, _HT_CAPABILITY_IE_, &tmp_len, pnetwork->network.IELength - 12);
 	if (pregistrypriv->ht_enable && ptmp && tmp_len > 0) {
 		/*	Added by Albert 2010/06/23 */
 		/*	For the WEP mode, we will use the bg mode to do the connection to avoid some IOT issue. */
@@ -1483,12 +1484,16 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network *pnetwork)
 		    (padapter->securitypriv.dot11PrivacyAlgrthm != _TKIP_)) {
 			rtw_ht_use_default_setting(padapter);
 
-			rtw_build_wmm_ie_ht(padapter, &psecnetwork->IEs[0], &psecnetwork->IELength);
+			ie_length = psecnetwork->IELength;
+			rtw_build_wmm_ie_ht(padapter, &psecnetwork->IEs[0], &ie_length);
+			psecnetwork->IELength = ie_length;
 
 			/* rtw_restructure_ht_ie */
-			rtw_restructure_ht_ie(padapter, &pnetwork->network.IEs[12], &psecnetwork->IEs[0],
-				pnetwork->network.IELength - 12, &psecnetwork->IELength,
+			ie_length = psecnetwork->IELength;
+			rtw_restructure_ht_ie(padapter, (u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, IEs) + 12, &psecnetwork->IEs[0],
+				pnetwork->network.IELength - 12, &ie_length,
 				pnetwork->network.Configuration.DSConfig);
+			psecnetwork->IELength = ie_length;
 		}
 	}
 
@@ -1499,21 +1504,25 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network *pnetwork)
 	    && hal_chk_proto_cap(padapter, PROTO_CAP_11AC)
 	    && (!pmlmepriv->country_ent || COUNTRY_CHPLAN_EN_11AC(pmlmepriv->country_ent))
 	   ) {
+		ie_length = psecnetwork->IELength;
 		rtw_restructure_vht_ie(padapter, &pnetwork->network.IEs[0], &psecnetwork->IEs[0],
-			pnetwork->network.IELength, &psecnetwork->IELength);
+			pnetwork->network.IELength, &ie_length);
+		psecnetwork->IELength = ie_length;
 	}
 #endif
 
-	rtw_append_exented_cap(padapter, &psecnetwork->IEs[0], &psecnetwork->IELength);
+	ie_length = psecnetwork->IELength;
+	rtw_append_exented_cap(padapter, &psecnetwork->IEs[0], &ie_length);
+	psecnetwork->IELength = ie_length;
 
 #endif /* CONFIG_80211N_HT */
 
 #ifdef CONFIG_RTW_80211R
-	/*IEEE802.11-2012 Std. Table 8-101¡XAKM suite selectors*/
+	/*IEEE802.11-2012 Std. Table 8-101Â¡XAKM suite selectors*/
 	if ((rtw_chk_ft_flags(padapter, RTW_FT_STA_SUPPORTED)) &&
 		((psecuritypriv->rsn_akm_suite_type == 3) || (psecuritypriv->rsn_akm_suite_type == 4))
 		) {
-		ptmp = rtw_get_ie(&pnetwork->network.IEs[12], _MDIE_, &tmp_len, pnetwork->network.IELength-12);
+		ptmp = rtw_get_ie((u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, IEs) + 12, _MDIE_, &tmp_len, pnetwork->network.IELength-12);
 		if (ptmp) {
 			_rtw_memcpy(&pftpriv->mdid, ptmp+2, 2);
 			pftpriv->ft_cap = *(ptmp+4);

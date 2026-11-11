@@ -175,14 +175,18 @@ static int uhid_hid_parse(struct hid_device *hid)
 
 /* must be called with report_lock held */
 static int __uhid_report_queue_and_wait(struct uhid_device *uhid,
-					struct uhid_event *ev,
-					__u32 *report_id)
+                                        struct uhid_event *ev)
 {
 	unsigned long flags;
 	int ret;
 
 	spin_lock_irqsave(&uhid->qlock, flags);
-	*report_id = ++uhid->report_id;
+	{
+		__u32 report_id = ++uhid->report_id;
+
+		memcpy((u8 *)ev + offsetof(struct uhid_event, u),
+		       &report_id, sizeof(report_id));
+	}
 	uhid->report_type = ev->type + 1;
 	uhid->report_running = true;
 	uhid_queue(uhid, ev);
@@ -250,7 +254,7 @@ static int uhid_hid_get_report(struct hid_device *hid, unsigned char rnum,
 	}
 
 	/* this _always_ takes ownership of @ev */
-	ret = __uhid_report_queue_and_wait(uhid, ev, &ev->u.get_report.id);
+	ret = __uhid_report_queue_and_wait(uhid, ev);
 	if (ret)
 		goto unlock;
 
@@ -294,7 +298,7 @@ static int uhid_hid_set_report(struct hid_device *hid, unsigned char rnum,
 	}
 
 	/* this _always_ takes ownership of @ev */
-	ret = __uhid_report_queue_and_wait(uhid, ev, &ev->u.set_report.id);
+	ret = __uhid_report_queue_and_wait(uhid, ev);
 	if (ret)
 		goto unlock;
 

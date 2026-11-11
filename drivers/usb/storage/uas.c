@@ -156,7 +156,12 @@ static void uas_sense(struct urb *urb, struct scsi_cmnd *cmnd)
 	struct scsi_device *sdev = cmnd->device;
 
 	if (urb->actual_length > 16) {
-		unsigned len = be16_to_cpup(&sense_iu->len);
+		__be16 sense_len;
+		unsigned len;
+
+		memcpy(&sense_len, (u8 *)sense_iu + offsetof(struct sense_iu, len),
+		       sizeof(sense_len));
+		len = be16_to_cpu(sense_len);
 		if (len + 16 != urb->actual_length) {
 			int newlen = min(len + 16, urb->actual_length) - 16;
 			if (newlen < 0)
@@ -270,7 +275,9 @@ static void uas_stat_cmplt(struct urb *urb)
 		goto out;
 	}
 
-	idx = be16_to_cpup(&iu->tag) - 1;
+	idx = (((u8 *)iu)[offsetof(struct iu, tag)] << 8) |
+	      ((u8 *)iu)[offsetof(struct iu, tag) + 1];
+	idx--;
 	if (idx >= MAX_CMNDS || !devinfo->cmnd[idx]) {
 		dev_err(&urb->dev->dev,
 			"stat urb: no pending cmd for uas-tag %d\n", idx + 1);

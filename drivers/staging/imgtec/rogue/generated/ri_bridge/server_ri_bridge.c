@@ -215,6 +215,8 @@ PVRSRVBridgeRIWriteMEMDESCEntry(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_RIWRITEMEMDESCENTRY *psRIWriteMEMDESCEntryOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psRIWriteMEMDESCEntryOUT->hRIHandle) aligned_out_psRIWriteMEMDESCEntryOUT_hRIHandle __attribute__((unused));
+
 	IMG_HANDLE hPMRHandle = psRIWriteMEMDESCEntryIN->hPMRHandle;
 	PMR * psPMRHandleInt = NULL;
 	IMG_CHAR *uiTextBInt = NULL;
@@ -326,13 +328,15 @@ PVRSRVBridgeRIWriteMEMDESCEntry(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psRIWriteMEMDESCEntryOUT_hRIHandle = psRIWriteMEMDESCEntryOUT->hRIHandle;
 	psRIWriteMEMDESCEntryOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psRIWriteMEMDESCEntryOUT->hRIHandle,
+							&aligned_out_psRIWriteMEMDESCEntryOUT_hRIHandle,
 							(void *) psRIHandleInt,
 							PVRSRV_HANDLE_TYPE_RI_HANDLE,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&RIDeleteMEMDESCEntryKM);
+	psRIWriteMEMDESCEntryOUT->hRIHandle = aligned_out_psRIWriteMEMDESCEntryOUT_hRIHandle;
 	if (psRIWriteMEMDESCEntryOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -395,6 +399,8 @@ PVRSRVBridgeRIWriteProcListEntry(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_RIWRITEPROCLISTENTRY *psRIWriteProcListEntryOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psRIWriteProcListEntryOUT->hRIHandle) aligned_out_psRIWriteProcListEntryOUT_hRIHandle __attribute__((unused));
+
 	IMG_CHAR *uiTextBInt = NULL;
 	RI_HANDLE psRIHandleInt = NULL;
 
@@ -478,13 +484,15 @@ PVRSRVBridgeRIWriteProcListEntry(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psRIWriteProcListEntryOUT_hRIHandle = psRIWriteProcListEntryOUT->hRIHandle;
 	psRIWriteProcListEntryOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psRIWriteProcListEntryOUT->hRIHandle,
+							&aligned_out_psRIWriteProcListEntryOUT_hRIHandle,
 							(void *) psRIHandleInt,
 							PVRSRV_HANDLE_TYPE_RI_HANDLE,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&RIDeleteMEMDESCEntryKM);
+	psRIWriteProcListEntryOUT->hRIHandle = aligned_out_psRIWriteProcListEntryOUT_hRIHandle;
 	if (psRIWriteProcListEntryOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();

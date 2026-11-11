@@ -78,6 +78,11 @@ PVRSRVBridgeAllocSyncPrimitiveBlock(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_ALLOCSYNCPRIMITIVEBLOCK *psAllocSyncPrimitiveBlockOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psAllocSyncPrimitiveBlockOUT->ui32SyncPrimVAddr) aligned_out_psAllocSyncPrimitiveBlockOUT_ui32SyncPrimVAddr __attribute__((unused));
+	typeof(psAllocSyncPrimitiveBlockOUT->ui32SyncPrimBlockSize) aligned_out_psAllocSyncPrimitiveBlockOUT_ui32SyncPrimBlockSize __attribute__((unused));
+	typeof(psAllocSyncPrimitiveBlockOUT->hSyncHandle) aligned_out_psAllocSyncPrimitiveBlockOUT_hSyncHandle __attribute__((unused));
+	typeof(psAllocSyncPrimitiveBlockOUT->hhSyncPMR) aligned_out_psAllocSyncPrimitiveBlockOUT_hhSyncPMR __attribute__((unused));
+
 	SYNC_PRIMITIVE_BLOCK * psSyncHandleInt = NULL;
 	PMR * pshSyncPMRInt = NULL;
 
@@ -90,12 +95,16 @@ PVRSRVBridgeAllocSyncPrimitiveBlock(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psAllocSyncPrimitiveBlockOUT_ui32SyncPrimVAddr = psAllocSyncPrimitiveBlockOUT->ui32SyncPrimVAddr;
+	aligned_out_psAllocSyncPrimitiveBlockOUT_ui32SyncPrimBlockSize = psAllocSyncPrimitiveBlockOUT->ui32SyncPrimBlockSize;
 	psAllocSyncPrimitiveBlockOUT->eError =
 		PVRSRVAllocSyncPrimitiveBlockKM(psConnection, OSGetDevData(psConnection),
 					&psSyncHandleInt,
-					&psAllocSyncPrimitiveBlockOUT->ui32SyncPrimVAddr,
-					&psAllocSyncPrimitiveBlockOUT->ui32SyncPrimBlockSize,
+					&aligned_out_psAllocSyncPrimitiveBlockOUT_ui32SyncPrimVAddr,
+					&aligned_out_psAllocSyncPrimitiveBlockOUT_ui32SyncPrimBlockSize,
 					&pshSyncPMRInt);
+	psAllocSyncPrimitiveBlockOUT->ui32SyncPrimVAddr = aligned_out_psAllocSyncPrimitiveBlockOUT_ui32SyncPrimVAddr;
+	psAllocSyncPrimitiveBlockOUT->ui32SyncPrimBlockSize = aligned_out_psAllocSyncPrimitiveBlockOUT_ui32SyncPrimBlockSize;
 	/* Exit early if bridged call fails */
 	if(psAllocSyncPrimitiveBlockOUT->eError != PVRSRV_OK)
 	{
@@ -109,13 +118,15 @@ PVRSRVBridgeAllocSyncPrimitiveBlock(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psAllocSyncPrimitiveBlockOUT_hSyncHandle = psAllocSyncPrimitiveBlockOUT->hSyncHandle;
 	psAllocSyncPrimitiveBlockOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psAllocSyncPrimitiveBlockOUT->hSyncHandle,
+							&aligned_out_psAllocSyncPrimitiveBlockOUT_hSyncHandle,
 							(void *) psSyncHandleInt,
 							PVRSRV_HANDLE_TYPE_SYNC_PRIMITIVE_BLOCK,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&PVRSRVFreeSyncPrimitiveBlockKM);
+	psAllocSyncPrimitiveBlockOUT->hSyncHandle = aligned_out_psAllocSyncPrimitiveBlockOUT_hSyncHandle;
 	if (psAllocSyncPrimitiveBlockOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -127,13 +138,15 @@ PVRSRVBridgeAllocSyncPrimitiveBlock(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psAllocSyncPrimitiveBlockOUT_hhSyncPMR = psAllocSyncPrimitiveBlockOUT->hhSyncPMR;
 	psAllocSyncPrimitiveBlockOUT->eError = PVRSRVAllocSubHandleUnlocked(psConnection->psHandleBase,
 
-							&psAllocSyncPrimitiveBlockOUT->hhSyncPMR,
+							&aligned_out_psAllocSyncPrimitiveBlockOUT_hhSyncPMR,
 							(void *) pshSyncPMRInt,
 							PVRSRV_HANDLE_TYPE_PMR_LOCAL_EXPORT_HANDLE,
 							PVRSRV_HANDLE_ALLOC_FLAG_NONE
 							,psAllocSyncPrimitiveBlockOUT->hSyncHandle);
+	psAllocSyncPrimitiveBlockOUT->hhSyncPMR = aligned_out_psAllocSyncPrimitiveBlockOUT_hhSyncPMR;
 	if (psAllocSyncPrimitiveBlockOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -394,6 +407,9 @@ PVRSRVBridgeServerSyncAlloc(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_SERVERSYNCALLOC *psServerSyncAllocOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psServerSyncAllocOUT->ui32SyncPrimVAddr) aligned_out_psServerSyncAllocOUT_ui32SyncPrimVAddr __attribute__((unused));
+	typeof(psServerSyncAllocOUT->hSyncHandle) aligned_out_psServerSyncAllocOUT_hSyncHandle __attribute__((unused));
+
 	SERVER_SYNC_PRIMITIVE * psSyncHandleInt = NULL;
 	IMG_CHAR *uiClassNameInt = NULL;
 
@@ -456,12 +472,14 @@ PVRSRVBridgeServerSyncAlloc(IMG_UINT32 ui32DispatchTableEntry,
 			}
 
 
+	aligned_out_psServerSyncAllocOUT_ui32SyncPrimVAddr = psServerSyncAllocOUT->ui32SyncPrimVAddr;
 	psServerSyncAllocOUT->eError =
 		PVRSRVServerSyncAllocKM(psConnection, OSGetDevData(psConnection),
 					&psSyncHandleInt,
-					&psServerSyncAllocOUT->ui32SyncPrimVAddr,
+					&aligned_out_psServerSyncAllocOUT_ui32SyncPrimVAddr,
 					psServerSyncAllocIN->ui32ClassNameSize,
 					uiClassNameInt);
+	psServerSyncAllocOUT->ui32SyncPrimVAddr = aligned_out_psServerSyncAllocOUT_ui32SyncPrimVAddr;
 	/* Exit early if bridged call fails */
 	if(psServerSyncAllocOUT->eError != PVRSRV_OK)
 	{
@@ -475,13 +493,15 @@ PVRSRVBridgeServerSyncAlloc(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psServerSyncAllocOUT_hSyncHandle = psServerSyncAllocOUT->hSyncHandle;
 	psServerSyncAllocOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psServerSyncAllocOUT->hSyncHandle,
+							&aligned_out_psServerSyncAllocOUT_hSyncHandle,
 							(void *) psSyncHandleInt,
 							PVRSRV_HANDLE_TYPE_SERVER_SYNC_PRIMITIVE,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&PVRSRVServerSyncFreeKM);
+	psServerSyncAllocOUT->hSyncHandle = aligned_out_psServerSyncAllocOUT_hSyncHandle;
 	if (psServerSyncAllocOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -577,6 +597,9 @@ PVRSRVBridgeServerSyncQueueHWOp(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_SERVERSYNCQUEUEHWOP *psServerSyncQueueHWOpOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psServerSyncQueueHWOpOUT->ui32FenceValue) aligned_out_psServerSyncQueueHWOpOUT_ui32FenceValue __attribute__((unused));
+	typeof(psServerSyncQueueHWOpOUT->ui32UpdateValue) aligned_out_psServerSyncQueueHWOpOUT_ui32UpdateValue __attribute__((unused));
+
 	IMG_HANDLE hSyncHandle = psServerSyncQueueHWOpIN->hSyncHandle;
 	SERVER_SYNC_PRIMITIVE * psSyncHandleInt = NULL;
 
@@ -610,12 +633,16 @@ PVRSRVBridgeServerSyncQueueHWOp(IMG_UINT32 ui32DispatchTableEntry,
 	/* Release now we have looked up handles. */
 	UnlockHandle();
 
+	aligned_out_psServerSyncQueueHWOpOUT_ui32FenceValue = psServerSyncQueueHWOpOUT->ui32FenceValue;
+	aligned_out_psServerSyncQueueHWOpOUT_ui32UpdateValue = psServerSyncQueueHWOpOUT->ui32UpdateValue;
 	psServerSyncQueueHWOpOUT->eError =
 		PVRSRVServerSyncQueueHWOpKM(
 					psSyncHandleInt,
 					psServerSyncQueueHWOpIN->bbUpdate,
-					&psServerSyncQueueHWOpOUT->ui32FenceValue,
-					&psServerSyncQueueHWOpOUT->ui32UpdateValue);
+					&aligned_out_psServerSyncQueueHWOpOUT_ui32FenceValue,
+					&aligned_out_psServerSyncQueueHWOpOUT_ui32UpdateValue);
+	psServerSyncQueueHWOpOUT->ui32FenceValue = aligned_out_psServerSyncQueueHWOpOUT_ui32FenceValue;
+	psServerSyncQueueHWOpOUT->ui32UpdateValue = aligned_out_psServerSyncQueueHWOpOUT_ui32UpdateValue;
 
 
 
@@ -890,6 +917,8 @@ PVRSRVBridgeSyncPrimOpCreate(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_SYNCPRIMOPCREATE *psSyncPrimOpCreateOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psSyncPrimOpCreateOUT->hServerCookie) aligned_out_psSyncPrimOpCreateOUT_hServerCookie __attribute__((unused));
+
 	SYNC_PRIMITIVE_BLOCK * *psBlockListInt = NULL;
 	IMG_HANDLE *hBlockListInt2 = NULL;
 	IMG_UINT32 *ui32SyncBlockIndexInt = NULL;
@@ -1093,13 +1122,15 @@ PVRSRVBridgeSyncPrimOpCreate(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psSyncPrimOpCreateOUT_hServerCookie = psSyncPrimOpCreateOUT->hServerCookie;
 	psSyncPrimOpCreateOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psSyncPrimOpCreateOUT->hServerCookie,
+							&aligned_out_psSyncPrimOpCreateOUT_hServerCookie,
 							(void *) psServerCookieInt,
 							PVRSRV_HANDLE_TYPE_SERVER_OP_COOKIE,
 							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
 							,(PFN_HANDLE_RELEASE)&PVRSRVSyncPrimOpDestroyKM);
+	psSyncPrimOpCreateOUT->hServerCookie = aligned_out_psSyncPrimOpCreateOUT_hServerCookie;
 	if (psSyncPrimOpCreateOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
@@ -1386,6 +1417,8 @@ PVRSRVBridgeSyncPrimOpReady(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_SYNCPRIMOPREADY *psSyncPrimOpReadyOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psSyncPrimOpReadyOUT->bReady) aligned_out_psSyncPrimOpReadyOUT_bReady __attribute__((unused));
+
 	IMG_HANDLE hServerCookie = psSyncPrimOpReadyIN->hServerCookie;
 	SERVER_OP_COOKIE * psServerCookieInt = NULL;
 
@@ -1419,10 +1452,12 @@ PVRSRVBridgeSyncPrimOpReady(IMG_UINT32 ui32DispatchTableEntry,
 	/* Release now we have looked up handles. */
 	UnlockHandle();
 
+	aligned_out_psSyncPrimOpReadyOUT_bReady = psSyncPrimOpReadyOUT->bReady;
 	psSyncPrimOpReadyOUT->eError =
 		PVRSRVSyncPrimOpReadyKM(
 					psServerCookieInt,
-					&psSyncPrimOpReadyOUT->bReady);
+					&aligned_out_psSyncPrimOpReadyOUT_bReady);
+	psSyncPrimOpReadyOUT->bReady = aligned_out_psSyncPrimOpReadyOUT_bReady;
 
 
 

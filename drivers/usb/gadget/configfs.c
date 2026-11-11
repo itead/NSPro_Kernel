@@ -172,7 +172,7 @@ static ssize_t gadget_dev_desc_##__name##_show(struct config_item *item, \
 			char *page)	\
 {	\
 	return sprintf(page, "0x%04x\n", \
-		le16_to_cpup(&to_gadget_info(item)->cdev.desc.__name)); \
+		le16_to_cpu(to_gadget_info(item)->cdev.desc.__name)); \
 }
 
 

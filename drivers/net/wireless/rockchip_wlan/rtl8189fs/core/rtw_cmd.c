@@ -1418,6 +1418,7 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network* pnetwork)
 #ifdef CONFIG_80211AC_VHT
 	struct vht_priv		*pvhtpriv = &pmlmepriv->vhtpriv;
 #endif //CONFIG_80211AC_VHT
+	__typeof__(psecnetwork->IELength) ie_length;
 	NDIS_802_11_NETWORK_INFRASTRUCTURE ndis_network_mode = pnetwork->network.InfrastructureMode;
 	struct mlme_ext_priv	*pmlmeext = &padapter->mlmeextpriv;
 	struct mlme_ext_info	*pmlmeinfo = &(pmlmeext->mlmext_info);
@@ -1513,17 +1514,17 @@ _func_enter_;
         
 	if ( pmlmepriv->assoc_by_bssid == _FALSE )
 	{
-		_rtw_memcpy( &pmlmepriv->assoc_bssid[ 0 ], &pnetwork->network.MacAddress[ 0 ], ETH_ALEN );
+		_rtw_memcpy( &pmlmepriv->assoc_bssid[ 0 ], (u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, MacAddress), ETH_ALEN );
 	}
 
-	psecnetwork->IELength = rtw_restruct_sec_ie(padapter, &pnetwork->network.IEs[0], &psecnetwork->IEs[0], pnetwork->network.IELength);
+	psecnetwork->IELength = rtw_restruct_sec_ie(padapter, (u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, IEs), &psecnetwork->IEs[0], pnetwork->network.IELength);
 
 
 	pqospriv->qos_option = 0;
 	
 	if(pregistrypriv->wmm_enable)	
 	{
-		tmp_len = rtw_restruct_wmm_ie(padapter, &pnetwork->network.IEs[0], &psecnetwork->IEs[0], pnetwork->network.IELength, psecnetwork->IELength);	
+		tmp_len = rtw_restruct_wmm_ie(padapter, (u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, IEs), &psecnetwork->IEs[0], pnetwork->network.IELength, psecnetwork->IELength);	
 
 		if (psecnetwork->IELength != tmp_len)		
 		{
@@ -1538,7 +1539,7 @@ _func_enter_;
 
 #ifdef CONFIG_80211N_HT
 	phtpriv->ht_option = _FALSE;
-	ptmp = rtw_get_ie(&pnetwork->network.IEs[12], _HT_CAPABILITY_IE_, &tmp_len, pnetwork->network.IELength-12);
+	ptmp = rtw_get_ie((u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, IEs) + 12, _HT_CAPABILITY_IE_, &tmp_len, pnetwork->network.IELength-12);
 	if(pregistrypriv->ht_enable && ptmp && tmp_len>0)
 	{
 		//	Added by Albert 2010/06/23
@@ -1550,12 +1551,16 @@ _func_enter_;
 		{
 			rtw_ht_use_default_setting(padapter);
 
-			rtw_build_wmm_ie_ht(padapter, &psecnetwork->IEs[0], &psecnetwork->IELength);
+			ie_length = psecnetwork->IELength;
+			rtw_build_wmm_ie_ht(padapter, &psecnetwork->IEs[0], &ie_length);
+			psecnetwork->IELength = ie_length;
 
 			//rtw_restructure_ht_ie
-			rtw_restructure_ht_ie(padapter, &pnetwork->network.IEs[12], &psecnetwork->IEs[0], 
-									pnetwork->network.IELength-12, &psecnetwork->IELength,
+			ie_length = psecnetwork->IELength;
+			rtw_restructure_ht_ie(padapter, (u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, IEs) + 12, &psecnetwork->IEs[0], 
+									pnetwork->network.IELength-12, &ie_length,
 									pnetwork->network.Configuration.DSConfig);
+			psecnetwork->IELength = ie_length;
 		}
 	}
 
@@ -1566,12 +1571,16 @@ _func_enter_;
 		&& hal_chk_proto_cap(padapter, PROTO_CAP_11AC)
 		&& (!pmlmepriv->country_ent || COUNTRY_CHPLAN_EN_11AC(pmlmepriv->country_ent))
 	) {
-		rtw_restructure_vht_ie(padapter, &pnetwork->network.IEs[0], &psecnetwork->IEs[0], 
-								pnetwork->network.IELength, &psecnetwork->IELength);
+		ie_length = psecnetwork->IELength;
+		rtw_restructure_vht_ie(padapter, (u8 *)&pnetwork->network + offsetof(WLAN_BSSID_EX, IEs), &psecnetwork->IEs[0], 
+								pnetwork->network.IELength, &ie_length);
+		psecnetwork->IELength = ie_length;
 	}
 #endif
 
-	rtw_append_exented_cap(padapter, &psecnetwork->IEs[0], &psecnetwork->IELength);
+	ie_length = psecnetwork->IELength;
+	rtw_append_exented_cap(padapter, &psecnetwork->IEs[0], &ie_length);
+	psecnetwork->IELength = ie_length;
 
 #endif //CONFIG_80211N_HT
 

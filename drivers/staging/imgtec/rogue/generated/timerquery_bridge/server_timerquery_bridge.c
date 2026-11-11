@@ -135,6 +135,8 @@ PVRSRVBridgeRGXQueryTimer(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_RGXQUERYTIMER *psRGXQueryTimerOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psRGXQueryTimerOUT->ui64StartTime) aligned_out_psRGXQueryTimerOUT_ui64StartTime __attribute__((unused));
+	typeof(psRGXQueryTimerOUT->ui64EndTime) aligned_out_psRGXQueryTimerOUT_ui64EndTime __attribute__((unused));
 
 
 
@@ -143,11 +145,16 @@ PVRSRVBridgeRGXQueryTimer(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+
+	aligned_out_psRGXQueryTimerOUT_ui64StartTime = psRGXQueryTimerOUT->ui64StartTime;
+	aligned_out_psRGXQueryTimerOUT_ui64EndTime = psRGXQueryTimerOUT->ui64EndTime;
 	psRGXQueryTimerOUT->eError =
 		PVRSRVRGXQueryTimerKM(psConnection, OSGetDevData(psConnection),
 					psRGXQueryTimerIN->ui32QueryId,
-					&psRGXQueryTimerOUT->ui64StartTime,
-					&psRGXQueryTimerOUT->ui64EndTime);
+					&aligned_out_psRGXQueryTimerOUT_ui64StartTime,
+					&aligned_out_psRGXQueryTimerOUT_ui64EndTime);
+	psRGXQueryTimerOUT->ui64StartTime = aligned_out_psRGXQueryTimerOUT_ui64StartTime;
+	psRGXQueryTimerOUT->ui64EndTime = aligned_out_psRGXQueryTimerOUT_ui64EndTime;
 
 
 
@@ -166,6 +173,8 @@ PVRSRVBridgeRGXCurrentTime(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_RGXCURRENTTIME *psRGXCurrentTimeOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psRGXCurrentTimeOUT->ui64Time) aligned_out_psRGXCurrentTimeOUT_ui64Time __attribute__((unused));
+
 
 
 
@@ -175,9 +184,11 @@ PVRSRVBridgeRGXCurrentTime(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psRGXCurrentTimeOUT_ui64Time = psRGXCurrentTimeOUT->ui64Time;
 	psRGXCurrentTimeOUT->eError =
 		PVRSRVRGXCurrentTime(psConnection, OSGetDevData(psConnection),
-					&psRGXCurrentTimeOUT->ui64Time);
+					&aligned_out_psRGXCurrentTimeOUT_ui64Time);
+	psRGXCurrentTimeOUT->ui64Time = aligned_out_psRGXCurrentTimeOUT_ui64Time;
 
 
 

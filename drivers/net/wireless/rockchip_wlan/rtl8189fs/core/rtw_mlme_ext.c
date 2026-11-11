@@ -3807,7 +3807,7 @@ void issue_p2p_GO_request(_adapter *padapter, u8* raddr)
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, raddr, ETH_ALEN);
@@ -4257,7 +4257,7 @@ void issue_p2p_GO_response(_adapter *padapter, u8* raddr, u8* frame_body,uint le
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, raddr, ETH_ALEN);
@@ -4734,7 +4734,7 @@ void issue_p2p_GO_confirm(_adapter *padapter, u8* raddr, u8 result)
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, raddr, ETH_ALEN);
@@ -5010,7 +5010,7 @@ void issue_p2p_invitation_request(_adapter *padapter, u8* raddr )
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, raddr, ETH_ALEN);
@@ -5352,7 +5352,7 @@ void issue_p2p_invitation_response(_adapter *padapter, u8* raddr, u8 dialogToken
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, raddr, ETH_ALEN);
@@ -5627,7 +5627,7 @@ void issue_p2p_provision_request(_adapter *padapter, u8* pssid, u8 ussidlen, u8*
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, pdev_raddr, ETH_ALEN);
@@ -5765,7 +5765,7 @@ void issue_probersp_p2p(_adapter *padapter, unsigned char *da)
 	
 	mac = adapter_mac_addr(padapter);
 	
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 	_rtw_memcpy(pwlanhdr->addr1, da, ETH_ALEN);
 	_rtw_memcpy(pwlanhdr->addr2, mac, ETH_ALEN);
@@ -6093,7 +6093,7 @@ int _issue_probereq_p2p(_adapter *padapter, u8 *da, int wait_ack)
 
 	mac = adapter_mac_addr(padapter);
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 
 	if (da) {
@@ -7591,7 +7591,7 @@ void issue_beacon(_adapter *padapter, int timeout_ms)
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;	
 	
 	
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 	
 	_rtw_memcpy(pwlanhdr->addr1, bc_addr, ETH_ALEN);
@@ -7899,7 +7899,7 @@ void issue_probersp(_adapter *padapter, unsigned char *da, u8 is_valid_p2p_probe
 	mac = adapter_mac_addr(padapter);
 	bssid = cur_network->MacAddress;
 	
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 	_rtw_memcpy(pwlanhdr->addr1, da, ETH_ALEN);
 	_rtw_memcpy(pwlanhdr->addr2, mac, ETH_ALEN);
@@ -8162,7 +8162,7 @@ int _issue_probereq(_adapter *padapter, NDIS_802_11_SSID *pssid, u8 *da, u8 ch, 
 
 	mac = adapter_mac_addr(padapter);
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 
 	if (da)
@@ -8320,7 +8320,7 @@ void issue_auth(_adapter *padapter, struct sta_info *psta, unsigned short status
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 
 	SetSeqNum(pwlanhdr, pmlmeext->mgnt_seq);
@@ -8480,7 +8480,7 @@ void issue_asocrsp(_adapter *padapter, unsigned short status, struct sta_info *p
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 
 	_rtw_memcpy((void *)GetAddr1Ptr(pwlanhdr), pstat->hwaddr, ETH_ALEN);
@@ -8726,7 +8726,7 @@ void issue_assocreq(_adapter *padapter)
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 	_rtw_memcpy(pwlanhdr->addr1, get_my_bssid(&(pmlmeinfo->network)), ETH_ALEN);
 	_rtw_memcpy(pwlanhdr->addr2, adapter_mac_addr(padapter), ETH_ALEN);
@@ -9163,7 +9163,7 @@ static int _issue_nulldata(_adapter *padapter, unsigned char *da, unsigned int p
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 
 	if((pmlmeinfo->state&0x03) == WIFI_FW_AP_STATE)
@@ -9341,7 +9341,7 @@ static int _issue_qos_nulldata(_adapter *padapter, unsigned char *da, u16 tid, i
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 
 	if((pmlmeinfo->state&0x03) == WIFI_FW_AP_STATE)
@@ -9491,7 +9491,7 @@ static int _issue_deauth(_adapter *padapter, unsigned char *da, unsigned short r
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, da, ETH_ALEN);
@@ -9621,7 +9621,7 @@ void issue_action_spct_ch_switch(_adapter *padapter, u8 *ra, u8 new_ch, u8 ch_of
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, ra, ETH_ALEN); /* RA */
@@ -9693,7 +9693,7 @@ void issue_action_SA_Query(_adapter *padapter, unsigned char *raddr, unsigned ch
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 
 	if(raddr)
@@ -9796,7 +9796,7 @@ static int issue_action_ba(_adapter *padapter, unsigned char *raddr, unsigned ch
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 
 	//_rtw_memcpy(pwlanhdr->addr1, get_my_bssid(&(pmlmeinfo->network)), ETH_ALEN);
@@ -10075,7 +10075,7 @@ static void issue_action_BSSCoexistPacket(_adapter *padapter)
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, get_my_bssid(&(pmlmeinfo->network)), ETH_ALEN);
@@ -10239,7 +10239,7 @@ int _issue_action_SM_PS(_adapter *padapter ,  unsigned char *raddr , u8 NewMimoP
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 
-	fctrl = &(pwlanhdr->frame_ctl);
+	fctrl = (unsigned short *)(pframe + offsetof(struct rtw_ieee80211_hdr, frame_ctl));
 	*(fctrl) = 0;
 
 	_rtw_memcpy(pwlanhdr->addr1, raddr, ETH_ALEN); /* RA */
@@ -10909,7 +10909,9 @@ void start_clnt_join(_adapter* padapter)
 				
 				scanned = LIST_CONTAINOR(pos, struct wlan_network, list);
 
-				if (_rtw_memcmp(&(scanned->network.Ssid), &(pnetwork->Ssid), sizeof(NDIS_802_11_SSID)) == _TRUE
+				if (_rtw_memcmp((const u8 *)&scanned->network + offsetof(WLAN_BSSID_EX, Ssid),
+				                (const u8 *)pnetwork + offsetof(WLAN_BSSID_EX, Ssid),
+				                sizeof(NDIS_802_11_SSID)) == _TRUE
 					&& _rtw_memcmp(scanned->network.MacAddress, pnetwork->MacAddress, sizeof(NDIS_802_11_MAC_ADDRESS)) == _TRUE
 				) {
 					ie_offset = (scanned->network.Reserved[0] == 2? 0:12);
@@ -12348,6 +12350,21 @@ struct candidate_pool{
 }
 #endif //CONFIG_TDLS
 
+static s32 issue_probereq_ex_network(_adapter *padapter,
+				     const WLAN_BSSID_EX *network,
+				     u8 *da, u8 ch, bool append_wps,
+				     int try_cnt, int wait_ms)
+{
+	NDIS_802_11_SSID ssid;
+
+	_rtw_memcpy(&ssid,
+		    (const u8 *)network + offsetof(WLAN_BSSID_EX, Ssid),
+		    sizeof(ssid));
+
+	return issue_probereq_ex(padapter, &ssid, da, ch, append_wps,
+				 try_cnt, wait_ms);
+}
+
 //from_timer == 1 means driver is in LPS
 void linked_status_chk(_adapter *padapter, u8 from_timer)
 {
@@ -12450,7 +12467,7 @@ void linked_status_chk(_adapter *padapter, u8 from_timer)
 				}
 
 				if (rx_chk != _SUCCESS)
-					issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, psta->hwaddr, 0, 0, 3, 1);
+					issue_probereq_ex_network(padapter, &pmlmeinfo->network, psta->hwaddr, 0, 0, 3, 1);
 
 				if ((tx_chk != _SUCCESS && pmlmeinfo->link_count++ == link_count_limit) || rx_chk != _SUCCESS) {
 					tx_chk = issue_nulldata(padapter, psta->hwaddr, 0, 3, 1);
@@ -12474,9 +12491,9 @@ bypass_active_keep_alive:
 						#ifdef DBG_EXPIRATION_CHK
 						DBG_871X("issue_probereq to trigger probersp, retry=%d\n", pmlmeext->retry);
 						#endif
-						issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
-						issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
-						issue_probereq_ex(padapter, &pmlmeinfo->network.Ssid, pmlmeinfo->network.MacAddress, 0, 0, 0, 0);
+						issue_probereq_ex_network(padapter, &pmlmeinfo->network, (u8 *)&pmlmeinfo->network + offsetof(WLAN_BSSID_EX, MacAddress), 0, 0, 0, 0);
+						issue_probereq_ex_network(padapter, &pmlmeinfo->network, (u8 *)&pmlmeinfo->network + offsetof(WLAN_BSSID_EX, MacAddress), 0, 0, 0, 0);
+						issue_probereq_ex_network(padapter, &pmlmeinfo->network, (u8 *)&pmlmeinfo->network + offsetof(WLAN_BSSID_EX, MacAddress), 0, 0, 0, 0);
 					}
 				}
 

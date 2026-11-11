@@ -128,6 +128,8 @@ PVRSRVBridgeSyncRecordAdd(IMG_UINT32 ui32DispatchTableEntry,
 					  PVRSRV_BRIDGE_OUT_SYNCRECORDADD *psSyncRecordAddOUT,
 					 CONNECTION_DATA *psConnection)
 {
+	typeof(psSyncRecordAddOUT->hhRecord) aligned_out_psSyncRecordAddOUT_hhRecord __attribute__((unused));
+
 	SYNC_RECORD_HANDLE pshRecordInt = NULL;
 	IMG_HANDLE hhServerSyncPrimBlock = psSyncRecordAddIN->hhServerSyncPrimBlock;
 	SYNC_PRIMITIVE_BLOCK * pshServerSyncPrimBlockInt = NULL;
@@ -237,13 +239,15 @@ PVRSRVBridgeSyncRecordAdd(IMG_UINT32 ui32DispatchTableEntry,
 
 
 
+	aligned_out_psSyncRecordAddOUT_hhRecord = psSyncRecordAddOUT->hhRecord;
 	psSyncRecordAddOUT->eError = PVRSRVAllocHandleUnlocked(psConnection->psHandleBase,
 
-							&psSyncRecordAddOUT->hhRecord,
+							&aligned_out_psSyncRecordAddOUT_hhRecord,
 							(void *) pshRecordInt,
 							PVRSRV_HANDLE_TYPE_SYNC_RECORD_HANDLE,
 							PVRSRV_HANDLE_ALLOC_FLAG_NONE
 							,(PFN_HANDLE_RELEASE)&PVRSRVSyncRecordRemoveByHandleKM);
+	psSyncRecordAddOUT->hhRecord = aligned_out_psSyncRecordAddOUT_hhRecord;
 	if (psSyncRecordAddOUT->eError != PVRSRV_OK)
 	{
 		UnlockHandle();
