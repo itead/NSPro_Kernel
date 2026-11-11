@@ -63,7 +63,7 @@ if [ "$CI_MODE" = 1 ]; then
         if [ "$BUILD_STATUS" -eq 0 ]; then break; fi
         if [ "$ATTEMPT" -eq 3 ] || [ "${GITHUB_REF:-}" != "refs/heads/fix/rockchip-gem-zero-size" ]; then break; fi
         if ! bash scripts/ci-autofix-known-warnings.sh "$LOG_FILE"; then break; fi
-        git diff --check || break
+        git -c core.whitespace=cr-at-eol diff --check || break
         if git diff --quiet; then break; fi
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

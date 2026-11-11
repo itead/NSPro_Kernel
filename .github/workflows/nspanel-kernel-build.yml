@@ -30,7 +30,7 @@ jobs:
           if [ -n "${{ github.event.pull_request.base.sha || '' }}" ]; then
             git diff --check "${{ github.event.pull_request.base.sha }}" "$GITHUB_SHA"
           elif git rev-parse HEAD^ >/dev/null 2>&1; then
-            git diff --check HEAD^ HEAD
+            git -c core.whitespace=cr-at-eol diff --check HEAD^ HEAD
           fi
           for driver in rtl8188eu rtl8188fu rtl8189es rtl8189fs rtl8723bs rtl8723bu rtl8723cs rtl8723ds rtl8822be; do
             header="drivers/net/wireless/rockchip_wlan/$driver/include/ieee80211.h"
