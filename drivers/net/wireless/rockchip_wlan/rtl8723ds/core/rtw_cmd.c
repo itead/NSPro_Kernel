@@ -1461,12 +1461,16 @@ u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network *pnetwork)
 	    && hal_chk_proto_cap(padapter, PROTO_CAP_11AC)
 	    && (!rfctl->country_ent || COUNTRY_CHPLAN_EN_11AC(rfctl->country_ent))
 	   ) {
+		tmp_ie_length = psecnetwork->IELength;
 		rtw_restructure_vht_ie(padapter, &pnetwork->network.IEs[0], &psecnetwork->IEs[0],
-			pnetwork->network.IELength, &psecnetwork->IELength);
+			pnetwork->network.IELength, &tmp_ie_length);
+		psecnetwork->IELength = tmp_ie_length;
 	}
 #endif
 
-	rtw_append_exented_cap(padapter, &psecnetwork->IEs[0], &psecnetwork->IELength);
+	tmp_ie_length = psecnetwork->IELength;
+	rtw_append_exented_cap(padapter, &psecnetwork->IEs[0], &tmp_ie_length);
+	psecnetwork->IELength = tmp_ie_length;
 
 #endif /* CONFIG_80211N_HT */
 
