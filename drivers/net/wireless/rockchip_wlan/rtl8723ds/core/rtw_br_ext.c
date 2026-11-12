@@ -203,12 +203,12 @@ static __inline__ void __nat25_generate_apple_network_addr(unsigned char *networ
 
 
 static __inline__ void __nat25_generate_pppoe_network_addr(unsigned char *networkAddr,
-		unsigned char *ac_mac, unsigned short *sid)
+		unsigned char *ac_mac, const void *sid)
 {
 	memset(networkAddr, 0, MAX_NETWORK_ADDR_LEN);
 
 	networkAddr[0] = NAT25_PPPOE;
-	memcpy(networkAddr + 1, (unsigned char *)sid, 2);
+	memcpy(networkAddr + 1, sid, 2);
 	memcpy(networkAddr + 3, (unsigned char *)ac_mac, 6);
 }
 
@@ -1198,7 +1198,7 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 			} else {	/* session phase */
 				RTW_INFO("NAT25: Insert PPPoE, insert session packet to %s\n", skb->dev->name);
 
-				__nat25_generate_pppoe_network_addr(networkAddr, skb->data, &(ph->sid));
+				__nat25_generate_pppoe_network_addr(networkAddr, skb->data, (const u8 *)ph + offsetof(struct pppoe_hdr, sid));
 
 				__nat25_db_network_insert(priv, skb->data + ETH_ALEN, networkAddr);
 
@@ -1267,7 +1267,7 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 			} else {
 				if (ph->sid != 0) {
 					RTW_INFO("NAT25: Lookup PPPoE, lookup session packet from %s\n", skb->dev->name);
-					__nat25_generate_pppoe_network_addr(networkAddr, skb->data + ETH_ALEN, &(ph->sid));
+					__nat25_generate_pppoe_network_addr(networkAddr, skb->data + ETH_ALEN, (const u8 *)ph + offsetof(struct pppoe_hdr, sid));
 
 					__nat25_db_network_lookup_and_replace(priv, skb, networkAddr);
 
