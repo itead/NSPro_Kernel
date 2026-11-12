@@ -61,6 +61,11 @@ jobs:
           if git grep -n -E 'rtw_validate_ssid[[:space:]]*\([[:space:]]*&[[:space:]]*\([^)]*network\.Ssid' -- drivers/net/wireless/rockchip_wlan; then
             echo "::error::rtw_validate_ssid must receive an aligned local SSID copy, never a packed WLAN_BSSID_EX member"; exit 1
           fi
+          for packed_pppoe_ref in '&(ph->sid)' '&ph->sid'; do
+            if git grep -n -F "$packed_pppoe_ref" -- drivers/net/wireless/rockchip_wlan; then
+              echo "::error::Direct address of packed PPPoE session ID remains: $packed_pppoe_ref"; exit 1
+            fi
+          done
 
   build:
     name: Build and package on dell5300
