@@ -66,6 +66,12 @@ jobs:
               echo "::error::Direct address of packed PPPoE session ID remains: $packed_pppoe_ref"; exit 1
             fi
           done
+          for driver in rtl8723cs rtl8822be; do
+            source="drivers/net/wireless/rockchip_wlan/$driver/os_dep/linux/ioctl_linux.c"
+            if grep -nE 'sprintf[[:space:]]*\([[:space:]]*extra[[:space:]]*,[[:space:]]*"[^"]*%s[^"]*"[[:space:]]*,[[:space:]]*extra([[:space:]]*,|[[:space:]]*\))' "$source"; then
+              echo "::error::Overlapping sprintf source/destination remains in $source"; exit 1
+            fi
+          done
 
   build:
     name: Build and package on dell5300
